@@ -1,0 +1,26 @@
+digraph LLVMOG {
+4 [shape = record, label="4int P = argv[1] ? atoi(argv[1]) : 0;\\l | Reads: [argv] \l Writes: [P]", style=filled, fillcolor="papayawhip"];
+0 [shape = record, label="0A = AComputation(P);\\l | Reads: [P] \l Writes: [A]", style=filled, fillcolor="papayawhip"];
+1 [shape = record, label="1if (Cond(A))\\l | Reads: [A]", style=filled, fillcolor="papayawhip"];
+2 [shape = record, label="2int R = 10;\\l | Writes: [R]", style=filled, fillcolor="papayawhip"];
+3 [shape = record, label="3int P = argv[1] ? atoi(argv[1]) : 0;\\l | Reads: [argv] \l Writes: [P]", style=filled, fillcolor="papayawhip"];
+5 [shape = record, label="5return R;\\l | Reads: [R]", style=filled, fillcolor="papayawhip"];
+6 [shape = record, label="6R = HeavyRComputation(P, A);\\l | Reads: [P ; A] \l Writes: [R]", style=filled, fillcolor="papayawhip"];
+9 [shape = record, label="9if (Cond1(P))\\l | Reads: [P]", style=filled, fillcolor="papayawhip"];
+7 [shape = record, label="7int P = argv[1] ? atoi(argv[1]) : 0;\\l | Reads: [argv] \l Writes: [P]", style=filled, fillcolor="papayawhip"];
+8 [shape = record, label="8int A = 0;\\l | Writes: [A]", style=filled, fillcolor="papayawhip"];
+10 [shape = record, label="10R = RComputation(P, A);\\l | Reads: [P ; A] \l Writes: [R]", style=filled, fillcolor="papayawhip"];
+0 -> 1 [label="", id= 0];
+2 -> 3 [label="", id= 1];
+7 -> 8 [label="", id= 2];
+8 -> 9 [label="", id= 3];
+3 -> 4 [label="T", id= 4];
+3 -> 7 [label="F", id= 5];
+4 -> 7 [label="", id= 6];
+9 -> 0 [label="T", id= 7];
+9 -> 5 [label="F", id= 8];
+1 -> 6 [label="T", id= 9];
+1 -> 10 [label="F", id= 10];
+6 -> 5 [label="", id= 11];
+10 -> 5 [label="", id= 12];
+}

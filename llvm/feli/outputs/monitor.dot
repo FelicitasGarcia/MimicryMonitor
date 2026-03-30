@@ -1,0 +1,25 @@
+digraph MM {
+  4 [label="NV"];
+  1 [label="NV"];
+  11 [label="V"];
+  12 [label="IV"];
+  2 [label="NV"];
+  3 [label="NV"];
+  6 [label="NV"];
+  10 [label="NV"];
+  7 [label="NV"];
+  8 [label="NV"];
+
+  1 -> 2 [label="int P = argv[1] ? atoi(argv[1]) : 0;\\l?", id=0];
+  2 -> 3 [label="int P = argv[1] ? atoi(argv[1]) : 0;\\l: else", id=1];
+  2 -> 3 [label="int P = argv[1] ? atoi(argv[1]) : 0;\\l: then", id=2];
+  3 -> 4 [label="if (Cond0(P))\\l?", id=3];
+  4 -> 12 [label="if (Cond0(P))\\l: then", id=4];
+  4 -> 6 [label="if (Cond0(P))\\l: else", id=5];
+  6 -> 7 [label="if (Cond1(P))\\l?", id=6];
+  7 -> 8 [label="if (Cond1(P))\\l: then", id=7];
+  7 -> 11 [label="if (Cond1(P))\\l: else", id=8];
+  8 -> 10 [label="if (Cond(A))\\l?", id=9];
+  10 -> 11 [label="if (Cond(A))\\l: then", id=10];
+  10 -> 12 [label="if (Cond(A))\\l: else", id=11];
+}

@@ -1,0 +1,987 @@
+++ initial_cwd_=/Users/felicitasgarcia/coreutils
++++ testdir_prefix_
++++ printf gt
+++ pfx_=gt
++++ mktempd_ /Users/felicitasgarcia/coreutils gt-readdir-mountpoint-inode.sh.XXXX
++++ case $# in
++++ destdir_=/Users/felicitasgarcia/coreutils
++++ template_=gt-readdir-mountpoint-inode.sh.XXXX
++++ MAX_TRIES_=4
++++ case $destdir_ in
++++ destdir_slash_=/Users/felicitasgarcia/coreutils/
++++ case $template_ in
+++++ unset TMPDIR
++++ d=/Users/felicitasgarcia/coreutils/gt-readdir-mountpoint-inode.sh.11xy
++++ case $d in
++++ :
++++ test -d /Users/felicitasgarcia/coreutils/gt-readdir-mountpoint-inode.sh.11xy
+++++ ls -dgo /Users/felicitasgarcia/coreutils/gt-readdir-mountpoint-inode.sh.11xy
++++ perms='drwx------ 2 64 May 20 23:24 /Users/felicitasgarcia/coreutils/gt-readdir-mountpoint-inode.sh.11xy'
++++ case $perms in
++++ :
++++ echo /Users/felicitasgarcia/coreutils/gt-readdir-mountpoint-inode.sh.11xy
++++ return
+++ test_dir_=/Users/felicitasgarcia/coreutils/gt-readdir-mountpoint-inode.sh.11xy
+++ cd /Users/felicitasgarcia/coreutils/gt-readdir-mountpoint-inode.sh.11xy
+++ case $srcdir in
+++ srcdir=../.
+++ builddir=..
+++ export srcdir builddir
+++ gl_init_sh_nl_='
+'
+++ IFS=' 	
+'
+++ for sig_ in 1 2 3 13 15
++++ expr 1 + 128
+++ eval 'trap '\''Exit 129'\'' 1'
++++ trap 'Exit 129' 1
+++ for sig_ in 1 2 3 13 15
++++ expr 2 + 128
+++ eval 'trap '\''Exit 130'\'' 2'
++++ trap 'Exit 130' 2
+++ for sig_ in 1 2 3 13 15
++++ expr 3 + 128
+++ eval 'trap '\''Exit 131'\'' 3'
++++ trap 'Exit 131' 3
+++ for sig_ in 1 2 3 13 15
++++ expr 13 + 128
+++ eval 'trap '\''Exit 141'\'' 13'
++++ trap 'Exit 141' 13
+++ for sig_ in 1 2 3 13 15
++++ expr 15 + 128
+++ eval 'trap '\''Exit 143'\'' 15'
++++ trap 'Exit 143' 15
+++ saved_IFS=' 	
+'
+++ IFS=:
+++ new_PATH=
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Users/felicitasgarcia/coreutils/src/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Users/felicitasgarcia/.opam/my_project/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/homebrew/opt/bison/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Users/felicitasgarcia/.ghcup/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/homebrew/opt/llvm/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/miniconda3/condabin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Library/Frameworks/Python.framework/Versions/3.13/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/homebrew/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/homebrew/sbin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /usr/local/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /System/Cryptexes/App/usr/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /usr/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /usr/sbin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /sbin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /usr/local/MacGPG2/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Library/TeX/texbin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Library/TeX/texbin
+++ IFS=' 	
+'
+++ PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Library/TeX/texbin
+++ export PATH
+++ trap remove_tmp_ EXIT
++ path_prepend_ ./src
++ test 1 '!=' 0
++ path_dir_=./src
++ case $path_dir_ in
++ abs_path_dir_=/Users/felicitasgarcia/coreutils/./src
++ case $abs_path_dir_ in
++ PATH=/Users/felicitasgarcia/coreutils/./src:/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Library/TeX/texbin
++ create_exe_shims_ /Users/felicitasgarcia/coreutils/./src
++ case $EXEEXT in
++ return 0
++ shift
++ test 0 '!=' 0
++ export PATH
++ print_ver_ lsPUA
++ require_built_ lsPUA
++ skip_=no
++ for i in '"$@"'
++ case " $built_programs " in
++ test no = yes
++ test yes = yes
++ local i
++ for i in '$*'
++ env lsPUA --version
+ls (GNU coreutils) 9.7.25-3844c1-modified
+Copyright (C) 2025 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by Richard M. Stallman and David MacKenzie.
++ df --local --out=target
++ sed -n '/^\/./p'
++ head -n 64
++ test -s mount_points
++ read dir
+++ inode_via_readdir /System/Volumes/VM
+++ mount_point=/System/Volumes/VM
++++ basename /System/Volumes/VM
+++ base=VM
+++ case "$base" in
++++ ls_ignore_options VM
++++ name=VM
++++ opts='-I '\''.?*'\'' -I '\''VM?*'\'''
++++ :
+++++ echo VM
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='V[^M]*'
++++ opts='-I '\''.?*'\'' -I '\''VM?*'\'' -I '\''V[^M]*'\'''
+++++ echo VM
+++++ sed 's/.$//'
++++ name=V
++++ test -z V
+++++ echo V
+++++ sed 's/./?/g'
++++ glob='?'
++++ opts='-I '\''.?*'\'' -I '\''VM?*'\'' -I '\''V[^M]*'\'' -I '\''?'\'''
++++ :
+++++ echo V
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='[^V]*'
++++ opts='-I '\''.?*'\'' -I '\''VM?*'\'' -I '\''V[^M]*'\'' -I '\''?'\'' -I '\''[^V]*'\'''
+++++ echo V
+++++ sed 's/.$//'
++++ name=
++++ test -z ''
++++ break
++++ echo '-I '\''.?*'\'' -I '\''VM?*'\'' -I '\''V[^M]*'\'' -I '\''?'\'' -I '\''[^V]*'\'''
+++ opts='-I '\''.?*'\'' -I '\''VM?*'\'' -I '\''V[^M]*'\'' -I '\''?'\'' -I '\''[^V]*'\'''
++++ dirname /System/Volumes/VM
+++ parent_dir=/System/Volumes
++++ eval 'lsPUA -i -I '\''.?*'\'' -I '\''VM?*'\'' -I '\''V[^M]*'\'' -I '\''?'\'' -I '\''[^V]*'\'' '\''/System/Volumes'\'''
+++++ lsPUA -i -I '.?*' -I 'VM?*' -I 'V[^M]*' -I '?' -I '[^V]*' /System/Volumes
+++ ls_out='2 VM'
+++ test 0 -eq 0
+++ echo 2 VM
+++ sed 's/ .*//'
++ readdir_inode=2
++ test 0 = 77
+++ timeout 1 stat --format=%i /System/Volumes/VM
++ stat_inode=2
++ case $stat_inode in
++ test 2 = 2
++ read dir
+++ inode_via_readdir /System/Volumes/Preboot
+++ mount_point=/System/Volumes/Preboot
++++ basename /System/Volumes/Preboot
+++ base=Preboot
+++ case "$base" in
++++ ls_ignore_options Preboot
++++ name=Preboot
++++ opts='-I '\''.?*'\'' -I '\''Preboot?*'\'''
++++ :
+++++ echo Preboot
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='Preboo[^t]*'
++++ opts='-I '\''.?*'\'' -I '\''Preboot?*'\'' -I '\''Preboo[^t]*'\'''
+++++ echo Preboot
+++++ sed 's/.$//'
++++ name=Preboo
++++ test -z Preboo
+++++ echo Preboo
+++++ sed 's/./?/g'
++++ glob='??????'
++++ opts='-I '\''.?*'\'' -I '\''Preboot?*'\'' -I '\''Preboo[^t]*'\'' -I '\''??????'\'''
++++ :
+++++ echo Preboo
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='Prebo[^o]*'
++++ opts='-I '\''.?*'\'' -I '\''Preboot?*'\'' -I '\''Preboo[^t]*'\'' -I '\''??????'\'' -I '\''Prebo[^o]*'\'''
+++++ echo Preboo
+++++ sed 's/.$//'
++++ name=Prebo
++++ test -z Prebo
+++++ echo Prebo
+++++ sed 's/./?/g'
++++ glob='?????'
++++ opts='-I '\''.?*'\'' -I '\''Preboot?*'\'' -I '\''Preboo[^t]*'\'' -I '\''??????'\'' -I '\''Prebo[^o]*'\'' -I '\''?????'\'''
++++ :
+++++ echo Prebo
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='Preb[^o]*'
++++ opts='-I '\''.?*'\'' -I '\''Preboot?*'\'' -I '\''Preboo[^t]*'\'' -I '\''??????'\'' -I '\''Prebo[^o]*'\'' -I '\''?????'\'' -I '\''Preb[^o]*'\'''
+++++ echo Prebo
+++++ sed 's/.$//'
++++ name=Preb
++++ test -z Preb
+++++ echo Preb
+++++ sed 's/./?/g'
++++ glob='????'
++++ opts='-I '\''.?*'\'' -I '\''Preboot?*'\'' -I '\''Preboo[^t]*'\'' -I '\''??????'\'' -I '\''Prebo[^o]*'\'' -I '\''?????'\'' -I '\''Preb[^o]*'\'' -I '\''????'\'''
++++ :
+++++ echo Preb
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='Pre[^b]*'
++++ opts='-I '\''.?*'\'' -I '\''Preboot?*'\'' -I '\''Preboo[^t]*'\'' -I '\''??????'\'' -I '\''Prebo[^o]*'\'' -I '\''?????'\'' -I '\''Preb[^o]*'\'' -I '\''????'\'' -I '\''Pre[^b]*'\'''
+++++ echo Preb
+++++ sed 's/.$//'
++++ name=Pre
++++ test -z Pre
+++++ echo Pre
+++++ sed 's/./?/g'
++++ glob='???'
++++ opts='-I '\''.?*'\'' -I '\''Preboot?*'\'' -I '\''Preboo[^t]*'\'' -I '\''??????'\'' -I '\''Prebo[^o]*'\'' -I '\''?????'\'' -I '\''Preb[^o]*'\'' -I '\''????'\'' -I '\''Pre[^b]*'\'' -I '\''???'\'''
++++ :
+++++ echo Pre
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='Pr[^e]*'
++++ opts='-I '\''.?*'\'' -I '\''Preboot?*'\'' -I '\''Preboo[^t]*'\'' -I '\''??????'\'' -I '\''Prebo[^o]*'\'' -I '\''?????'\'' -I '\''Preb[^o]*'\'' -I '\''????'\'' -I '\''Pre[^b]*'\'' -I '\''???'\'' -I '\''Pr[^e]*'\'''
+++++ echo Pre
+++++ sed 's/.$//'
++++ name=Pr
++++ test -z Pr
+++++ echo Pr
+++++ sed 's/./?/g'
++++ glob='??'
++++ opts='-I '\''.?*'\'' -I '\''Preboot?*'\'' -I '\''Preboo[^t]*'\'' -I '\''??????'\'' -I '\''Prebo[^o]*'\'' -I '\''?????'\'' -I '\''Preb[^o]*'\'' -I '\''????'\'' -I '\''Pre[^b]*'\'' -I '\''???'\'' -I '\''Pr[^e]*'\'' -I '\''??'\'''
++++ :
+++++ echo Pr
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='P[^r]*'
++++ opts='-I '\''.?*'\'' -I '\''Preboot?*'\'' -I '\''Preboo[^t]*'\'' -I '\''??????'\'' -I '\''Prebo[^o]*'\'' -I '\''?????'\'' -I '\''Preb[^o]*'\'' -I '\''????'\'' -I '\''Pre[^b]*'\'' -I '\''???'\'' -I '\''Pr[^e]*'\'' -I '\''??'\'' -I '\''P[^r]*'\'''
+++++ echo Pr
+++++ sed 's/.$//'
++++ name=P
++++ test -z P
+++++ echo P
+++++ sed 's/./?/g'
++++ glob='?'
++++ opts='-I '\''.?*'\'' -I '\''Preboot?*'\'' -I '\''Preboo[^t]*'\'' -I '\''??????'\'' -I '\''Prebo[^o]*'\'' -I '\''?????'\'' -I '\''Preb[^o]*'\'' -I '\''????'\'' -I '\''Pre[^b]*'\'' -I '\''???'\'' -I '\''Pr[^e]*'\'' -I '\''??'\'' -I '\''P[^r]*'\'' -I '\''?'\'''
++++ :
+++++ echo P
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='[^P]*'
++++ opts='-I '\''.?*'\'' -I '\''Preboot?*'\'' -I '\''Preboo[^t]*'\'' -I '\''??????'\'' -I '\''Prebo[^o]*'\'' -I '\''?????'\'' -I '\''Preb[^o]*'\'' -I '\''????'\'' -I '\''Pre[^b]*'\'' -I '\''???'\'' -I '\''Pr[^e]*'\'' -I '\''??'\'' -I '\''P[^r]*'\'' -I '\''?'\'' -I '\''[^P]*'\'''
+++++ echo P
+++++ sed 's/.$//'
++++ name=
++++ test -z ''
++++ break
++++ echo '-I '\''.?*'\'' -I '\''Preboot?*'\'' -I '\''Preboo[^t]*'\'' -I '\''??????'\'' -I '\''Prebo[^o]*'\'' -I '\''?????'\'' -I '\''Preb[^o]*'\'' -I '\''????'\'' -I '\''Pre[^b]*'\'' -I '\''???'\'' -I '\''Pr[^e]*'\'' -I '\''??'\'' -I '\''P[^r]*'\'' -I '\''?'\'' -I '\''[^P]*'\'''
+++ opts='-I '\''.?*'\'' -I '\''Preboot?*'\'' -I '\''Preboo[^t]*'\'' -I '\''??????'\'' -I '\''Prebo[^o]*'\'' -I '\''?????'\'' -I '\''Preb[^o]*'\'' -I '\''????'\'' -I '\''Pre[^b]*'\'' -I '\''???'\'' -I '\''Pr[^e]*'\'' -I '\''??'\'' -I '\''P[^r]*'\'' -I '\''?'\'' -I '\''[^P]*'\'''
++++ dirname /System/Volumes/Preboot
+++ parent_dir=/System/Volumes
++++ eval 'lsPUA -i -I '\''.?*'\'' -I '\''Preboot?*'\'' -I '\''Preboo[^t]*'\'' -I '\''??????'\'' -I '\''Prebo[^o]*'\'' -I '\''?????'\'' -I '\''Preb[^o]*'\'' -I '\''????'\'' -I '\''Pre[^b]*'\'' -I '\''???'\'' -I '\''Pr[^e]*'\'' -I '\''??'\'' -I '\''P[^r]*'\'' -I '\''?'\'' -I '\''[^P]*'\'' '\''/System/Volumes'\'''
+++++ lsPUA -i -I '.?*' -I 'Preboot?*' -I 'Preboo[^t]*' -I '??????' -I 'Prebo[^o]*' -I '?????' -I 'Preb[^o]*' -I '????' -I 'Pre[^b]*' -I '???' -I 'Pr[^e]*' -I '??' -I 'P[^r]*' -I '?' -I '[^P]*' /System/Volumes
+++ ls_out='2 Preboot'
+++ test 0 -eq 0
+++ echo 2 Preboot
+++ sed 's/ .*//'
++ readdir_inode=2
++ test 0 = 77
+++ timeout 1 stat --format=%i /System/Volumes/Preboot
++ stat_inode=2
++ case $stat_inode in
++ test 2 = 2
++ read dir
+++ inode_via_readdir /System/Volumes/Update
+++ mount_point=/System/Volumes/Update
++++ basename /System/Volumes/Update
+++ base=Update
+++ case "$base" in
++++ ls_ignore_options Update
++++ name=Update
++++ opts='-I '\''.?*'\'' -I '\''Update?*'\'''
++++ :
+++++ echo Update
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='Updat[^e]*'
++++ opts='-I '\''.?*'\'' -I '\''Update?*'\'' -I '\''Updat[^e]*'\'''
+++++ echo Update
+++++ sed 's/.$//'
++++ name=Updat
++++ test -z Updat
+++++ echo Updat
+++++ sed 's/./?/g'
++++ glob='?????'
++++ opts='-I '\''.?*'\'' -I '\''Update?*'\'' -I '\''Updat[^e]*'\'' -I '\''?????'\'''
++++ :
+++++ echo Updat
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='Upda[^t]*'
++++ opts='-I '\''.?*'\'' -I '\''Update?*'\'' -I '\''Updat[^e]*'\'' -I '\''?????'\'' -I '\''Upda[^t]*'\'''
+++++ echo Updat
+++++ sed 's/.$//'
++++ name=Upda
++++ test -z Upda
+++++ echo Upda
+++++ sed 's/./?/g'
++++ glob='????'
++++ opts='-I '\''.?*'\'' -I '\''Update?*'\'' -I '\''Updat[^e]*'\'' -I '\''?????'\'' -I '\''Upda[^t]*'\'' -I '\''????'\'''
++++ :
+++++ echo Upda
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='Upd[^a]*'
++++ opts='-I '\''.?*'\'' -I '\''Update?*'\'' -I '\''Updat[^e]*'\'' -I '\''?????'\'' -I '\''Upda[^t]*'\'' -I '\''????'\'' -I '\''Upd[^a]*'\'''
+++++ echo Upda
+++++ sed 's/.$//'
++++ name=Upd
++++ test -z Upd
+++++ echo Upd
+++++ sed 's/./?/g'
++++ glob='???'
++++ opts='-I '\''.?*'\'' -I '\''Update?*'\'' -I '\''Updat[^e]*'\'' -I '\''?????'\'' -I '\''Upda[^t]*'\'' -I '\''????'\'' -I '\''Upd[^a]*'\'' -I '\''???'\'''
++++ :
+++++ echo Upd
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='Up[^d]*'
++++ opts='-I '\''.?*'\'' -I '\''Update?*'\'' -I '\''Updat[^e]*'\'' -I '\''?????'\'' -I '\''Upda[^t]*'\'' -I '\''????'\'' -I '\''Upd[^a]*'\'' -I '\''???'\'' -I '\''Up[^d]*'\'''
+++++ echo Upd
+++++ sed 's/.$//'
++++ name=Up
++++ test -z Up
+++++ echo Up
+++++ sed 's/./?/g'
++++ glob='??'
++++ opts='-I '\''.?*'\'' -I '\''Update?*'\'' -I '\''Updat[^e]*'\'' -I '\''?????'\'' -I '\''Upda[^t]*'\'' -I '\''????'\'' -I '\''Upd[^a]*'\'' -I '\''???'\'' -I '\''Up[^d]*'\'' -I '\''??'\'''
++++ :
+++++ echo Up
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='U[^p]*'
++++ opts='-I '\''.?*'\'' -I '\''Update?*'\'' -I '\''Updat[^e]*'\'' -I '\''?????'\'' -I '\''Upda[^t]*'\'' -I '\''????'\'' -I '\''Upd[^a]*'\'' -I '\''???'\'' -I '\''Up[^d]*'\'' -I '\''??'\'' -I '\''U[^p]*'\'''
+++++ echo Up
+++++ sed 's/.$//'
++++ name=U
++++ test -z U
+++++ echo U
+++++ sed 's/./?/g'
++++ glob='?'
++++ opts='-I '\''.?*'\'' -I '\''Update?*'\'' -I '\''Updat[^e]*'\'' -I '\''?????'\'' -I '\''Upda[^t]*'\'' -I '\''????'\'' -I '\''Upd[^a]*'\'' -I '\''???'\'' -I '\''Up[^d]*'\'' -I '\''??'\'' -I '\''U[^p]*'\'' -I '\''?'\'''
++++ :
+++++ echo U
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='[^U]*'
++++ opts='-I '\''.?*'\'' -I '\''Update?*'\'' -I '\''Updat[^e]*'\'' -I '\''?????'\'' -I '\''Upda[^t]*'\'' -I '\''????'\'' -I '\''Upd[^a]*'\'' -I '\''???'\'' -I '\''Up[^d]*'\'' -I '\''??'\'' -I '\''U[^p]*'\'' -I '\''?'\'' -I '\''[^U]*'\'''
+++++ echo U
+++++ sed 's/.$//'
++++ name=
++++ test -z ''
++++ break
++++ echo '-I '\''.?*'\'' -I '\''Update?*'\'' -I '\''Updat[^e]*'\'' -I '\''?????'\'' -I '\''Upda[^t]*'\'' -I '\''????'\'' -I '\''Upd[^a]*'\'' -I '\''???'\'' -I '\''Up[^d]*'\'' -I '\''??'\'' -I '\''U[^p]*'\'' -I '\''?'\'' -I '\''[^U]*'\'''
+++ opts='-I '\''.?*'\'' -I '\''Update?*'\'' -I '\''Updat[^e]*'\'' -I '\''?????'\'' -I '\''Upda[^t]*'\'' -I '\''????'\'' -I '\''Upd[^a]*'\'' -I '\''???'\'' -I '\''Up[^d]*'\'' -I '\''??'\'' -I '\''U[^p]*'\'' -I '\''?'\'' -I '\''[^U]*'\'''
++++ dirname /System/Volumes/Update
+++ parent_dir=/System/Volumes
++++ eval 'lsPUA -i -I '\''.?*'\'' -I '\''Update?*'\'' -I '\''Updat[^e]*'\'' -I '\''?????'\'' -I '\''Upda[^t]*'\'' -I '\''????'\'' -I '\''Upd[^a]*'\'' -I '\''???'\'' -I '\''Up[^d]*'\'' -I '\''??'\'' -I '\''U[^p]*'\'' -I '\''?'\'' -I '\''[^U]*'\'' '\''/System/Volumes'\'''
+++++ lsPUA -i -I '.?*' -I 'Update?*' -I 'Updat[^e]*' -I '?????' -I 'Upda[^t]*' -I '????' -I 'Upd[^a]*' -I '???' -I 'Up[^d]*' -I '??' -I 'U[^p]*' -I '?' -I '[^U]*' /System/Volumes
+++ ls_out='2 Update'
+++ test 0 -eq 0
+++ echo 2 Update
+++ sed 's/ .*//'
++ readdir_inode=2
++ test 0 = 77
+++ timeout 1 stat --format=%i /System/Volumes/Update
++ stat_inode=2
++ case $stat_inode in
++ test 2 = 2
++ read dir
+++ inode_via_readdir /System/Volumes/xarts
+++ mount_point=/System/Volumes/xarts
++++ basename /System/Volumes/xarts
+++ base=xarts
+++ case "$base" in
++++ ls_ignore_options xarts
++++ name=xarts
++++ opts='-I '\''.?*'\'' -I '\''xarts?*'\'''
++++ :
+++++ echo xarts
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='xart[^s]*'
++++ opts='-I '\''.?*'\'' -I '\''xarts?*'\'' -I '\''xart[^s]*'\'''
+++++ echo xarts
+++++ sed 's/.$//'
++++ name=xart
++++ test -z xart
+++++ echo xart
+++++ sed 's/./?/g'
++++ glob='????'
++++ opts='-I '\''.?*'\'' -I '\''xarts?*'\'' -I '\''xart[^s]*'\'' -I '\''????'\'''
++++ :
+++++ echo xart
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='xar[^t]*'
++++ opts='-I '\''.?*'\'' -I '\''xarts?*'\'' -I '\''xart[^s]*'\'' -I '\''????'\'' -I '\''xar[^t]*'\'''
+++++ echo xart
+++++ sed 's/.$//'
++++ name=xar
++++ test -z xar
+++++ echo xar
+++++ sed 's/./?/g'
++++ glob='???'
++++ opts='-I '\''.?*'\'' -I '\''xarts?*'\'' -I '\''xart[^s]*'\'' -I '\''????'\'' -I '\''xar[^t]*'\'' -I '\''???'\'''
++++ :
+++++ echo xar
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='xa[^r]*'
++++ opts='-I '\''.?*'\'' -I '\''xarts?*'\'' -I '\''xart[^s]*'\'' -I '\''????'\'' -I '\''xar[^t]*'\'' -I '\''???'\'' -I '\''xa[^r]*'\'''
+++++ echo xar
+++++ sed 's/.$//'
++++ name=xa
++++ test -z xa
+++++ echo xa
+++++ sed 's/./?/g'
++++ glob='??'
++++ opts='-I '\''.?*'\'' -I '\''xarts?*'\'' -I '\''xart[^s]*'\'' -I '\''????'\'' -I '\''xar[^t]*'\'' -I '\''???'\'' -I '\''xa[^r]*'\'' -I '\''??'\'''
++++ :
+++++ echo xa
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='x[^a]*'
++++ opts='-I '\''.?*'\'' -I '\''xarts?*'\'' -I '\''xart[^s]*'\'' -I '\''????'\'' -I '\''xar[^t]*'\'' -I '\''???'\'' -I '\''xa[^r]*'\'' -I '\''??'\'' -I '\''x[^a]*'\'''
+++++ echo xa
+++++ sed 's/.$//'
++++ name=x
++++ test -z x
+++++ echo x
+++++ sed 's/./?/g'
++++ glob='?'
++++ opts='-I '\''.?*'\'' -I '\''xarts?*'\'' -I '\''xart[^s]*'\'' -I '\''????'\'' -I '\''xar[^t]*'\'' -I '\''???'\'' -I '\''xa[^r]*'\'' -I '\''??'\'' -I '\''x[^a]*'\'' -I '\''?'\'''
++++ :
+++++ echo x
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='[^x]*'
++++ opts='-I '\''.?*'\'' -I '\''xarts?*'\'' -I '\''xart[^s]*'\'' -I '\''????'\'' -I '\''xar[^t]*'\'' -I '\''???'\'' -I '\''xa[^r]*'\'' -I '\''??'\'' -I '\''x[^a]*'\'' -I '\''?'\'' -I '\''[^x]*'\'''
+++++ echo x
+++++ sed 's/.$//'
++++ name=
++++ test -z ''
++++ break
++++ echo '-I '\''.?*'\'' -I '\''xarts?*'\'' -I '\''xart[^s]*'\'' -I '\''????'\'' -I '\''xar[^t]*'\'' -I '\''???'\'' -I '\''xa[^r]*'\'' -I '\''??'\'' -I '\''x[^a]*'\'' -I '\''?'\'' -I '\''[^x]*'\'''
+++ opts='-I '\''.?*'\'' -I '\''xarts?*'\'' -I '\''xart[^s]*'\'' -I '\''????'\'' -I '\''xar[^t]*'\'' -I '\''???'\'' -I '\''xa[^r]*'\'' -I '\''??'\'' -I '\''x[^a]*'\'' -I '\''?'\'' -I '\''[^x]*'\'''
++++ dirname /System/Volumes/xarts
+++ parent_dir=/System/Volumes
++++ eval 'lsPUA -i -I '\''.?*'\'' -I '\''xarts?*'\'' -I '\''xart[^s]*'\'' -I '\''????'\'' -I '\''xar[^t]*'\'' -I '\''???'\'' -I '\''xa[^r]*'\'' -I '\''??'\'' -I '\''x[^a]*'\'' -I '\''?'\'' -I '\''[^x]*'\'' '\''/System/Volumes'\'''
+++++ lsPUA -i -I '.?*' -I 'xarts?*' -I 'xart[^s]*' -I '????' -I 'xar[^t]*' -I '???' -I 'xa[^r]*' -I '??' -I 'x[^a]*' -I '?' -I '[^x]*' /System/Volumes
+++ ls_out='2 xarts'
+++ test 0 -eq 0
+++ echo 2 xarts
+++ sed 's/ .*//'
++ readdir_inode=2
++ test 0 = 77
+++ timeout 1 stat --format=%i /System/Volumes/xarts
++ stat_inode=2
++ case $stat_inode in
++ test 2 = 2
++ read dir
+++ inode_via_readdir /System/Volumes/iSCPreboot
+++ mount_point=/System/Volumes/iSCPreboot
++++ basename /System/Volumes/iSCPreboot
+++ base=iSCPreboot
+++ case "$base" in
++++ ls_ignore_options iSCPreboot
++++ name=iSCPreboot
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'''
++++ :
+++++ echo iSCPreboot
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='iSCPreboo[^t]*'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'''
+++++ echo iSCPreboot
+++++ sed 's/.$//'
++++ name=iSCPreboo
++++ test -z iSCPreboo
+++++ echo iSCPreboo
+++++ sed 's/./?/g'
++++ glob='?????????'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'''
++++ :
+++++ echo iSCPreboo
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='iSCPrebo[^o]*'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'''
+++++ echo iSCPreboo
+++++ sed 's/.$//'
++++ name=iSCPrebo
++++ test -z iSCPrebo
+++++ echo iSCPrebo
+++++ sed 's/./?/g'
++++ glob='????????'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'''
++++ :
+++++ echo iSCPrebo
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='iSCPreb[^o]*'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'''
+++++ echo iSCPrebo
+++++ sed 's/.$//'
++++ name=iSCPreb
++++ test -z iSCPreb
+++++ echo iSCPreb
+++++ sed 's/./?/g'
++++ glob='???????'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'''
++++ :
+++++ echo iSCPreb
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='iSCPre[^b]*'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'' -I '\''iSCPre[^b]*'\'''
+++++ echo iSCPreb
+++++ sed 's/.$//'
++++ name=iSCPre
++++ test -z iSCPre
+++++ echo iSCPre
+++++ sed 's/./?/g'
++++ glob='??????'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'' -I '\''iSCPre[^b]*'\'' -I '\''??????'\'''
++++ :
+++++ echo iSCPre
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='iSCPr[^e]*'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'' -I '\''iSCPre[^b]*'\'' -I '\''??????'\'' -I '\''iSCPr[^e]*'\'''
+++++ echo iSCPre
+++++ sed 's/.$//'
++++ name=iSCPr
++++ test -z iSCPr
+++++ echo iSCPr
+++++ sed 's/./?/g'
++++ glob='?????'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'' -I '\''iSCPre[^b]*'\'' -I '\''??????'\'' -I '\''iSCPr[^e]*'\'' -I '\''?????'\'''
++++ :
+++++ echo iSCPr
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='iSCP[^r]*'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'' -I '\''iSCPre[^b]*'\'' -I '\''??????'\'' -I '\''iSCPr[^e]*'\'' -I '\''?????'\'' -I '\''iSCP[^r]*'\'''
+++++ echo iSCPr
+++++ sed 's/.$//'
++++ name=iSCP
++++ test -z iSCP
+++++ echo iSCP
+++++ sed 's/./?/g'
++++ glob='????'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'' -I '\''iSCPre[^b]*'\'' -I '\''??????'\'' -I '\''iSCPr[^e]*'\'' -I '\''?????'\'' -I '\''iSCP[^r]*'\'' -I '\''????'\'''
++++ :
+++++ echo iSCP
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='iSC[^P]*'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'' -I '\''iSCPre[^b]*'\'' -I '\''??????'\'' -I '\''iSCPr[^e]*'\'' -I '\''?????'\'' -I '\''iSCP[^r]*'\'' -I '\''????'\'' -I '\''iSC[^P]*'\'''
+++++ echo iSCP
+++++ sed 's/.$//'
++++ name=iSC
++++ test -z iSC
+++++ echo iSC
+++++ sed 's/./?/g'
++++ glob='???'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'' -I '\''iSCPre[^b]*'\'' -I '\''??????'\'' -I '\''iSCPr[^e]*'\'' -I '\''?????'\'' -I '\''iSCP[^r]*'\'' -I '\''????'\'' -I '\''iSC[^P]*'\'' -I '\''???'\'''
++++ :
+++++ echo iSC
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='iS[^C]*'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'' -I '\''iSCPre[^b]*'\'' -I '\''??????'\'' -I '\''iSCPr[^e]*'\'' -I '\''?????'\'' -I '\''iSCP[^r]*'\'' -I '\''????'\'' -I '\''iSC[^P]*'\'' -I '\''???'\'' -I '\''iS[^C]*'\'''
+++++ echo iSC
+++++ sed 's/.$//'
++++ name=iS
++++ test -z iS
+++++ echo iS
+++++ sed 's/./?/g'
++++ glob='??'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'' -I '\''iSCPre[^b]*'\'' -I '\''??????'\'' -I '\''iSCPr[^e]*'\'' -I '\''?????'\'' -I '\''iSCP[^r]*'\'' -I '\''????'\'' -I '\''iSC[^P]*'\'' -I '\''???'\'' -I '\''iS[^C]*'\'' -I '\''??'\'''
++++ :
+++++ echo iS
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='i[^S]*'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'' -I '\''iSCPre[^b]*'\'' -I '\''??????'\'' -I '\''iSCPr[^e]*'\'' -I '\''?????'\'' -I '\''iSCP[^r]*'\'' -I '\''????'\'' -I '\''iSC[^P]*'\'' -I '\''???'\'' -I '\''iS[^C]*'\'' -I '\''??'\'' -I '\''i[^S]*'\'''
+++++ echo iS
+++++ sed 's/.$//'
++++ name=i
++++ test -z i
+++++ echo i
+++++ sed 's/./?/g'
++++ glob='?'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'' -I '\''iSCPre[^b]*'\'' -I '\''??????'\'' -I '\''iSCPr[^e]*'\'' -I '\''?????'\'' -I '\''iSCP[^r]*'\'' -I '\''????'\'' -I '\''iSC[^P]*'\'' -I '\''???'\'' -I '\''iS[^C]*'\'' -I '\''??'\'' -I '\''i[^S]*'\'' -I '\''?'\'''
++++ :
+++++ echo i
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='[^i]*'
++++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'' -I '\''iSCPre[^b]*'\'' -I '\''??????'\'' -I '\''iSCPr[^e]*'\'' -I '\''?????'\'' -I '\''iSCP[^r]*'\'' -I '\''????'\'' -I '\''iSC[^P]*'\'' -I '\''???'\'' -I '\''iS[^C]*'\'' -I '\''??'\'' -I '\''i[^S]*'\'' -I '\''?'\'' -I '\''[^i]*'\'''
+++++ echo i
+++++ sed 's/.$//'
++++ name=
++++ test -z ''
++++ break
++++ echo '-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'' -I '\''iSCPre[^b]*'\'' -I '\''??????'\'' -I '\''iSCPr[^e]*'\'' -I '\''?????'\'' -I '\''iSCP[^r]*'\'' -I '\''????'\'' -I '\''iSC[^P]*'\'' -I '\''???'\'' -I '\''iS[^C]*'\'' -I '\''??'\'' -I '\''i[^S]*'\'' -I '\''?'\'' -I '\''[^i]*'\'''
+++ opts='-I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'' -I '\''iSCPre[^b]*'\'' -I '\''??????'\'' -I '\''iSCPr[^e]*'\'' -I '\''?????'\'' -I '\''iSCP[^r]*'\'' -I '\''????'\'' -I '\''iSC[^P]*'\'' -I '\''???'\'' -I '\''iS[^C]*'\'' -I '\''??'\'' -I '\''i[^S]*'\'' -I '\''?'\'' -I '\''[^i]*'\'''
++++ dirname /System/Volumes/iSCPreboot
+++ parent_dir=/System/Volumes
++++ eval 'lsPUA -i -I '\''.?*'\'' -I '\''iSCPreboot?*'\'' -I '\''iSCPreboo[^t]*'\'' -I '\''?????????'\'' -I '\''iSCPrebo[^o]*'\'' -I '\''????????'\'' -I '\''iSCPreb[^o]*'\'' -I '\''???????'\'' -I '\''iSCPre[^b]*'\'' -I '\''??????'\'' -I '\''iSCPr[^e]*'\'' -I '\''?????'\'' -I '\''iSCP[^r]*'\'' -I '\''????'\'' -I '\''iSC[^P]*'\'' -I '\''???'\'' -I '\''iS[^C]*'\'' -I '\''??'\'' -I '\''i[^S]*'\'' -I '\''?'\'' -I '\''[^i]*'\'' '\''/System/Volumes'\'''
+++++ lsPUA -i -I '.?*' -I 'iSCPreboot?*' -I 'iSCPreboo[^t]*' -I '?????????' -I 'iSCPrebo[^o]*' -I '????????' -I 'iSCPreb[^o]*' -I '???????' -I 'iSCPre[^b]*' -I '??????' -I 'iSCPr[^e]*' -I '?????' -I 'iSCP[^r]*' -I '????' -I 'iSC[^P]*' -I '???' -I 'iS[^C]*' -I '??' -I 'i[^S]*' -I '?' -I '[^i]*' /System/Volumes
+++ ls_out='2 iSCPreboot'
+++ test 0 -eq 0
+++ echo 2 iSCPreboot
+++ sed 's/ .*//'
++ readdir_inode=2
++ test 0 = 77
+++ timeout 1 stat --format=%i /System/Volumes/iSCPreboot
++ stat_inode=2
++ case $stat_inode in
++ test 2 = 2
++ read dir
+++ inode_via_readdir /System/Volumes/Hardware
+++ mount_point=/System/Volumes/Hardware
++++ basename /System/Volumes/Hardware
+++ base=Hardware
+++ case "$base" in
++++ ls_ignore_options Hardware
++++ name=Hardware
++++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'''
++++ :
+++++ echo Hardware
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='Hardwar[^e]*'
++++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'''
+++++ echo Hardware
+++++ sed 's/.$//'
++++ name=Hardwar
++++ test -z Hardwar
+++++ echo Hardwar
+++++ sed 's/./?/g'
++++ glob='???????'
++++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'''
++++ :
+++++ echo Hardwar
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='Hardwa[^r]*'
++++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'' -I '\''Hardwa[^r]*'\'''
+++++ echo Hardwar
+++++ sed 's/.$//'
++++ name=Hardwa
++++ test -z Hardwa
+++++ echo Hardwa
+++++ sed 's/./?/g'
++++ glob='??????'
++++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'' -I '\''Hardwa[^r]*'\'' -I '\''??????'\'''
++++ :
+++++ echo Hardwa
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='Hardw[^a]*'
++++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'' -I '\''Hardwa[^r]*'\'' -I '\''??????'\'' -I '\''Hardw[^a]*'\'''
+++++ echo Hardwa
+++++ sed 's/.$//'
++++ name=Hardw
++++ test -z Hardw
+++++ echo Hardw
+++++ sed 's/./?/g'
++++ glob='?????'
++++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'' -I '\''Hardwa[^r]*'\'' -I '\''??????'\'' -I '\''Hardw[^a]*'\'' -I '\''?????'\'''
++++ :
+++++ echo Hardw
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='Hard[^w]*'
++++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'' -I '\''Hardwa[^r]*'\'' -I '\''??????'\'' -I '\''Hardw[^a]*'\'' -I '\''?????'\'' -I '\''Hard[^w]*'\'''
+++++ echo Hardw
+++++ sed 's/.$//'
++++ name=Hard
++++ test -z Hard
+++++ echo Hard
+++++ sed 's/./?/g'
++++ glob='????'
++++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'' -I '\''Hardwa[^r]*'\'' -I '\''??????'\'' -I '\''Hardw[^a]*'\'' -I '\''?????'\'' -I '\''Hard[^w]*'\'' -I '\''????'\'''
++++ :
+++++ echo Hard
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='Har[^d]*'
++++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'' -I '\''Hardwa[^r]*'\'' -I '\''??????'\'' -I '\''Hardw[^a]*'\'' -I '\''?????'\'' -I '\''Hard[^w]*'\'' -I '\''????'\'' -I '\''Har[^d]*'\'''
+++++ echo Hard
+++++ sed 's/.$//'
++++ name=Har
++++ test -z Har
+++++ echo Har
+++++ sed 's/./?/g'
++++ glob='???'
++++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'' -I '\''Hardwa[^r]*'\'' -I '\''??????'\'' -I '\''Hardw[^a]*'\'' -I '\''?????'\'' -I '\''Hard[^w]*'\'' -I '\''????'\'' -I '\''Har[^d]*'\'' -I '\''???'\'''
++++ :
+++++ echo Har
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='Ha[^r]*'
++++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'' -I '\''Hardwa[^r]*'\'' -I '\''??????'\'' -I '\''Hardw[^a]*'\'' -I '\''?????'\'' -I '\''Hard[^w]*'\'' -I '\''????'\'' -I '\''Har[^d]*'\'' -I '\''???'\'' -I '\''Ha[^r]*'\'''
+++++ echo Har
+++++ sed 's/.$//'
++++ name=Ha
++++ test -z Ha
+++++ echo Ha
+++++ sed 's/./?/g'
++++ glob='??'
++++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'' -I '\''Hardwa[^r]*'\'' -I '\''??????'\'' -I '\''Hardw[^a]*'\'' -I '\''?????'\'' -I '\''Hard[^w]*'\'' -I '\''????'\'' -I '\''Har[^d]*'\'' -I '\''???'\'' -I '\''Ha[^r]*'\'' -I '\''??'\'''
++++ :
+++++ echo Ha
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='H[^a]*'
++++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'' -I '\''Hardwa[^r]*'\'' -I '\''??????'\'' -I '\''Hardw[^a]*'\'' -I '\''?????'\'' -I '\''Hard[^w]*'\'' -I '\''????'\'' -I '\''Har[^d]*'\'' -I '\''???'\'' -I '\''Ha[^r]*'\'' -I '\''??'\'' -I '\''H[^a]*'\'''
+++++ echo Ha
+++++ sed 's/.$//'
++++ name=H
++++ test -z H
+++++ echo H
+++++ sed 's/./?/g'
++++ glob='?'
++++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'' -I '\''Hardwa[^r]*'\'' -I '\''??????'\'' -I '\''Hardw[^a]*'\'' -I '\''?????'\'' -I '\''Hard[^w]*'\'' -I '\''????'\'' -I '\''Har[^d]*'\'' -I '\''???'\'' -I '\''Ha[^r]*'\'' -I '\''??'\'' -I '\''H[^a]*'\'' -I '\''?'\'''
++++ :
+++++ echo H
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='[^H]*'
++++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'' -I '\''Hardwa[^r]*'\'' -I '\''??????'\'' -I '\''Hardw[^a]*'\'' -I '\''?????'\'' -I '\''Hard[^w]*'\'' -I '\''????'\'' -I '\''Har[^d]*'\'' -I '\''???'\'' -I '\''Ha[^r]*'\'' -I '\''??'\'' -I '\''H[^a]*'\'' -I '\''?'\'' -I '\''[^H]*'\'''
+++++ echo H
+++++ sed 's/.$//'
++++ name=
++++ test -z ''
++++ break
++++ echo '-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'' -I '\''Hardwa[^r]*'\'' -I '\''??????'\'' -I '\''Hardw[^a]*'\'' -I '\''?????'\'' -I '\''Hard[^w]*'\'' -I '\''????'\'' -I '\''Har[^d]*'\'' -I '\''???'\'' -I '\''Ha[^r]*'\'' -I '\''??'\'' -I '\''H[^a]*'\'' -I '\''?'\'' -I '\''[^H]*'\'''
+++ opts='-I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'' -I '\''Hardwa[^r]*'\'' -I '\''??????'\'' -I '\''Hardw[^a]*'\'' -I '\''?????'\'' -I '\''Hard[^w]*'\'' -I '\''????'\'' -I '\''Har[^d]*'\'' -I '\''???'\'' -I '\''Ha[^r]*'\'' -I '\''??'\'' -I '\''H[^a]*'\'' -I '\''?'\'' -I '\''[^H]*'\'''
++++ dirname /System/Volumes/Hardware
+++ parent_dir=/System/Volumes
++++ eval 'lsPUA -i -I '\''.?*'\'' -I '\''Hardware?*'\'' -I '\''Hardwar[^e]*'\'' -I '\''???????'\'' -I '\''Hardwa[^r]*'\'' -I '\''??????'\'' -I '\''Hardw[^a]*'\'' -I '\''?????'\'' -I '\''Hard[^w]*'\'' -I '\''????'\'' -I '\''Har[^d]*'\'' -I '\''???'\'' -I '\''Ha[^r]*'\'' -I '\''??'\'' -I '\''H[^a]*'\'' -I '\''?'\'' -I '\''[^H]*'\'' '\''/System/Volumes'\'''
+++++ lsPUA -i -I '.?*' -I 'Hardware?*' -I 'Hardwar[^e]*' -I '???????' -I 'Hardwa[^r]*' -I '??????' -I 'Hardw[^a]*' -I '?????' -I 'Hard[^w]*' -I '????' -I 'Har[^d]*' -I '???' -I 'Ha[^r]*' -I '??' -I 'H[^a]*' -I '?' -I '[^H]*' /System/Volumes
+++ ls_out='2 Hardware'
+++ test 0 -eq 0
+++ echo 2 Hardware
+++ sed 's/ .*//'
++ readdir_inode=2
++ test 0 = 77
+++ timeout 1 stat --format=%i /System/Volumes/Hardware
++ stat_inode=2
++ case $stat_inode in
++ test 2 = 2
++ read dir
+++ inode_via_readdir /System/Volumes/Update/SFR/mnt1
+++ mount_point=/System/Volumes/Update/SFR/mnt1
++++ basename /System/Volumes/Update/SFR/mnt1
+++ base=mnt1
+++ case "$base" in
++++ ls_ignore_options mnt1
++++ name=mnt1
++++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'''
++++ :
+++++ echo mnt1
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='mnt[^1]*'
++++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'''
+++++ echo mnt1
+++++ sed 's/.$//'
++++ name=mnt
++++ test -z mnt
+++++ echo mnt
+++++ sed 's/./?/g'
++++ glob='???'
++++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'''
++++ :
+++++ echo mnt
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='mn[^t]*'
++++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'' -I '\''mn[^t]*'\'''
+++++ echo mnt
+++++ sed 's/.$//'
++++ name=mn
++++ test -z mn
+++++ echo mn
+++++ sed 's/./?/g'
++++ glob='??'
++++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'' -I '\''mn[^t]*'\'' -I '\''??'\'''
++++ :
+++++ echo mn
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='m[^n]*'
++++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'' -I '\''mn[^t]*'\'' -I '\''??'\'' -I '\''m[^n]*'\'''
+++++ echo mn
+++++ sed 's/.$//'
++++ name=m
++++ test -z m
+++++ echo m
+++++ sed 's/./?/g'
++++ glob='?'
++++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'' -I '\''mn[^t]*'\'' -I '\''??'\'' -I '\''m[^n]*'\'' -I '\''?'\'''
++++ :
+++++ echo m
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='[^m]*'
++++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'' -I '\''mn[^t]*'\'' -I '\''??'\'' -I '\''m[^n]*'\'' -I '\''?'\'' -I '\''[^m]*'\'''
+++++ echo m
+++++ sed 's/.$//'
++++ name=
++++ test -z ''
++++ break
++++ echo '-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'' -I '\''mn[^t]*'\'' -I '\''??'\'' -I '\''m[^n]*'\'' -I '\''?'\'' -I '\''[^m]*'\'''
+++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'' -I '\''mn[^t]*'\'' -I '\''??'\'' -I '\''m[^n]*'\'' -I '\''?'\'' -I '\''[^m]*'\'''
++++ dirname /System/Volumes/Update/SFR/mnt1
+++ parent_dir=/System/Volumes/Update/SFR
++++ eval 'lsPUA -i -I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'' -I '\''mn[^t]*'\'' -I '\''??'\'' -I '\''m[^n]*'\'' -I '\''?'\'' -I '\''[^m]*'\'' '\''/System/Volumes/Update/SFR'\'''
+++++ lsPUA -i -I '.?*' -I 'mnt1?*' -I 'mnt[^1]*' -I '???' -I 'mn[^t]*' -I '??' -I 'm[^n]*' -I '?' -I '[^m]*' /System/Volumes/Update/SFR
+++ ls_out='2 mnt1'
+++ test 0 -eq 0
+++ echo 2 mnt1
+++ sed 's/ .*//'
++ readdir_inode=2
++ test 0 = 77
+++ timeout 1 stat --format=%i /System/Volumes/Update/SFR/mnt1
++ stat_inode=2
++ case $stat_inode in
++ test 2 = 2
++ read dir
+++ inode_via_readdir /System/Volumes/Update/mnt1
+++ mount_point=/System/Volumes/Update/mnt1
++++ basename /System/Volumes/Update/mnt1
+++ base=mnt1
+++ case "$base" in
++++ ls_ignore_options mnt1
++++ name=mnt1
++++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'''
++++ :
+++++ echo mnt1
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='mnt[^1]*'
++++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'''
+++++ echo mnt1
+++++ sed 's/.$//'
++++ name=mnt
++++ test -z mnt
+++++ echo mnt
+++++ sed 's/./?/g'
++++ glob='???'
++++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'''
++++ :
+++++ echo mnt
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='mn[^t]*'
++++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'' -I '\''mn[^t]*'\'''
+++++ echo mnt
+++++ sed 's/.$//'
++++ name=mn
++++ test -z mn
+++++ echo mn
+++++ sed 's/./?/g'
++++ glob='??'
++++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'' -I '\''mn[^t]*'\'' -I '\''??'\'''
++++ :
+++++ echo mn
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='m[^n]*'
++++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'' -I '\''mn[^t]*'\'' -I '\''??'\'' -I '\''m[^n]*'\'''
+++++ echo mn
+++++ sed 's/.$//'
++++ name=m
++++ test -z m
+++++ echo m
+++++ sed 's/./?/g'
++++ glob='?'
++++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'' -I '\''mn[^t]*'\'' -I '\''??'\'' -I '\''m[^n]*'\'' -I '\''?'\'''
++++ :
+++++ echo m
+++++ sed 's/\(.*\)\(.\)$/\1[^\2]*/'
++++ glob='[^m]*'
++++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'' -I '\''mn[^t]*'\'' -I '\''??'\'' -I '\''m[^n]*'\'' -I '\''?'\'' -I '\''[^m]*'\'''
+++++ echo m
+++++ sed 's/.$//'
++++ name=
++++ test -z ''
++++ break
++++ echo '-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'' -I '\''mn[^t]*'\'' -I '\''??'\'' -I '\''m[^n]*'\'' -I '\''?'\'' -I '\''[^m]*'\'''
+++ opts='-I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'' -I '\''mn[^t]*'\'' -I '\''??'\'' -I '\''m[^n]*'\'' -I '\''?'\'' -I '\''[^m]*'\'''
++++ dirname /System/Volumes/Update/mnt1
+++ parent_dir=/System/Volumes/Update
++++ eval 'lsPUA -i -I '\''.?*'\'' -I '\''mnt1?*'\'' -I '\''mnt[^1]*'\'' -I '\''???'\'' -I '\''mn[^t]*'\'' -I '\''??'\'' -I '\''m[^n]*'\'' -I '\''?'\'' -I '\''[^m]*'\'' '\''/System/Volumes/Update'\'''
+++++ lsPUA -i -I '.?*' -I 'mnt1?*' -I 'mnt[^1]*' -I '???' -I 'mn[^t]*' -I '??' -I 'm[^n]*' -I '?' -I '[^m]*' /System/Volumes/Update
+++ ls_out='2 mnt1'
+++ test 0 -eq 0
+++ echo 2 mnt1
+++ sed 's/ .*//'
++ readdir_inode=2
++ test 0 = 77
+++ timeout 1 stat --format=%i /System/Volumes/Update/mnt1
++ stat_inode=2
++ case $stat_inode in
++ test 2 = 2
++ read dir
++ Exit 0
++ set +e
++ exit 0
++ exit 0
++ remove_tmp_
++ __st=0
++ cleanup_
++ :
++ test '' = yes
++ cd /Users/felicitasgarcia/coreutils
++ chmod -R u+rwx /Users/felicitasgarcia/coreutils/gt-readdir-mountpoint-inode.sh.11xy
++ rm -rf /Users/felicitasgarcia/coreutils/gt-readdir-mountpoint-inode.sh.11xy
++ exit 0
+PASS tests/lsPUA/readdir-mountpoint-inode.sh (exit status: 0)

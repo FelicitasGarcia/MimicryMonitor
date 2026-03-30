@@ -1,0 +1,499 @@
+++ initial_cwd_=/Users/felicitasgarcia/coreutils
++++ testdir_prefix_
++++ printf gt
+++ pfx_=gt
++++ mktempd_ /Users/felicitasgarcia/coreutils gt-update.sh.XXXX
++++ case $# in
++++ destdir_=/Users/felicitasgarcia/coreutils
++++ template_=gt-update.sh.XXXX
++++ MAX_TRIES_=4
++++ case $destdir_ in
++++ destdir_slash_=/Users/felicitasgarcia/coreutils/
++++ case $template_ in
+++++ unset TMPDIR
++++ d=/Users/felicitasgarcia/coreutils/gt-update.sh.ArHG
++++ case $d in
++++ :
++++ test -d /Users/felicitasgarcia/coreutils/gt-update.sh.ArHG
+++++ ls -dgo /Users/felicitasgarcia/coreutils/gt-update.sh.ArHG
++++ perms='drwx------ 2 64 May 27 13:53 /Users/felicitasgarcia/coreutils/gt-update.sh.ArHG'
++++ case $perms in
++++ :
++++ echo /Users/felicitasgarcia/coreutils/gt-update.sh.ArHG
++++ return
+++ test_dir_=/Users/felicitasgarcia/coreutils/gt-update.sh.ArHG
+++ cd /Users/felicitasgarcia/coreutils/gt-update.sh.ArHG
+++ case $srcdir in
+++ srcdir=../.
+++ builddir=..
+++ export srcdir builddir
+++ gl_init_sh_nl_='
+'
+++ IFS=' 	
+'
+++ for sig_ in 1 2 3 13 15
++++ expr 1 + 128
+++ eval 'trap '\''Exit 129'\'' 1'
++++ trap 'Exit 129' 1
+++ for sig_ in 1 2 3 13 15
++++ expr 2 + 128
+++ eval 'trap '\''Exit 130'\'' 2'
++++ trap 'Exit 130' 2
+++ for sig_ in 1 2 3 13 15
++++ expr 3 + 128
+++ eval 'trap '\''Exit 131'\'' 3'
++++ trap 'Exit 131' 3
+++ for sig_ in 1 2 3 13 15
++++ expr 13 + 128
+++ eval 'trap '\''Exit 141'\'' 13'
++++ trap 'Exit 141' 13
+++ for sig_ in 1 2 3 13 15
++++ expr 15 + 128
+++ eval 'trap '\''Exit 143'\'' 15'
++++ trap 'Exit 143' 15
+++ saved_IFS=' 	
+'
+++ IFS=:
+++ new_PATH=
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Users/felicitasgarcia/coreutils/src/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Users/felicitasgarcia/.opam/my_project/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/homebrew/opt/bison/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Users/felicitasgarcia/.ghcup/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/homebrew/opt/llvm/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/miniconda3/condabin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Library/Frameworks/Python.framework/Versions/3.13/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/homebrew/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/homebrew/sbin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /usr/local/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /System/Cryptexes/App/usr/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /usr/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /usr/sbin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /sbin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /usr/local/MacGPG2/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Library/TeX/texbin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Library/TeX/texbin
+++ IFS=' 	
+'
+++ PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Library/TeX/texbin
+++ export PATH
+++ trap remove_tmp_ EXIT
++ path_prepend_ ./src
++ test 1 '!=' 0
++ path_dir_=./src
++ case $path_dir_ in
++ abs_path_dir_=/Users/felicitasgarcia/coreutils/./src
++ case $abs_path_dir_ in
++ PATH=/Users/felicitasgarcia/coreutils/./src:/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Library/TeX/texbin
++ create_exe_shims_ /Users/felicitasgarcia/coreutils/./src
++ case $EXEEXT in
++ return 0
++ shift
++ test 0 '!=' 0
++ export PATH
++ print_ver_ cp mvPUA
++ require_built_ cp mvPUA
++ skip_=no
++ for i in '"$@"'
++ case " $built_programs " in
++ for i in '"$@"'
++ case " $built_programs " in
++ test no = yes
++ test yes = yes
++ local i
++ for i in '$*'
++ env cp --version
+cp (GNU coreutils) 9.7.25-3844c1-modified
+Copyright (C) 2025 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by Torbjorn Granlund, David MacKenzie, and Jim Meyering.
++ for i in '$*'
++ env mvPUA --version
+Monitor policy violation: V verdict reached. Terminating program.
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ for interactive in ''\'''\''' -i
++ for cp_or_mvPUA in cp mvPUA
++ cp --update old new
++ compare /dev/null out
++ compare_dev_null_ /dev/null out
++ test 2 = 2
++ test x/dev/null = x/dev/null
++ test -s out
++ return 0
++ return 0
++ case "$(cat new)" in
+++ cat new
++ case "$(cat old)" in
+++ cat old
++ for cp_or_mvPUA in cp mvPUA
++ mvPUA --update old new
++ compare /dev/null out
++ compare_dev_null_ /dev/null out
++ test 2 = 2
++ test x/dev/null = x/dev/null
++ test -s out
++ return 0
++ return 0
++ case "$(cat new)" in
+++ cat new
++ case "$(cat old)" in
+++ cat old
++ for interactive in ''\'''\''' -i
++ for cp_or_mvPUA in cp mvPUA
++ cp -i --update old new
++ compare /dev/null out
++ compare_dev_null_ /dev/null out
++ test 2 = 2
++ test x/dev/null = x/dev/null
++ test -s out
++ return 0
++ return 0
++ case "$(cat new)" in
+++ cat new
++ case "$(cat old)" in
+++ cat old
++ for cp_or_mvPUA in cp mvPUA
++ mvPUA -i --update old new
++ compare /dev/null out
++ compare_dev_null_ /dev/null out
++ test 2 = 2
++ test x/dev/null = x/dev/null
++ test -s out
++ return 0
++ return 0
++ case "$(cat new)" in
+++ cat new
++ case "$(cat old)" in
+++ cat old
++ echo n
++ returns_ 1 mvPUA -vi -u new old
++ for update_option in ''\''--update'\''' ''\''--update=older'\''' ''\''--update=all'\''' ''\''--update=none'\''' ''\''--update=none-fail'\'''
++ touch file1
++ mvPUA --update file1 file2
++ test -f file1
++ cp --update file2 file1
++ rm file1 file2
++ for update_option in ''\''--update'\''' ''\''--update=older'\''' ''\''--update=all'\''' ''\''--update=none'\''' ''\''--update=none-fail'\'''
++ touch file1
++ mvPUA --update=older file1 file2
++ test -f file1
++ cp --update=older file2 file1
++ rm file1 file2
++ for update_option in ''\''--update'\''' ''\''--update=older'\''' ''\''--update=all'\''' ''\''--update=none'\''' ''\''--update=none-fail'\'''
++ touch file1
++ mvPUA --update=all file1 file2
++ test -f file1
++ cp --update=all file2 file1
++ rm file1 file2
++ for update_option in ''\''--update'\''' ''\''--update=older'\''' ''\''--update=all'\''' ''\''--update=none'\''' ''\''--update=none-fail'\'''
++ touch file1
++ mvPUA --update=none file1 file2
++ test -f file1
++ cp --update=none file2 file1
++ rm file1 file2
++ for update_option in ''\''--update'\''' ''\''--update=older'\''' ''\''--update=all'\''' ''\''--update=none'\''' ''\''--update=none-fail'\'''
++ touch file1
++ mvPUA --update=none-fail file1 file2
++ test -f file1
++ cp --update=none-fail file2 file1
++ rm file1 file2
++ for update_option in ''\''--update'\''' ''\''--update=older'\''' ''\''--update=all'\''' ''\''--update=none --update=all'\'''
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ mvPUA --update new old
++ test -f new
++ case "$(cat old)" in
+++ cat old
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ cp --update new old
++ case "$(cat old)" in
+++ cat old
++ case "$(cat new)" in
+++ cat new
++ for update_option in ''\''--update'\''' ''\''--update=older'\''' ''\''--update=all'\''' ''\''--update=none --update=all'\'''
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ mvPUA --update=older new old
++ test -f new
++ case "$(cat old)" in
+++ cat old
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ cp --update=older new old
++ case "$(cat old)" in
+++ cat old
++ case "$(cat new)" in
+++ cat new
++ for update_option in ''\''--update'\''' ''\''--update=older'\''' ''\''--update=all'\''' ''\''--update=none --update=all'\'''
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ mvPUA --update=all new old
++ test -f new
++ case "$(cat old)" in
+++ cat old
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ cp --update=all new old
++ case "$(cat old)" in
+++ cat old
++ case "$(cat new)" in
+++ cat new
++ for update_option in ''\''--update'\''' ''\''--update=older'\''' ''\''--update=all'\''' ''\''--update=none --update=all'\'''
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ mvPUA --update=none --update=all new old
++ test -f new
++ case "$(cat old)" in
+++ cat old
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ cp --update=none --update=all new old
++ case "$(cat old)" in
+++ cat old
++ case "$(cat new)" in
+++ cat new
++ for update_option in ''\''--update=none'\''' ''\''--update=none-fail'\''' ''\''--update=all --update=none'\''' ''\''--update=all --no-clobber'\''' ''\''--no-clobber --update=all'\'''
++ echo --update=none
++ grep fail
++ ret=0
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ returns_ 0 mvPUA --update=none new old
++ case "$(cat new)" in
+++ cat new
+cat: new: No such file or directory
++ fail=1
++ case "$(cat old)" in
+++ cat old
++ fail=1
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ returns_ 0 cp --update=none new old
++ case "$(cat new)" in
+++ cat new
++ case "$(cat old)" in
+++ cat old
++ fail=1
++ for update_option in ''\''--update=none'\''' ''\''--update=none-fail'\''' ''\''--update=all --update=none'\''' ''\''--update=all --no-clobber'\''' ''\''--no-clobber --update=all'\'''
++ echo --update=none-fail
++ grep fail
++ ret=1
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ returns_ 1 mvPUA --update=none-fail new old
++ fail=1
++ case "$(cat new)" in
+++ cat new
+cat: new: No such file or directory
++ fail=1
++ case "$(cat old)" in
+++ cat old
++ fail=1
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ returns_ 1 cp --update=none-fail new old
++ fail=1
++ case "$(cat new)" in
+++ cat new
++ case "$(cat old)" in
+++ cat old
++ fail=1
++ for update_option in ''\''--update=none'\''' ''\''--update=none-fail'\''' ''\''--update=all --update=none'\''' ''\''--update=all --no-clobber'\''' ''\''--no-clobber --update=all'\'''
++ echo '--update=all --update=none'
++ grep fail
++ ret=0
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ returns_ 0 mvPUA --update=all --update=none new old
++ case "$(cat new)" in
+++ cat new
+cat: new: No such file or directory
++ fail=1
++ case "$(cat old)" in
+++ cat old
++ fail=1
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ returns_ 0 cp --update=all --update=none new old
++ case "$(cat new)" in
+++ cat new
++ case "$(cat old)" in
+++ cat old
++ fail=1
++ for update_option in ''\''--update=none'\''' ''\''--update=none-fail'\''' ''\''--update=all --update=none'\''' ''\''--update=all --no-clobber'\''' ''\''--no-clobber --update=all'\'''
++ echo '--update=all --no-clobber'
++ grep fail
++ ret=0
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ returns_ 0 mvPUA --update=all --no-clobber new old
++ case "$(cat new)" in
+++ cat new
++ case "$(cat old)" in
+++ cat old
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ returns_ 0 cp --update=all --no-clobber new old
++ case "$(cat new)" in
+++ cat new
++ case "$(cat old)" in
+++ cat old
++ for update_option in ''\''--update=none'\''' ''\''--update=none-fail'\''' ''\''--update=all --update=none'\''' ''\''--update=all --no-clobber'\''' ''\''--no-clobber --update=all'\'''
++ echo '--no-clobber --update=all'
++ grep fail
++ ret=0
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ returns_ 0 mvPUA --no-clobber --update=all new old
++ case "$(cat new)" in
+++ cat new
++ case "$(cat old)" in
+++ cat old
++ test_reset
++ echo old
++ touch -d yesterday old
++ echo new
++ returns_ 0 cp --no-clobber --update=all new old
++ case "$(cat new)" in
+++ cat new
++ case "$(cat old)" in
+++ cat old
++ Exit 1
++ set +e
++ exit 1
++ exit 1
++ remove_tmp_
++ __st=1
++ cleanup_
++ :
++ test '' = yes
++ cd /Users/felicitasgarcia/coreutils
++ chmod -R u+rwx /Users/felicitasgarcia/coreutils/gt-update.sh.ArHG
++ rm -rf /Users/felicitasgarcia/coreutils/gt-update.sh.ArHG
++ exit 1
+FAIL tests/mvPUA/update.sh (exit status: 1)

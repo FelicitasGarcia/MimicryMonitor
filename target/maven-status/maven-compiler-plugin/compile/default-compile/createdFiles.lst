@@ -1,0 +1,16 @@
+org/example/Node.class
+org/example/Main.class
+org/example/MonitorConstructor.class
+org/example/DataFlowTrackingAutomata.class
+org/example/DOTExporter.class
+org/example/LabeledCFG.class
+org/example/Minimizer.class
+org/example/Edge.class
+org/example/Minimizer$Block.class
+org/example/LLVMProcessing.class
+org/example/CompositionAutomata.class
+org/example/MonitorTool.class
+org/example/ProgramLogic.class
+org/example/DOTParser.class
+org/example/Automata.class
+org/example/VerdictAutomata.class

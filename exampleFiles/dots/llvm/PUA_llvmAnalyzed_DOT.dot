@@ -1,0 +1,35 @@
+digraph LLVMOG {
+0 [shape = record, label="0logMessage('Error0');\\l | Reads: [.str] \l Writes: [.str]", style=filled, fillcolor="papayawhip"];
+1 [shape = record, label="1return R;\\l | Reads: [R]", style=filled, fillcolor="papayawhip"];
+13 [shape = record, label="13R = HeavyRComputation(P, A);\\l | Reads: [P ; A] \l Writes: [R]", style=filled, fillcolor="papayawhip"];
+11 [shape = record, label="11int R = 10;\\l | Writes: [R]", style=filled, fillcolor="papayawhip"];
+12 [shape = record, label="12int P = argv[1] ? atoi(argv[1]) : 0;\\l | Reads: [argv] \l Writes: [P]", style=filled, fillcolor="papayawhip"];
+4 [shape = record, label="4if (Cond1(P))\\l | Reads: [P]", style=filled, fillcolor="papayawhip"];
+3 [shape = record, label="3int P = argv[1] ? atoi(argv[1]) : 0;\\l | Reads: [argv] \l Writes: [P]", style=filled, fillcolor="papayawhip"];
+5 [shape = record, label="5R = ChangedRComputation(P, A);\\l | Reads: [P ; A] \l Writes: [R]", style=filled, fillcolor="papayawhip"];
+6 [shape = record, label="6A = AComputation(P);\\l | Reads: [P] \l Writes: [A]", style=filled, fillcolor="papayawhip"];
+2 [shape = record, label="2logValue(R);\\l | Reads: [R]", style=filled, fillcolor="papayawhip"];
+7 [shape = record, label="7if (Cond(A))\\l | Reads: [A]", style=filled, fillcolor="papayawhip"];
+8 [shape = record, label="8int P = argv[1] ? atoi(argv[1]) : 0;\\l | Reads: [argv] \l Writes: [P]", style=filled, fillcolor="papayawhip"];
+14 [shape = record, label="14logMessage('Error');\\l | Reads: [.str.1] \l Writes: [.str.1]", style=filled, fillcolor="papayawhip"];
+9 [shape = record, label="9int A = 0;\\l | Writes: [A]", style=filled, fillcolor="papayawhip"];
+10 [shape = record, label="10if (Cond0(P))\\l | Reads: [P]", style=filled, fillcolor="papayawhip"];
+6 -> 7 [label="", id= 0];
+8 -> 9 [label="", id= 1];
+9 -> 10 [label="", id= 2];
+11 -> 12 [label="", id= 3];
+12 -> 3 [label="T", id= 4];
+12 -> 8 [label="F", id= 5];
+3 -> 8 [label="", id= 6];
+10 -> 0 [label="T", id= 7];
+10 -> 4 [label="F", id= 8];
+0 -> 1 [label="", id= 9];
+4 -> 6 [label="T", id= 10];
+4 -> 14 [label="F", id= 11];
+7 -> 13 [label="T", id= 12];
+7 -> 5 [label="F", id= 13];
+13 -> 2 [label="", id= 14];
+5 -> 2 [label="", id= 15];
+14 -> 2 [label="", id= 16];
+2 -> 1 [label="", id= 17];
+}

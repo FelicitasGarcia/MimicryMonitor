@@ -1,0 +1,249 @@
+++ initial_cwd_=/Users/felicitasgarcia/coreutils
++++ testdir_prefix_
++++ printf gt
+++ pfx_=gt
++++ mktempd_ /Users/felicitasgarcia/coreutils gt-test9_empty_files.sh.XXXX
++++ case $# in
++++ destdir_=/Users/felicitasgarcia/coreutils
++++ template_=gt-test9_empty_files.sh.XXXX
++++ MAX_TRIES_=4
++++ case $destdir_ in
++++ destdir_slash_=/Users/felicitasgarcia/coreutils/
++++ case $template_ in
+++++ unset TMPDIR
++++ d=/Users/felicitasgarcia/coreutils/gt-test9_empty_files.sh.BT8q
++++ case $d in
++++ :
++++ test -d /Users/felicitasgarcia/coreutils/gt-test9_empty_files.sh.BT8q
+++++ ls -dgo /Users/felicitasgarcia/coreutils/gt-test9_empty_files.sh.BT8q
++++ perms='drwx------ 2 64 May 23 18:27 /Users/felicitasgarcia/coreutils/gt-test9_empty_files.sh.BT8q'
++++ case $perms in
++++ :
++++ echo /Users/felicitasgarcia/coreutils/gt-test9_empty_files.sh.BT8q
++++ return
+++ test_dir_=/Users/felicitasgarcia/coreutils/gt-test9_empty_files.sh.BT8q
+++ cd /Users/felicitasgarcia/coreutils/gt-test9_empty_files.sh.BT8q
+++ case $srcdir in
+++ srcdir=../.
+++ builddir=..
+++ export srcdir builddir
+++ gl_init_sh_nl_='
+'
+++ IFS=' 	
+'
+++ for sig_ in 1 2 3 13 15
++++ expr 1 + 128
+++ eval 'trap '\''Exit 129'\'' 1'
++++ trap 'Exit 129' 1
+++ for sig_ in 1 2 3 13 15
++++ expr 2 + 128
+++ eval 'trap '\''Exit 130'\'' 2'
++++ trap 'Exit 130' 2
+++ for sig_ in 1 2 3 13 15
++++ expr 3 + 128
+++ eval 'trap '\''Exit 131'\'' 3'
++++ trap 'Exit 131' 3
+++ for sig_ in 1 2 3 13 15
++++ expr 13 + 128
+++ eval 'trap '\''Exit 141'\'' 13'
++++ trap 'Exit 141' 13
+++ for sig_ in 1 2 3 13 15
++++ expr 15 + 128
+++ eval 'trap '\''Exit 143'\'' 15'
++++ trap 'Exit 143' 15
+++ saved_IFS=' 	
+'
+++ IFS=:
+++ new_PATH=
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Users/felicitasgarcia/coreutils/src/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Users/felicitasgarcia/.opam/my_project/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/homebrew/opt/bison/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Users/felicitasgarcia/.ghcup/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/homebrew/opt/llvm/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/miniconda3/condabin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Library/Frameworks/Python.framework/Versions/3.13/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/homebrew/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/homebrew/sbin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /usr/local/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /System/Cryptexes/App/usr/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /usr/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /usr/sbin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /sbin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /usr/local/MacGPG2/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Library/TeX/texbin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Library/TeX/texbin
+++ IFS=' 	
+'
+++ PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Library/TeX/texbin
+++ export PATH
+++ trap remove_tmp_ EXIT
++ path_prepend_ ./src
++ test 1 '!=' 0
++ path_dir_=./src
++ case $path_dir_ in
++ abs_path_dir_=/Users/felicitasgarcia/coreutils/./src
++ case $abs_path_dir_ in
++ PATH=/Users/felicitasgarcia/coreutils/./src:/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Library/TeX/texbin
++ create_exe_shims_ /Users/felicitasgarcia/coreutils/./src
++ case $EXEEXT in
++ return 0
++ shift
++ test 0 '!=' 0
++ export PATH
++ print_ver_ expandPUA
++ require_built_ expandPUA
++ skip_=no
++ for i in '"$@"'
++ case " $built_programs " in
++ test no = yes
++ test yes = yes
++ local i
++ for i in '$*'
++ env expandPUA --version
+expand (GNU coreutils) 9.7.25-3844c1-modified
+Copyright (C) 2025 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by David MacKenzie.
++ touch empty
++ expandPUA empty
++ test '!' -s output_empty
++ printf '\n\n\n'
++ expandPUA newlines
++ compare newlines output_newlines
++ compare_dev_null_ newlines output_newlines
++ test 2 = 2
++ test xnewlines = x/dev/null
++ test xoutput_newlines = x/dev/null
++ return 2
++ case $? in
++ compare_ newlines output_newlines
++ LC_ALL=C
++ diff -u newlines output_newlines
++ printf '\t\t\t\n'
++ printf '                        \n'
++ expandPUA tabs_only
++ compare expected_tabs output_tabs
++ compare_dev_null_ expected_tabs output_tabs
++ test 2 = 2
++ test xexpected_tabs = x/dev/null
++ test xoutput_tabs = x/dev/null
++ return 2
++ case $? in
++ compare_ expected_tabs output_tabs
++ LC_ALL=C
++ diff -u expected_tabs output_tabs
++ printf ' \t \t \n'
++ printf '                 \n'
++ expandPUA mixed
++ compare expected_mixed output_mixed
++ compare_dev_null_ expected_mixed output_mixed
++ test 2 = 2
++ test xexpected_mixed = x/dev/null
++ test xoutput_mixed = x/dev/null
++ return 2
++ case $? in
++ compare_ expected_mixed output_mixed
++ LC_ALL=C
++ diff -u expected_mixed output_mixed
++ Exit 0
++ set +e
++ exit 0
++ exit 0
++ remove_tmp_
++ __st=0
++ cleanup_
++ :
++ test '' = yes
++ cd /Users/felicitasgarcia/coreutils
++ chmod -R u+rwx /Users/felicitasgarcia/coreutils/gt-test9_empty_files.sh.BT8q
++ rm -rf /Users/felicitasgarcia/coreutils/gt-test9_empty_files.sh.BT8q
++ exit 0
+PASS tests/expandPUA/test9_empty_files.sh (exit status: 0)

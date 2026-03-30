@@ -1,0 +1,365 @@
+++ initial_cwd_=/Users/felicitasgarcia/coreutils
++++ testdir_prefix_
++++ printf gt
+++ pfx_=gt
++++ mktempd_ /Users/felicitasgarcia/coreutils gt-block-size.sh.XXXX
++++ case $# in
++++ destdir_=/Users/felicitasgarcia/coreutils
++++ template_=gt-block-size.sh.XXXX
++++ MAX_TRIES_=4
++++ case $destdir_ in
++++ destdir_slash_=/Users/felicitasgarcia/coreutils/
++++ case $template_ in
+++++ unset TMPDIR
++++ d=/Users/felicitasgarcia/coreutils/gt-block-size.sh.JoCJ
++++ case $d in
++++ :
++++ test -d /Users/felicitasgarcia/coreutils/gt-block-size.sh.JoCJ
+++++ ls -dgo /Users/felicitasgarcia/coreutils/gt-block-size.sh.JoCJ
++++ perms='drwx------ 2 64 May 20 23:22 /Users/felicitasgarcia/coreutils/gt-block-size.sh.JoCJ'
++++ case $perms in
++++ :
++++ echo /Users/felicitasgarcia/coreutils/gt-block-size.sh.JoCJ
++++ return
+++ test_dir_=/Users/felicitasgarcia/coreutils/gt-block-size.sh.JoCJ
+++ cd /Users/felicitasgarcia/coreutils/gt-block-size.sh.JoCJ
+++ case $srcdir in
+++ srcdir=../.
+++ builddir=..
+++ export srcdir builddir
+++ gl_init_sh_nl_='
+'
+++ IFS=' 	
+'
+++ for sig_ in 1 2 3 13 15
++++ expr 1 + 128
+++ eval 'trap '\''Exit 129'\'' 1'
++++ trap 'Exit 129' 1
+++ for sig_ in 1 2 3 13 15
++++ expr 2 + 128
+++ eval 'trap '\''Exit 130'\'' 2'
++++ trap 'Exit 130' 2
+++ for sig_ in 1 2 3 13 15
++++ expr 3 + 128
+++ eval 'trap '\''Exit 131'\'' 3'
++++ trap 'Exit 131' 3
+++ for sig_ in 1 2 3 13 15
++++ expr 13 + 128
+++ eval 'trap '\''Exit 141'\'' 13'
++++ trap 'Exit 141' 13
+++ for sig_ in 1 2 3 13 15
++++ expr 15 + 128
+++ eval 'trap '\''Exit 143'\'' 15'
++++ trap 'Exit 143' 15
+++ saved_IFS=' 	
+'
+++ IFS=:
+++ new_PATH=
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Users/felicitasgarcia/coreutils/src/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Users/felicitasgarcia/.opam/my_project/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/homebrew/opt/bison/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Users/felicitasgarcia/.ghcup/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/homebrew/opt/llvm/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/miniconda3/condabin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Library/Frameworks/Python.framework/Versions/3.13/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/homebrew/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /opt/homebrew/sbin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /usr/local/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /System/Cryptexes/App/usr/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /usr/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /usr/sbin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /sbin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /usr/local/MacGPG2/bin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin
+++ for dir in '$PATH'
+++ IFS=' 	
+'
+++ case "$dir" in
+++ test -d /Library/TeX/texbin/.
+++ new_PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Library/TeX/texbin
+++ IFS=' 	
+'
+++ PATH=/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Library/TeX/texbin
+++ export PATH
+++ trap remove_tmp_ EXIT
++ path_prepend_ ./src
++ test 1 '!=' 0
++ path_dir_=./src
++ case $path_dir_ in
++ abs_path_dir_=/Users/felicitasgarcia/coreutils/./src
++ case $abs_path_dir_ in
++ PATH=/Users/felicitasgarcia/coreutils/./src:/Users/felicitasgarcia/coreutils/src:/Users/felicitasgarcia/.opam/my_project/bin:/opt/homebrew/opt/bison/bin:/Users/felicitasgarcia/.ghcup/bin:/opt/homebrew/opt/llvm/bin:/opt/miniconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.13/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Library/TeX/texbin
++ create_exe_shims_ /Users/felicitasgarcia/coreutils/./src
++ case $EXEEXT in
++ return 0
++ shift
++ test 0 '!=' 0
++ export PATH
++ print_ver_ lsPUA
++ require_built_ lsPUA
++ skip_=no
++ for i in '"$@"'
++ case " $built_programs " in
++ test no = yes
++ test yes = yes
++ local i
++ for i in '$*'
++ env lsPUA --version
+ls (GNU coreutils) 9.7.25-3844c1-modified
+Copyright (C) 2025 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by Richard M. Stallman and David MacKenzie.
++ TZ=UTC0
++ export TZ
++ mkdir sub
++ cd sub
++ for size in 1024 4096 262144
++ echo foo
++ dd conv=sync bs=1024
+0+1 records in
+1+0 records out
+1024 bytes (1.0 kB, 1.0 KiB) copied, 6.7e-05 s, 15.3 MB/s
++ for size in 1024 4096 262144
++ echo foo
++ dd conv=sync bs=4096
+0+1 records in
+1+0 records out
+4096 bytes (4.1 kB, 4.0 KiB) copied, 6.1e-05 s, 67.1 MB/s
++ for size in 1024 4096 262144
++ echo foo
++ dd conv=sync bs=262144
+0+1 records in
+1+0 records out
+262144 bytes (262 kB, 256 KiB) copied, 0.000311 s, 843 MB/s
++ touch -d '2001-01-01 00:00' file1024 file262144 file4096
++ size_etc='s/[^ ]* *[^ ]* *//'
++ ls -og file1024 file262144 file4096
++ sed 's/[^ ]* *[^ ]* *//'
++ POSIXLY_CORRECT=1
++ lsPUA -og file1024 file262144 file4096
++ sed 's/[^ ]* *[^ ]* *//'
++ POSIXLY_CORRECT=1
++ lsPUA -k -og file1024 file262144 file4096
++ sed 's/[^ ]* *[^ ]* *//'
++ for var in BLOCKSIZE BLOCK_SIZE LS_BLOCK_SIZE
++ for blocksize in 1 512 1K 1KiB
++ eval BLOCKSIZE=1
+++ BLOCKSIZE=1
++ export BLOCKSIZE
++ echo 'x x # BLOCKSIZE=1'
++ lsPUA -og file1024 file262144 file4096
++ sed 's/[^ ]* *[^ ]* *//'
++ lsPUA -og -k file1024 file262144 file4096
++ lsPUA -og -k --block-size=1 file1024 file262144 file4096
++ for blocksize in 1 512 1K 1KiB
++ eval BLOCKSIZE=512
+++ BLOCKSIZE=512
++ export BLOCKSIZE
++ echo 'x x # BLOCKSIZE=512'
++ sed 's/[^ ]* *[^ ]* *//'
++ lsPUA -og file1024 file262144 file4096
++ lsPUA -og -k file1024 file262144 file4096
++ lsPUA -og -k --block-size=512 file1024 file262144 file4096
++ for blocksize in 1 512 1K 1KiB
++ eval BLOCKSIZE=1K
+++ BLOCKSIZE=1K
++ export BLOCKSIZE
++ echo 'x x # BLOCKSIZE=1K'
++ lsPUA -og file1024 file262144 file4096
++ sed 's/[^ ]* *[^ ]* *//'
++ lsPUA -og -k file1024 file262144 file4096
++ lsPUA -og -k --block-size=1K file1024 file262144 file4096
++ for blocksize in 1 512 1K 1KiB
++ eval BLOCKSIZE=1KiB
+++ BLOCKSIZE=1KiB
++ export BLOCKSIZE
++ echo 'x x # BLOCKSIZE=1KiB'
++ sed 's/[^ ]* *[^ ]* *//'
++ lsPUA -og file1024 file262144 file4096
++ lsPUA -og -k file1024 file262144 file4096
++ lsPUA -og -k --block-size=1KiB file1024 file262144 file4096
++ for var in BLOCKSIZE BLOCK_SIZE LS_BLOCK_SIZE
++ for blocksize in 1 512 1K 1KiB
++ eval BLOCK_SIZE=1
+++ BLOCK_SIZE=1
++ export BLOCK_SIZE
++ echo 'x x # BLOCK_SIZE=1'
++ sed 's/[^ ]* *[^ ]* *//'
++ lsPUA -og file1024 file262144 file4096
++ lsPUA -og -k file1024 file262144 file4096
++ lsPUA -og -k --block-size=1 file1024 file262144 file4096
++ for blocksize in 1 512 1K 1KiB
++ eval BLOCK_SIZE=512
+++ BLOCK_SIZE=512
++ export BLOCK_SIZE
++ echo 'x x # BLOCK_SIZE=512'
++ lsPUA -og file1024 file262144 file4096
++ sed 's/[^ ]* *[^ ]* *//'
++ lsPUA -og -k file1024 file262144 file4096
++ lsPUA -og -k --block-size=512 file1024 file262144 file4096
++ for blocksize in 1 512 1K 1KiB
++ eval BLOCK_SIZE=1K
+++ BLOCK_SIZE=1K
++ export BLOCK_SIZE
++ echo 'x x # BLOCK_SIZE=1K'
++ sed 's/[^ ]* *[^ ]* *//'
++ lsPUA -og file1024 file262144 file4096
++ lsPUA -og -k file1024 file262144 file4096
++ lsPUA -og -k --block-size=1K file1024 file262144 file4096
++ for blocksize in 1 512 1K 1KiB
++ eval BLOCK_SIZE=1KiB
+++ BLOCK_SIZE=1KiB
++ export BLOCK_SIZE
++ echo 'x x # BLOCK_SIZE=1KiB'
++ sed 's/[^ ]* *[^ ]* *//'
++ lsPUA -og file1024 file262144 file4096
++ lsPUA -og -k file1024 file262144 file4096
++ lsPUA -og -k --block-size=1KiB file1024 file262144 file4096
++ for var in BLOCKSIZE BLOCK_SIZE LS_BLOCK_SIZE
++ for blocksize in 1 512 1K 1KiB
++ eval LS_BLOCK_SIZE=1
+++ LS_BLOCK_SIZE=1
++ export LS_BLOCK_SIZE
++ echo 'x x # LS_BLOCK_SIZE=1'
++ lsPUA -og file1024 file262144 file4096
++ sed 's/[^ ]* *[^ ]* *//'
++ lsPUA -og -k file1024 file262144 file4096
++ lsPUA -og -k --block-size=1 file1024 file262144 file4096
++ for blocksize in 1 512 1K 1KiB
++ eval LS_BLOCK_SIZE=512
+++ LS_BLOCK_SIZE=512
++ export LS_BLOCK_SIZE
++ echo 'x x # LS_BLOCK_SIZE=512'
++ sed 's/[^ ]* *[^ ]* *//'
++ lsPUA -og file1024 file262144 file4096
++ lsPUA -og -k file1024 file262144 file4096
++ lsPUA -og -k --block-size=512 file1024 file262144 file4096
++ for blocksize in 1 512 1K 1KiB
++ eval LS_BLOCK_SIZE=1K
+++ LS_BLOCK_SIZE=1K
++ export LS_BLOCK_SIZE
++ echo 'x x # LS_BLOCK_SIZE=1K'
++ lsPUA -og file1024 file262144 file4096
++ sed 's/[^ ]* *[^ ]* *//'
++ lsPUA -og -k file1024 file262144 file4096
++ lsPUA -og -k --block-size=1K file1024 file262144 file4096
++ for blocksize in 1 512 1K 1KiB
++ eval LS_BLOCK_SIZE=1KiB
+++ LS_BLOCK_SIZE=1KiB
++ export LS_BLOCK_SIZE
++ echo 'x x # LS_BLOCK_SIZE=1KiB'
++ sed 's/[^ ]* *[^ ]* *//'
++ lsPUA -og file1024 file262144 file4096
++ lsPUA -og -k file1024 file262144 file4096
++ lsPUA -og -k --block-size=1KiB file1024 file262144 file4096
++ cd ..
++ cat
++ cp exp /Users/felicitasgarcia/exp
++ cp out /Users/felicitasgarcia/out
++ compare exp out
++ compare_dev_null_ exp out
++ test 2 = 2
++ test xexp = x/dev/null
++ test xout = x/dev/null
++ return 2
++ case $? in
++ compare_ exp out
++ LC_ALL=C
++ diff -u exp out
++ Exit 0
++ set +e
++ exit 0
++ exit 0
++ remove_tmp_
++ __st=0
++ cleanup_
++ :
++ test '' = yes
++ cd /Users/felicitasgarcia/coreutils
++ chmod -R u+rwx /Users/felicitasgarcia/coreutils/gt-block-size.sh.JoCJ
++ rm -rf /Users/felicitasgarcia/coreutils/gt-block-size.sh.JoCJ
++ exit 0
+PASS tests/lsPUA/block-size.sh (exit status: 0)

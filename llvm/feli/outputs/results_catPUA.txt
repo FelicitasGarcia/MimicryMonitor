@@ -1,0 +1,41 @@
+Test Results for Program: catPUA
+========================================
+
+cat-E.sh                       OK
+----------------------------------------
+  Test Case 1:              V (Final)
+  Test Case 2:              V (Final)
+  Test Case 3:              V (Final)
+  Test Case 4:              V (Final)
+
+
+cat-buf.sh                     OK
+----------------------------------------
+  Test Case 1:              V (Final)
+  Test Case 2:              No terminal verdict found
+
+
+cat-proc.sh                    OK
+----------------------------------------
+  Test Case 1:              V (Final)
+
+
+cat-self.sh                    OK
+----------------------------------------
+  Test Case 1:              V (Final)
+  Test Case 2:              IV (Final)
+  Test Case 3:              IV (Final)
+  Test Case 4:              V (Final)
+  Test Case 5:              V (Final)
+  Test Case 6:              V (Final)
+  Test Case 7:              V (Final)
+  Test Case 8:              V (Final)
+  Test Case 9:              V (Final)
+  Test Case 10:             V (Final)
+  Test Case 11:             IV (Final)
+  Test Case 12:             IV (Final)
+  Test Case 13:             IV (Final)
+  Test Case 14:             IV (Final)
+  Test Case 15:             IV (Final)
+  Test Case 16:             IV (Final)
+

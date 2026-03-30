@@ -1,0 +1,55 @@
+digraph CFG {
+  rankdir=TB; // Top to bottom layout
+  rank=min;
+  nodesep=0.5; // Increase node separation
+  ranksep=0.8; // Increase rank separation
+edge [curvature=0.3];  node [fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9];
+
+  2 [label="Node2", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  0 [label="START", style=filled, fillcolor="lightgoldenrod2", shape=diamond, margin="0.15,0.15"];
+  1 [label="RETURN", style=filled, fillcolor="lightblue4", shape=diamond, margin="0.15,0.15"];
+  13 [label="Node13", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  3 [label="Node3", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  14 [label="Node14", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  12 [label="Node12", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  19 [label="Node19", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  15 [label="Node15", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  17 [label="Node17", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  4 [label="Node4", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  18 [label="Node18", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  5 [label="Node5", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  6 [label="Node6", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  7 [label="Node7", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  16 [label="Node16", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  20 [label="Node20", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  8 [label="Node8", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  9 [label="Node9", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  11 [label="Node11", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  10 [label="Node10", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+
+  4 -> 11 [label="R = HeavyRComputation(P, A);\\l", id=32, arrowhead=normal, penwidth=1.2];
+  9 -> 11 [label="1: R ! PUA", id=34, arrowhead=normal, penwidth=1.2];
+  14 -> 11 [label="PUA2", id=37, arrowhead=normal, penwidth=1.2];
+  11 -> 3 [label="PUA3", id=40, arrowhead=normal, penwidth=1.2];
+  3 -> 1 [label="return R;\\l", id=43, arrowhead=normal, penwidth=1.2];
+  0 -> 5 [label="Entry", id=19, arrowhead=normal, penwidth=1.2];
+  5 -> 6 [label="int R = 10;\\l", id=19, arrowhead=normal, penwidth=1.2];
+  13 -> 15 [label="int P = argv[1] ? atoi(argv[1]...", id=21, arrowhead=normal, penwidth=1.2];
+  6 -> 17 [label="int P = argv[1] ? atoi(argv[1]...", id=21, arrowhead=normal, penwidth=1.2];
+  17 -> 8 [label="int P = argv[1] ? atoi(argv[1]...: then", id=21, arrowhead=vee, penwidth=1.2];
+  17 -> 13 [label="int P = argv[1] ? atoi(argv[1]...: else", id=21, arrowhead=dot, penwidth=1.2];
+  8 -> 13 [label="int P = argv[1] ? atoi(argv[1]...", id=21, arrowhead=normal, penwidth=1.2];
+  15 -> 16 [label="int A = 0;\\l", id=23, arrowhead=normal, penwidth=1.2];
+  16 -> 20 [label="if (Cond0(P))\\l?", id=26, arrowhead=normal, penwidth=1.2];
+  20 -> 2 [label="if (Cond0(P))\\l: then", id=26, arrowhead=vee, penwidth=1.2];
+  20 -> 7 [label="if (Cond0(P))\\l: else", id=26, arrowhead=dot, penwidth=1.2];
+  2 -> 3 [label="PUA4", id=27, arrowhead=normal, penwidth=1.2];
+  7 -> 18 [label="if (Cond1(P))\\l?", id=29, arrowhead=normal, penwidth=1.2];
+  18 -> 10 [label="if (Cond1(P))\\l: then", id=29, arrowhead=vee, penwidth=1.2];
+  18 -> 14 [label="if (Cond1(P))\\l: else", id=29, arrowhead=dot, penwidth=1.2];
+  10 -> 12 [label="A = AComputation(P);\\l", id=30, arrowhead=normal, penwidth=1.2];
+  12 -> 19 [label="if (Cond(A))\\l?", id=31, arrowhead=normal, penwidth=1.2];
+  19 -> 4 [label="if (Cond(A))\\l: then", id=31, arrowhead=vee, penwidth=1.2];
+  19 -> 9 [label="if (Cond(A))\\l: else", id=31, arrowhead=dot, penwidth=1.2];
+}

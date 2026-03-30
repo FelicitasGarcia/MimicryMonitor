@@ -1,0 +1,67 @@
+digraph Composition {
+  rankdir=TB; // Top to bottom layout
+  rank=min;
+  nodesep=0.5; // Increase node separation
+  ranksep=0.8; // Increase rank separation
+edge [curvature=0.3];  node [fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9];
+
+  275 [label="3, 10, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  370 [label="7, 3, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  380 [label="13, 19, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  262 [label="9, 3, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  402 [label="1, 1, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  198 [label="9, 7, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  486 [label="12, 11, R=[0, 1]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  326 [label="7, 11, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  82 [label="2, 8, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  435 [label="12, 9, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  75 [label="10, 13, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  555 [label="7, 3, R=[1, 1]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  120 [label="11, 15, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  433 [label="8, 4, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  14 [label="5, 5, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  70 [label="14, 17, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  0 [label="0, 0, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  161 [label="9, 16, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  481 [label="7, 9, R=[1, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  271 [label="7, 14, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  211 [label="9, 2, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  506 [label="7, 11, R=[1, 1]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  535 [label="12, 3, R=[0, 1]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  224 [label="15, 18, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  180 [label="9, 20, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  334 [label="4, 12, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  45 [label="6, 6, R=[0, 0]", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+
+  0 -> 14 [label="Entry", id=19, arrowhead=normal, penwidth=1.2];
+  14 -> 45 [label="int R = 10;\\l", id=19, arrowhead=normal, penwidth=1.2];
+  45 -> 70 [label="int P = argv[1] ? atoi(argv[1]...", id=21, arrowhead=normal, penwidth=1.2];
+  70 -> 75 [label="int P = argv[1] ? atoi(argv[1]...: else", id=21, arrowhead=dot, penwidth=1.2];
+  70 -> 82 [label="int P = argv[1] ? atoi(argv[1]...: then", id=21, arrowhead=vee, penwidth=1.2];
+  75 -> 120 [label="int P = argv[1] ? atoi(argv[1]...", id=21, arrowhead=normal, penwidth=1.2];
+  82 -> 75 [label="int P = argv[1] ? atoi(argv[1]...", id=21, arrowhead=normal, penwidth=1.2];
+  120 -> 161 [label="int A = 0;\\l", id=23, arrowhead=normal, penwidth=1.2];
+  161 -> 180 [label="if (Cond0(P))\\l?", id=26, arrowhead=normal, penwidth=1.2];
+  180 -> 198 [label="if (Cond0(P))\\l: else", id=26, arrowhead=dot, penwidth=1.2];
+  180 -> 211 [label="if (Cond0(P))\\l: then", id=26, arrowhead=vee, penwidth=1.2];
+  211 -> 262 [label="PUA4", id=27, arrowhead=normal, penwidth=1.2];
+  198 -> 224 [label="if (Cond1(P))\\l?", id=29, arrowhead=normal, penwidth=1.2];
+  224 -> 271 [label="if (Cond1(P))\\l: else", id=29, arrowhead=dot, penwidth=1.2];
+  224 -> 275 [label="if (Cond1(P))\\l: then", id=29, arrowhead=vee, penwidth=1.2];
+  435 -> 481 [label="1: R ! OP", id=29, arrowhead=normal, penwidth=1.2];
+  486 -> 506 [label="1: R ! OP", id=29, arrowhead=normal, penwidth=1.2];
+  535 -> 555 [label="1: R ! OP", id=29, arrowhead=normal, penwidth=1.2];
+  275 -> 334 [label="A = AComputation(P);\\l", id=30, arrowhead=normal, penwidth=1.2];
+  334 -> 380 [label="if (Cond(A))\\l?", id=31, arrowhead=normal, penwidth=1.2];
+  380 -> 433 [label="if (Cond(A))\\l: then", id=31, arrowhead=vee, penwidth=1.2];
+  380 -> 435 [label="if (Cond(A))\\l: else", id=31, arrowhead=dot, penwidth=1.2];
+  433 -> 326 [label="R = HeavyRComputation(P, A);\\l", id=32, arrowhead=normal, penwidth=1.2];
+  435 -> 486 [label="1: R ! PUA", id=34, arrowhead=normal, penwidth=1.2];
+  481 -> 506 [label="1: R ! PUA", id=34, arrowhead=normal, penwidth=1.2];
+  271 -> 326 [label="PUA2", id=37, arrowhead=normal, penwidth=1.2];
+  326 -> 370 [label="PUA3", id=40, arrowhead=normal, penwidth=1.2];
+  486 -> 535 [label="PUA3", id=40, arrowhead=normal, penwidth=1.2];
+  506 -> 555 [label="PUA3", id=40, arrowhead=normal, penwidth=1.2];
+  370 -> 402 [label="return R;\\l", id=43, arrowhead=normal, penwidth=1.2];
+}
