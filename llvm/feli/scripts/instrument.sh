@@ -93,8 +93,17 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-echo -e "${GREEN}Instrumentation completed successfully!${RESET}"
+# Step 1.1: sanitize debug pseudo-directives for compatibility across LLVM builds
+# This does NOT change your LLVM version or analysis stage; it only cleans the generated instrumented IR.
+if grep -qE '^[[:space:]]*#dbg_' "$OUTPUT_FILE"; then
+  echo -e "${YELLOW}Sanitizing invalid debug pseudo-instructions (#dbg_*) in instrumented IR...${RESET}"
+  tmp_output="${OUTPUT_FILE}.tmp"
+  sed -E '/^[[:space:]]*#dbg_[a-zA-Z0-9_]*\(/d' "$OUTPUT_FILE" > "$tmp_output"
+  mv "$tmp_output" "$OUTPUT_FILE"
+fi
 
+echo -e "${GREEN}Instrumentation completed successfully!${RESET}"
+ 
 # Step 2: Compile the instrumented .ll file to executable
 echo -e "${BLUE}Step 2:${RESET} Compiling instrumented code to executable..."
 

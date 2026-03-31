@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdint.h>
 
 typedef struct {
     const char* transitionType;
@@ -25,59 +26,55 @@ static FILE* outputFile = NULL;
 static int extraInstructions = 0;
 static char* monitorPolicy = NULL;
 
+// [MM_FUZZER] variable global leída por el harness de Rust
+uint8_t MM_VERDICT = 0; // 0=NV, 1=V, 2=IV
+
 AutomatonNode* findNode(const char* nodeId) {
-    if (!automaton || !nodeId) {
+    if (!automaton || !nodeId)
         return NULL;
-    }
-
     for (int i = 0; i < automatonSize; i++) {
-        if (strcmp(automaton[i].id, nodeId) == 0) {
+        if (strcmp(automaton[i].id, nodeId) == 0)
             return &automaton[i];
-        }
     }
-
     return NULL;
 }
 
 void setMonitorPolicy(const char* policy) {
-    if (monitorPolicy) {
+    if (monitorPolicy)
         free(monitorPolicy);
-    }
-    if (policy) {
-        monitorPolicy = strdup(policy);
-    } else {
-        monitorPolicy = NULL;
-    }
+    monitorPolicy = policy ? strdup(policy) : NULL;
 }
 
 int shouldAbortOnVerdict(const char* verdict) {
-    if (!monitorPolicy || !verdict) {
+    if (!monitorPolicy || !verdict)
         return 0;
-    }
-
-    // Check if policy requires stopping on this verdict
-    if (strcmp(monitorPolicy, "stop-v") == 0 && strcmp(verdict, "V") == 0) {
+    if (strcmp(monitorPolicy, "stop-v") == 0 && strcmp(verdict, "V") == 0)
         return 1;
-    }
-    if (strcmp(monitorPolicy, "stop-iv") == 0 && strcmp(verdict, "IV") == 0) {
+    if (strcmp(monitorPolicy, "stop-iv") == 0 && strcmp(verdict, "IV") == 0)
         return 1;
-    }
-
     return 0;
 }
 
-void monitorAction(const char* transitionType) {
-    if (stopMonitoring || !automaton || !currentState) {
-        return;
-    }
+// [MM_FUZZER] escribe el veredicto en MM_VERDICT
+static void setVerdict(const char *verdict)
+{
+    if (strcmp(verdict, "IV") == 0)
+        MM_VERDICT = 2;
+    else if (strcmp(verdict, "V") == 0)
+        MM_VERDICT = 1;
+    else
+        MM_VERDICT = 0;
+}
 
+void monitorAction(const char* transitionType) {
+    if (stopMonitoring || !automaton || !currentState)
+        return;
 
     AutomatonNode* node = findNode(currentState);
     if (!node) {
         fprintf(stderr, "[ERROR] Current node %s not found\n", currentState);
-        if (outputFile) {
+        if (outputFile)
             fprintf(outputFile, "[ERROR] Current node %s not found\n", currentState);
-        }
         return;
     }
 
@@ -88,7 +85,6 @@ void monitorAction(const char* transitionType) {
         fprintf(outputFile, "Processing transition: %s\n", transitionType);
     }
 
-    // Check if current state is already terminal
     if (node->isTerminal) {
         if (outputFile) {
             fprintf(outputFile, "Warning: Attempted transition '%s' from terminal state %s\n",
@@ -101,9 +97,6 @@ void monitorAction(const char* transitionType) {
             fprintf(outputFile, "-----------------\n");
             fflush(outputFile);
         }
-
-        // Don't change stopMonitoring or clean up here, just ignore the transition
-        // The monitoring can continue to receive more transitions, but they'll all be ignored
         return;
     }
 
@@ -117,17 +110,17 @@ void monitorAction(const char* transitionType) {
 
     if (newState) {
         currentState = newState;
-        if (outputFile) {
+        if (outputFile)
             fprintf(outputFile, "Transition successful. New state: %s\n", currentState);
-        }
 
         AutomatonNode* newNode = findNode(currentState);
         if (newNode) {
-            if (outputFile) {
+            if (outputFile)
                 fprintf(outputFile, "New node verdict: %s\n", newNode->verdict);
-            }
 
-            // Check if we should abort based on the verdict and policy
+            // [MM_FUZZER] escribir veredicto
+            setVerdict(newNode->verdict);
+
             if (shouldAbortOnVerdict(newNode->verdict)) {
                 if (outputFile) {
                     fprintf(outputFile, "EARLY ABORT: Policy '%s' triggered on verdict '%s'\n",
@@ -138,18 +131,13 @@ void monitorAction(const char* transitionType) {
                     fclose(outputFile);
                     outputFile = NULL;
                 }
-
-                // Cleanup
                 stopMonitoring = 1;
                 automaton = NULL;
-
-                // Terminate the program
                 fprintf(stderr, "Monitor policy violation: %s verdict reached. Terminating program.\n",
                         newNode->verdict);
                 exit(1);
             }
 
-            // Check if terminal state is reached (normal termination)
             if (newNode->isTerminal) {
                 if (outputFile) {
                     fprintf(outputFile, "Terminal state reached: %s\n", newNode->verdict);
@@ -159,8 +147,8 @@ void monitorAction(const char* transitionType) {
                 }
                 stopMonitoring = 1;
                 automaton = NULL;
-
-                if (outputFile) {
+                if (outputFile)
+                {
                     fclose(outputFile);
                     outputFile = NULL;
                 }
@@ -173,14 +161,15 @@ void monitorAction(const char* transitionType) {
             fprintf(outputFile, "================================\n");
         }
         stopMonitoring = 1;
-
-        if (outputFile) {
+        if (outputFile)
+        {
             fclose(outputFile);
             outputFile = NULL;
         }
     }
 
-    if (outputFile) {
+    if (outputFile)
+    {
         fprintf(outputFile, "-----------------\n");
         fflush(outputFile);
     }
@@ -192,14 +181,16 @@ void initAutomaton(AutomatonNode* nodes, int size, const char* initialNodeId) {
         return;
     }
 
-    if (automaton != NULL) {
+    if (automaton != NULL)
+    {
         stopMonitoring = 1;
         return;
     }
 
-    // Open file in append mode to preserve previous runs
-    outputFile = fopen("/Users/felicitasgarcia/monitor_output.txt", "a");
+    // [MM_FUZZER] resetear veredicto al inicio de cada ejecución
+    MM_VERDICT = 0;
 
+    outputFile = fopen("/Users/felicitasgarcia/monitor_output.txt", "a");
     if (outputFile == NULL) {
         fprintf(stderr, "[ERROR] Could not open output file monitor_output.txt\n");
         return;
@@ -209,13 +200,13 @@ void initAutomaton(AutomatonNode* nodes, int size, const char* initialNodeId) {
     automatonSize = size;
     currentState = initialNodeId;
 
-    // Add separator and timestamp for this execution
     time_t now = time(NULL);
     char* timeStr = ctime(&now);
-    // Remove newline from ctime string
-    if (timeStr) {
-        char* newline = strchr(timeStr, '\n');
-        if (newline) *newline = '\0';
+    if (timeStr)
+    {
+        char *nl = strchr(timeStr, '\n');
+        if (nl)
+            *nl = '\0';
     }
 
     fprintf(outputFile, "\n================================\n");
@@ -227,34 +218,29 @@ void initAutomaton(AutomatonNode* nodes, int size, const char* initialNodeId) {
     for (int i = 0; i < automatonSize; i++) {
         fprintf(outputFile, "Node %s (terminal: %d, verdict: %s):\n",
                 automaton[i].id, automaton[i].isTerminal, automaton[i].verdict);
-        for (int j = 0; j < automaton[i].numTransitions; j++) {
+        for (int j = 0; j < automaton[i].numTransitions; j++)
             fprintf(outputFile, "  -> %s (%s)\n",
                     automaton[i].transitions[j].transitionType,
                     automaton[i].transitions[j].targetNodeId);
-        }
     }
 
-    // Check if initial state is terminal
     AutomatonNode* initialNode = findNode(currentState);
     if (initialNode && initialNode->isTerminal) {
         fprintf(outputFile, "Initial state %s is terminal with verdict: %s\n",
                 currentState, initialNode->verdict);
 
-        // Check if we should abort based on the verdict and policy
+        // [MM_FUZZER] escribir veredicto del estado inicial
+        setVerdict(initialNode->verdict);
+
         if (shouldAbortOnVerdict(initialNode->verdict)) {
             fprintf(outputFile, "EARLY ABORT: Policy '%s' triggered on initial verdict '%s'\n",
                     monitorPolicy, initialNode->verdict);
-            fprintf(outputFile, "Program terminating due to policy violation.\n");
             fprintf(outputFile, "================================\n");
             fflush(outputFile);
             fclose(outputFile);
             outputFile = NULL;
-
-            // Cleanup
             stopMonitoring = 1;
             automaton = NULL;
-
-            // Terminate the program
             fprintf(stderr, "Monitor policy violation: %s verdict reached in initial state. Terminating program.\n",
                     initialNode->verdict);
             exit(1);
@@ -266,14 +252,12 @@ void initAutomaton(AutomatonNode* nodes, int size, const char* initialNodeId) {
         fflush(outputFile);
         fclose(outputFile);
         outputFile = NULL;
-
         stopMonitoring = 1;
         automaton = NULL;
     } else {
         fprintf(outputFile, "Continuing monitoring\n");
     }
 
-    if (outputFile) {
+    if (outputFile)
         fflush(outputFile);
-    }
 }
