@@ -43,7 +43,7 @@ mimicrymonitor/
 │   │   ├── outputs/        # Output files
 │   │   ├── scripts/        # Analysis and Instrumentation scripts
 │   │   └── temps/          # Temporary files
-│   └── llvm-project/       # LLVM source code repository (if not present in the system)
+│   └── llvm-project/       # LLVM source code repository — must be placed here (see note below)
 ├── node_modules/           # JavaScript dependencies
 ├── pom.xml                 # Maven project file
 └── src/                    # Source code for Monitor Constructor
@@ -58,6 +58,8 @@ mimicrymonitor/
 ```
 
 ## Installation
+
+> **LLVM project location:** The scripts expect `llvm-project` to be located at `mimicrymonitor/llvm/llvm-project/` (i.e., the `llvm/` subdirectory of this repo). If you place it elsewhere, you must manually update the `BUILD_DIR` variable in the relevant scripts (e.g., `llvm/feli/scripts/analyze.sh`, `llvm/feli/scripts/instrument.sh`).
 
 ### Quick Setup
 
