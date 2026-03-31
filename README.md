@@ -218,11 +218,11 @@ Later run the MM as usual:
    ```
 - Input for V verdict:
    ```bash
-    ./instrumentedPUA 1  
+    ./instrumentedPUA -1  
    ```
   - Input for IV verdict:
     ```bash
-    ./instrumentedPUA -1
+    ./instrumentedPUA 1
     ```
   
      4. ls:
