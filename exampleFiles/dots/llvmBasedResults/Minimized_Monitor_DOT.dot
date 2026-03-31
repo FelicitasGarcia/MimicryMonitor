@@ -8,13 +8,13 @@ edge [curvature=0.3];  node [fontname="Helvetica", fontsize=10];
 
   -1 [label="IV", style=filled, fillcolor="lightcoral", shape=diamond, margin="0.15,0.15"];
   -2 [label="V", style=filled, fillcolor="darkolivegreen3", shape=diamond, margin="0.15,0.15"];
-  10 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   1 [label="NV", style=filled, fillcolor="lightgoldenrod2", shape=diamond, margin="0.15,0.15"];
   2 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   3 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   4 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   6 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   7 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  10 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   8 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
 
   1 -> 2 [label="int P = argv[1] ? atoi(argv[1]...", id=0, arrowhead=normal, penwidth=1.2];

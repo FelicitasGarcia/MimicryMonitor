@@ -12,7 +12,6 @@ RESET='\033[0m'
 
 MIMICRY_DIR="../../.."
 INPUT_FILE="$MIMICRY_DIR/llvm/feli/temps/programPUA.ll"
-# INPUT_FILE="/Users/felicitasgarcia/coreutils/src/programPUA.ll"
 DOT_FILE="$MIMICRY_DIR/llvm/feli/outputs/monitor.dot"
 OUTPUT_FILE="$MIMICRY_DIR/llvm/feli/temps/instrumentedPUA.ll"
 EXECUTABLE_NAME="$MIMICRY_DIR/llvm/feli/outputs/instrumentedPUA"

@@ -1,13 +1,13 @@
 digraph MM {
   11 [label="IV"];
   12 [label="V"];
-  10 [label="NV"];
   1 [label="NV"];
   2 [label="NV"];
   3 [label="NV"];
   4 [label="NV"];
   6 [label="NV"];
   7 [label="NV"];
+  10 [label="NV"];
   8 [label="NV"];
 
   1 -> 2 [label="int P = argv[1] ? atoi(argv[1]) : 0;\\l?", id=0];

@@ -1,8 +1,8 @@
 digraph LLVMOG {
-2 [shape = record, label="2int R = 10;\\l | Writes: [R]", style=filled, fillcolor="papayawhip"];
+4 [shape = record, label="4int P = argv[1] ? atoi(argv[1]) : 0;\\l | Reads: [argv] \l Writes: [P]", style=filled, fillcolor="papayawhip"];
 0 [shape = record, label="0A = AComputation(P);\\l | Reads: [P] \l Writes: [A]", style=filled, fillcolor="papayawhip"];
 1 [shape = record, label="1if (Cond(A))\\l | Reads: [A]", style=filled, fillcolor="papayawhip"];
-4 [shape = record, label="4int P = argv[1] ? atoi(argv[1]) : 0;\\l | Reads: [argv] \l Writes: [P]", style=filled, fillcolor="papayawhip"];
+2 [shape = record, label="2int R = 10;\\l | Writes: [R]", style=filled, fillcolor="papayawhip"];
 3 [shape = record, label="3int P = argv[1] ? atoi(argv[1]) : 0;\\l | Reads: [argv] \l Writes: [P]", style=filled, fillcolor="papayawhip"];
 5 [shape = record, label="5return R;\\l | Reads: [R]", style=filled, fillcolor="papayawhip"];
 6 [shape = record, label="6R = HeavyRComputation(P, A);\\l | Reads: [P ; A] \l Writes: [R]", style=filled, fillcolor="papayawhip"];

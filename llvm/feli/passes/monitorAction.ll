@@ -40,23 +40,27 @@ target triple = "arm64-apple-macosx15.0.0"
 @.str.23 = private unnamed_addr constant [47 x i8] c"Error: No valid transition '%s' from state %s\0A\00", align 1
 @.str.24 = private unnamed_addr constant [47 x i8] c"Monitoring stopped due to invalid transition.\0A\00", align 1
 @.str.25 = private unnamed_addr constant [53 x i8] c"[ERROR] Invalid automaton initialization parameters\0A\00", align 1
-@.str.26 = private unnamed_addr constant [42 x i8] c"/Users/felicitasgarcia/monitor_output.txt\00", align 1
-@.str.27 = private unnamed_addr constant [2 x i8] c"a\00", align 1
-@.str.28 = private unnamed_addr constant [55 x i8] c"[ERROR] Could not open output file monitor_output.txt\0A\00", align 1
-@.str.29 = private unnamed_addr constant [35 x i8] c"\0A================================\0A\00", align 1
-@.str.30 = private unnamed_addr constant [20 x i8] c"NEW EXECUTION - %s\0A\00", align 1
-@.str.31 = private unnamed_addr constant [13 x i8] c"Unknown time\00", align 1
-@.str.32 = private unnamed_addr constant [56 x i8] c"Automaton initialized with %d nodes. Initial state: %s\0A\00", align 1
-@.str.33 = private unnamed_addr constant [20 x i8] c"Monitor policy: %s\0A\00", align 1
-@.str.34 = private unnamed_addr constant [5 x i8] c"none\00", align 1
-@.str.35 = private unnamed_addr constant [38 x i8] c"Node %s (terminal: %d, verdict: %s):\0A\00", align 1
-@.str.36 = private unnamed_addr constant [14 x i8] c"  -> %s (%s)\0A\00", align 1
-@.str.37 = private unnamed_addr constant [47 x i8] c"Initial state %s is terminal with verdict: %s\0A\00", align 1
-@.str.38 = private unnamed_addr constant [60 x i8] c"EARLY ABORT: Policy '%s' triggered on initial verdict '%s'\0A\00", align 1
-@.str.39 = private unnamed_addr constant [85 x i8] c"Monitor policy violation: %s verdict reached in initial state. Terminating program.\0A\00", align 1
-@.str.40 = private unnamed_addr constant [55 x i8] c"Terminal state reached immediately. Final verdict: %s\0A\00", align 1
-@.str.41 = private unnamed_addr constant [47 x i8] c"Monitoring completed (no transitions needed).\0A\00", align 1
-@.str.42 = private unnamed_addr constant [23 x i8] c"Continuing monitoring\0A\00", align 1
+@.str.26 = private unnamed_addr constant [16 x i8] c"/tmp/mm_verdict\00", align 1
+@.str.27 = private unnamed_addr constant [2 x i8] c"w\00", align 1
+@.str.28 = private unnamed_addr constant [2 x i8] c"0\00", align 1
+@.str.29 = private unnamed_addr constant [42 x i8] c"/Users/felicitasgarcia/monitor_output.txt\00", align 1
+@.str.30 = private unnamed_addr constant [2 x i8] c"a\00", align 1
+@.str.31 = private unnamed_addr constant [55 x i8] c"[ERROR] Could not open output file monitor_output.txt\0A\00", align 1
+@.str.32 = private unnamed_addr constant [35 x i8] c"\0A================================\0A\00", align 1
+@.str.33 = private unnamed_addr constant [20 x i8] c"NEW EXECUTION - %s\0A\00", align 1
+@.str.34 = private unnamed_addr constant [13 x i8] c"Unknown time\00", align 1
+@.str.35 = private unnamed_addr constant [56 x i8] c"Automaton initialized with %d nodes. Initial state: %s\0A\00", align 1
+@.str.36 = private unnamed_addr constant [20 x i8] c"Monitor policy: %s\0A\00", align 1
+@.str.37 = private unnamed_addr constant [5 x i8] c"none\00", align 1
+@.str.38 = private unnamed_addr constant [38 x i8] c"Node %s (terminal: %d, verdict: %s):\0A\00", align 1
+@.str.39 = private unnamed_addr constant [14 x i8] c"  -> %s (%s)\0A\00", align 1
+@.str.40 = private unnamed_addr constant [47 x i8] c"Initial state %s is terminal with verdict: %s\0A\00", align 1
+@.str.41 = private unnamed_addr constant [60 x i8] c"EARLY ABORT: Policy '%s' triggered on initial verdict '%s'\0A\00", align 1
+@.str.42 = private unnamed_addr constant [85 x i8] c"Monitor policy violation: %s verdict reached in initial state. Terminating program.\0A\00", align 1
+@.str.43 = private unnamed_addr constant [55 x i8] c"Terminal state reached immediately. Final verdict: %s\0A\00", align 1
+@.str.44 = private unnamed_addr constant [47 x i8] c"Monitoring completed (no transitions needed).\0A\00", align 1
+@.str.45 = private unnamed_addr constant [23 x i8] c"Continuing monitoring\0A\00", align 1
+@.str.46 = private unnamed_addr constant [3 x i8] c"%d\00", align 1
 
 ; Function Attrs: noinline nounwind optnone ssp uwtable(sync)
 define ptr @findNode(ptr noundef %0) #0 {
@@ -579,34 +583,51 @@ declare i32 @fflush(ptr noundef) #1
 ; Function Attrs: noinline nounwind optnone ssp uwtable(sync)
 define internal void @setVerdict(ptr noundef %0) #0 {
   %2 = alloca ptr, align 8
+  %3 = alloca ptr, align 8
   store ptr %0, ptr %2, align 8
-  %3 = load ptr, ptr %2, align 8
-  %4 = call i32 @strcmp(ptr noundef %3, ptr noundef @.str.3)
-  %5 = icmp eq i32 %4, 0
-  br i1 %5, label %6, label %7
-
-6:                                                ; preds = %1
-  store i8 2, ptr @MM_VERDICT, align 1
-  br label %14
+  %4 = load ptr, ptr %2, align 8
+  %5 = call i32 @strcmp(ptr noundef %4, ptr noundef @.str.3)
+  %6 = icmp eq i32 %5, 0
+  br i1 %6, label %7, label %8
 
 7:                                                ; preds = %1
-  %8 = load ptr, ptr %2, align 8
-  %9 = call i32 @strcmp(ptr noundef %8, ptr noundef @.str.1)
-  %10 = icmp eq i32 %9, 0
-  br i1 %10, label %11, label %12
+  store i8 2, ptr @MM_VERDICT, align 1
+  br label %15
 
-11:                                               ; preds = %7
+8:                                                ; preds = %1
+  %9 = load ptr, ptr %2, align 8
+  %10 = call i32 @strcmp(ptr noundef %9, ptr noundef @.str.1)
+  %11 = icmp eq i32 %10, 0
+  br i1 %11, label %12, label %13
+
+12:                                               ; preds = %8
   store i8 1, ptr @MM_VERDICT, align 1
-  br label %13
-
-12:                                               ; preds = %7
-  store i8 0, ptr @MM_VERDICT, align 1
-  br label %13
-
-13:                                               ; preds = %12, %11
   br label %14
 
-14:                                               ; preds = %13, %6
+13:                                               ; preds = %8
+  store i8 0, ptr @MM_VERDICT, align 1
+  br label %14
+
+14:                                               ; preds = %13, %12
+  br label %15
+
+15:                                               ; preds = %14, %7
+  %16 = call ptr @"\01_fopen"(ptr noundef @.str.26, ptr noundef @.str.27)
+  store ptr %16, ptr %3, align 8
+  %17 = load ptr, ptr %3, align 8
+  %18 = icmp ne ptr %17, null
+  br i1 %18, label %19, label %26
+
+19:                                               ; preds = %15
+  %20 = load ptr, ptr %3, align 8
+  %21 = load i8, ptr @MM_VERDICT, align 1
+  %22 = zext i8 %21 to i32
+  %23 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %20, ptr noundef @.str.46, i32 noundef %22)
+  %24 = load ptr, ptr %3, align 8
+  %25 = call i32 @fclose(ptr noundef %24)
+  br label %26
+
+26:                                               ; preds = %19, %15
   ret void
 }
 
@@ -620,304 +641,319 @@ define void @initAutomaton(ptr noundef %0, i32 noundef %1, ptr noundef %2) #0 {
   %4 = alloca ptr, align 8
   %5 = alloca i32, align 4
   %6 = alloca ptr, align 8
-  %7 = alloca i64, align 8
-  %8 = alloca ptr, align 8
+  %7 = alloca ptr, align 8
+  %8 = alloca i64, align 8
   %9 = alloca ptr, align 8
-  %10 = alloca i32, align 4
+  %10 = alloca ptr, align 8
   %11 = alloca i32, align 4
-  %12 = alloca ptr, align 8
+  %12 = alloca i32, align 4
+  %13 = alloca ptr, align 8
   store ptr %0, ptr %4, align 8
   store i32 %1, ptr %5, align 4
   store ptr %2, ptr %6, align 8
-  %13 = load ptr, ptr %4, align 8
-  %14 = icmp ne ptr %13, null
-  br i1 %14, label %15, label %21
+  %14 = load ptr, ptr %4, align 8
+  %15 = icmp ne ptr %14, null
+  br i1 %15, label %16, label %22
 
-15:                                               ; preds = %3
-  %16 = load i32, ptr %5, align 4
-  %17 = icmp sle i32 %16, 0
-  br i1 %17, label %21, label %18
+16:                                               ; preds = %3
+  %17 = load i32, ptr %5, align 4
+  %18 = icmp sle i32 %17, 0
+  br i1 %18, label %22, label %19
 
-18:                                               ; preds = %15
-  %19 = load ptr, ptr %6, align 8
-  %20 = icmp ne ptr %19, null
-  br i1 %20, label %24, label %21
+19:                                               ; preds = %16
+  %20 = load ptr, ptr %6, align 8
+  %21 = icmp ne ptr %20, null
+  br i1 %21, label %25, label %22
 
-21:                                               ; preds = %18, %15, %3
-  %22 = load ptr, ptr @__stderrp, align 8
-  %23 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %22, ptr noundef @.str.25)
-  br label %210
+22:                                               ; preds = %19, %16, %3
+  %23 = load ptr, ptr @__stderrp, align 8
+  %24 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %23, ptr noundef @.str.25)
+  br label %220
 
-24:                                               ; preds = %18
-  %25 = load ptr, ptr @automaton, align 8
-  %26 = icmp ne ptr %25, null
-  br i1 %26, label %27, label %28
+25:                                               ; preds = %19
+  %26 = load ptr, ptr @automaton, align 8
+  %27 = icmp ne ptr %26, null
+  br i1 %27, label %28, label %29
 
-27:                                               ; preds = %24
+28:                                               ; preds = %25
   store i32 1, ptr @stopMonitoring, align 4
-  br label %210
+  br label %220
 
-28:                                               ; preds = %24
+29:                                               ; preds = %25
   store i8 0, ptr @MM_VERDICT, align 1
-  %29 = call ptr @"\01_fopen"(ptr noundef @.str.26, ptr noundef @.str.27)
-  store ptr %29, ptr @outputFile, align 8
-  %30 = load ptr, ptr @outputFile, align 8
-  %31 = icmp eq ptr %30, null
-  br i1 %31, label %32, label %35
+  %30 = call ptr @"\01_fopen"(ptr noundef @.str.26, ptr noundef @.str.27)
+  store ptr %30, ptr %7, align 8
+  %31 = load ptr, ptr %7, align 8
+  %32 = icmp ne ptr %31, null
+  br i1 %32, label %33, label %38
 
-32:                                               ; preds = %28
-  %33 = load ptr, ptr @__stderrp, align 8
-  %34 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %33, ptr noundef @.str.28)
-  br label %210
+33:                                               ; preds = %29
+  %34 = load ptr, ptr %7, align 8
+  %35 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %34, ptr noundef @.str.28)
+  %36 = load ptr, ptr %7, align 8
+  %37 = call i32 @fclose(ptr noundef %36)
+  br label %38
 
-35:                                               ; preds = %28
-  %36 = load ptr, ptr %4, align 8
-  store ptr %36, ptr @automaton, align 8
-  %37 = load i32, ptr %5, align 4
-  store i32 %37, ptr @automatonSize, align 4
-  %38 = load ptr, ptr %6, align 8
-  store ptr %38, ptr @currentState, align 8
-  %39 = call i64 @time(ptr noundef null)
-  store i64 %39, ptr %7, align 8
-  %40 = call ptr @ctime(ptr noundef %7)
-  store ptr %40, ptr %8, align 8
-  %41 = load ptr, ptr %8, align 8
-  %42 = icmp ne ptr %41, null
-  br i1 %42, label %43, label %51
+38:                                               ; preds = %33, %29
+  %39 = call ptr @"\01_fopen"(ptr noundef @.str.29, ptr noundef @.str.30)
+  store ptr %39, ptr @outputFile, align 8
+  %40 = load ptr, ptr @outputFile, align 8
+  %41 = icmp eq ptr %40, null
+  br i1 %41, label %42, label %45
 
-43:                                               ; preds = %35
-  %44 = load ptr, ptr %8, align 8
-  %45 = call ptr @strchr(ptr noundef %44, i32 noundef 10)
-  store ptr %45, ptr %9, align 8
-  %46 = load ptr, ptr %9, align 8
-  %47 = icmp ne ptr %46, null
-  br i1 %47, label %48, label %50
+42:                                               ; preds = %38
+  %43 = load ptr, ptr @__stderrp, align 8
+  %44 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %43, ptr noundef @.str.31)
+  br label %220
 
-48:                                               ; preds = %43
-  %49 = load ptr, ptr %9, align 8
-  store i8 0, ptr %49, align 1
-  br label %50
+45:                                               ; preds = %38
+  %46 = load ptr, ptr %4, align 8
+  store ptr %46, ptr @automaton, align 8
+  %47 = load i32, ptr %5, align 4
+  store i32 %47, ptr @automatonSize, align 4
+  %48 = load ptr, ptr %6, align 8
+  store ptr %48, ptr @currentState, align 8
+  %49 = call i64 @time(ptr noundef null)
+  store i64 %49, ptr %8, align 8
+  %50 = call ptr @ctime(ptr noundef %8)
+  store ptr %50, ptr %9, align 8
+  %51 = load ptr, ptr %9, align 8
+  %52 = icmp ne ptr %51, null
+  br i1 %52, label %53, label %61
 
-50:                                               ; preds = %48, %43
-  br label %51
+53:                                               ; preds = %45
+  %54 = load ptr, ptr %9, align 8
+  %55 = call ptr @strchr(ptr noundef %54, i32 noundef 10)
+  store ptr %55, ptr %10, align 8
+  %56 = load ptr, ptr %10, align 8
+  %57 = icmp ne ptr %56, null
+  br i1 %57, label %58, label %60
 
-51:                                               ; preds = %50, %35
-  %52 = load ptr, ptr @outputFile, align 8
-  %53 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %52, ptr noundef @.str.29)
-  %54 = load ptr, ptr @outputFile, align 8
-  %55 = load ptr, ptr %8, align 8
-  %56 = icmp ne ptr %55, null
-  br i1 %56, label %57, label %59
-
-57:                                               ; preds = %51
-  %58 = load ptr, ptr %8, align 8
+58:                                               ; preds = %53
+  %59 = load ptr, ptr %10, align 8
+  store i8 0, ptr %59, align 1
   br label %60
 
-59:                                               ; preds = %51
-  br label %60
+60:                                               ; preds = %58, %53
+  br label %61
 
-60:                                               ; preds = %59, %57
-  %61 = phi ptr [ %58, %57 ], [ @.str.31, %59 ]
-  %62 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %54, ptr noundef @.str.30, ptr noundef %61)
-  %63 = load ptr, ptr @outputFile, align 8
-  %64 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %63, ptr noundef @.str.14)
-  %65 = load ptr, ptr @outputFile, align 8
-  %66 = load i32, ptr %5, align 4
-  %67 = load ptr, ptr @currentState, align 8
-  %68 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %65, ptr noundef @.str.32, i32 noundef %66, ptr noundef %67)
-  %69 = load ptr, ptr @outputFile, align 8
-  %70 = load ptr, ptr @monitorPolicy, align 8
-  %71 = icmp ne ptr %70, null
-  br i1 %71, label %72, label %74
+61:                                               ; preds = %60, %45
+  %62 = load ptr, ptr @outputFile, align 8
+  %63 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %62, ptr noundef @.str.32)
+  %64 = load ptr, ptr @outputFile, align 8
+  %65 = load ptr, ptr %9, align 8
+  %66 = icmp ne ptr %65, null
+  br i1 %66, label %67, label %69
 
-72:                                               ; preds = %60
-  %73 = load ptr, ptr @monitorPolicy, align 8
-  br label %75
+67:                                               ; preds = %61
+  %68 = load ptr, ptr %9, align 8
+  br label %70
 
-74:                                               ; preds = %60
-  br label %75
+69:                                               ; preds = %61
+  br label %70
 
-75:                                               ; preds = %74, %72
-  %76 = phi ptr [ %73, %72 ], [ @.str.34, %74 ]
-  %77 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %69, ptr noundef @.str.33, ptr noundef %76)
-  store i32 0, ptr %10, align 4
-  br label %78
+70:                                               ; preds = %69, %67
+  %71 = phi ptr [ %68, %67 ], [ @.str.34, %69 ]
+  %72 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %64, ptr noundef @.str.33, ptr noundef %71)
+  %73 = load ptr, ptr @outputFile, align 8
+  %74 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %73, ptr noundef @.str.14)
+  %75 = load ptr, ptr @outputFile, align 8
+  %76 = load i32, ptr %5, align 4
+  %77 = load ptr, ptr @currentState, align 8
+  %78 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %75, ptr noundef @.str.35, i32 noundef %76, ptr noundef %77)
+  %79 = load ptr, ptr @outputFile, align 8
+  %80 = load ptr, ptr @monitorPolicy, align 8
+  %81 = icmp ne ptr %80, null
+  br i1 %81, label %82, label %84
 
-78:                                               ; preds = %141, %75
-  %79 = load i32, ptr %10, align 4
-  %80 = load i32, ptr @automatonSize, align 4
-  %81 = icmp slt i32 %79, %80
-  br i1 %81, label %82, label %144
+82:                                               ; preds = %70
+  %83 = load ptr, ptr @monitorPolicy, align 8
+  br label %85
 
-82:                                               ; preds = %78
-  %83 = load ptr, ptr @outputFile, align 8
-  %84 = load ptr, ptr @automaton, align 8
-  %85 = load i32, ptr %10, align 4
-  %86 = sext i32 %85 to i64
-  %87 = getelementptr inbounds %struct.AutomatonNode, ptr %84, i64 %86
-  %88 = getelementptr inbounds %struct.AutomatonNode, ptr %87, i32 0, i32 0
-  %89 = load ptr, ptr %88, align 8
-  %90 = load ptr, ptr @automaton, align 8
-  %91 = load i32, ptr %10, align 4
-  %92 = sext i32 %91 to i64
-  %93 = getelementptr inbounds %struct.AutomatonNode, ptr %90, i64 %92
-  %94 = getelementptr inbounds %struct.AutomatonNode, ptr %93, i32 0, i32 3
-  %95 = load i32, ptr %94, align 8
-  %96 = load ptr, ptr @automaton, align 8
-  %97 = load i32, ptr %10, align 4
-  %98 = sext i32 %97 to i64
-  %99 = getelementptr inbounds %struct.AutomatonNode, ptr %96, i64 %98
-  %100 = getelementptr inbounds %struct.AutomatonNode, ptr %99, i32 0, i32 1
-  %101 = load ptr, ptr %100, align 8
-  %102 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %83, ptr noundef @.str.35, ptr noundef %89, i32 noundef %95, ptr noundef %101)
+84:                                               ; preds = %70
+  br label %85
+
+85:                                               ; preds = %84, %82
+  %86 = phi ptr [ %83, %82 ], [ @.str.37, %84 ]
+  %87 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %79, ptr noundef @.str.36, ptr noundef %86)
   store i32 0, ptr %11, align 4
-  br label %103
+  br label %88
 
-103:                                              ; preds = %137, %82
-  %104 = load i32, ptr %11, align 4
-  %105 = load ptr, ptr @automaton, align 8
-  %106 = load i32, ptr %10, align 4
-  %107 = sext i32 %106 to i64
-  %108 = getelementptr inbounds %struct.AutomatonNode, ptr %105, i64 %107
-  %109 = getelementptr inbounds %struct.AutomatonNode, ptr %108, i32 0, i32 5
-  %110 = load i32, ptr %109, align 8
-  %111 = icmp slt i32 %104, %110
-  br i1 %111, label %112, label %140
+88:                                               ; preds = %151, %85
+  %89 = load i32, ptr %11, align 4
+  %90 = load i32, ptr @automatonSize, align 4
+  %91 = icmp slt i32 %89, %90
+  br i1 %91, label %92, label %154
 
-112:                                              ; preds = %103
-  %113 = load ptr, ptr @outputFile, align 8
-  %114 = load ptr, ptr @automaton, align 8
-  %115 = load i32, ptr %10, align 4
-  %116 = sext i32 %115 to i64
-  %117 = getelementptr inbounds %struct.AutomatonNode, ptr %114, i64 %116
-  %118 = getelementptr inbounds %struct.AutomatonNode, ptr %117, i32 0, i32 4
-  %119 = load ptr, ptr %118, align 8
-  %120 = load i32, ptr %11, align 4
-  %121 = sext i32 %120 to i64
-  %122 = getelementptr inbounds %struct.AutomatonTransition, ptr %119, i64 %121
-  %123 = getelementptr inbounds %struct.AutomatonTransition, ptr %122, i32 0, i32 0
-  %124 = load ptr, ptr %123, align 8
-  %125 = load ptr, ptr @automaton, align 8
-  %126 = load i32, ptr %10, align 4
-  %127 = sext i32 %126 to i64
-  %128 = getelementptr inbounds %struct.AutomatonNode, ptr %125, i64 %127
-  %129 = getelementptr inbounds %struct.AutomatonNode, ptr %128, i32 0, i32 4
-  %130 = load ptr, ptr %129, align 8
-  %131 = load i32, ptr %11, align 4
-  %132 = sext i32 %131 to i64
-  %133 = getelementptr inbounds %struct.AutomatonTransition, ptr %130, i64 %132
-  %134 = getelementptr inbounds %struct.AutomatonTransition, ptr %133, i32 0, i32 1
-  %135 = load ptr, ptr %134, align 8
-  %136 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %113, ptr noundef @.str.36, ptr noundef %124, ptr noundef %135)
-  br label %137
+92:                                               ; preds = %88
+  %93 = load ptr, ptr @outputFile, align 8
+  %94 = load ptr, ptr @automaton, align 8
+  %95 = load i32, ptr %11, align 4
+  %96 = sext i32 %95 to i64
+  %97 = getelementptr inbounds %struct.AutomatonNode, ptr %94, i64 %96
+  %98 = getelementptr inbounds %struct.AutomatonNode, ptr %97, i32 0, i32 0
+  %99 = load ptr, ptr %98, align 8
+  %100 = load ptr, ptr @automaton, align 8
+  %101 = load i32, ptr %11, align 4
+  %102 = sext i32 %101 to i64
+  %103 = getelementptr inbounds %struct.AutomatonNode, ptr %100, i64 %102
+  %104 = getelementptr inbounds %struct.AutomatonNode, ptr %103, i32 0, i32 3
+  %105 = load i32, ptr %104, align 8
+  %106 = load ptr, ptr @automaton, align 8
+  %107 = load i32, ptr %11, align 4
+  %108 = sext i32 %107 to i64
+  %109 = getelementptr inbounds %struct.AutomatonNode, ptr %106, i64 %108
+  %110 = getelementptr inbounds %struct.AutomatonNode, ptr %109, i32 0, i32 1
+  %111 = load ptr, ptr %110, align 8
+  %112 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %93, ptr noundef @.str.38, ptr noundef %99, i32 noundef %105, ptr noundef %111)
+  store i32 0, ptr %12, align 4
+  br label %113
 
-137:                                              ; preds = %112
-  %138 = load i32, ptr %11, align 4
-  %139 = add nsw i32 %138, 1
-  store i32 %139, ptr %11, align 4
-  br label %103, !llvm.loop !9
+113:                                              ; preds = %147, %92
+  %114 = load i32, ptr %12, align 4
+  %115 = load ptr, ptr @automaton, align 8
+  %116 = load i32, ptr %11, align 4
+  %117 = sext i32 %116 to i64
+  %118 = getelementptr inbounds %struct.AutomatonNode, ptr %115, i64 %117
+  %119 = getelementptr inbounds %struct.AutomatonNode, ptr %118, i32 0, i32 5
+  %120 = load i32, ptr %119, align 8
+  %121 = icmp slt i32 %114, %120
+  br i1 %121, label %122, label %150
 
-140:                                              ; preds = %103
-  br label %141
+122:                                              ; preds = %113
+  %123 = load ptr, ptr @outputFile, align 8
+  %124 = load ptr, ptr @automaton, align 8
+  %125 = load i32, ptr %11, align 4
+  %126 = sext i32 %125 to i64
+  %127 = getelementptr inbounds %struct.AutomatonNode, ptr %124, i64 %126
+  %128 = getelementptr inbounds %struct.AutomatonNode, ptr %127, i32 0, i32 4
+  %129 = load ptr, ptr %128, align 8
+  %130 = load i32, ptr %12, align 4
+  %131 = sext i32 %130 to i64
+  %132 = getelementptr inbounds %struct.AutomatonTransition, ptr %129, i64 %131
+  %133 = getelementptr inbounds %struct.AutomatonTransition, ptr %132, i32 0, i32 0
+  %134 = load ptr, ptr %133, align 8
+  %135 = load ptr, ptr @automaton, align 8
+  %136 = load i32, ptr %11, align 4
+  %137 = sext i32 %136 to i64
+  %138 = getelementptr inbounds %struct.AutomatonNode, ptr %135, i64 %137
+  %139 = getelementptr inbounds %struct.AutomatonNode, ptr %138, i32 0, i32 4
+  %140 = load ptr, ptr %139, align 8
+  %141 = load i32, ptr %12, align 4
+  %142 = sext i32 %141 to i64
+  %143 = getelementptr inbounds %struct.AutomatonTransition, ptr %140, i64 %142
+  %144 = getelementptr inbounds %struct.AutomatonTransition, ptr %143, i32 0, i32 1
+  %145 = load ptr, ptr %144, align 8
+  %146 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %123, ptr noundef @.str.39, ptr noundef %134, ptr noundef %145)
+  br label %147
 
-141:                                              ; preds = %140
-  %142 = load i32, ptr %10, align 4
-  %143 = add nsw i32 %142, 1
-  store i32 %143, ptr %10, align 4
-  br label %78, !llvm.loop !10
+147:                                              ; preds = %122
+  %148 = load i32, ptr %12, align 4
+  %149 = add nsw i32 %148, 1
+  store i32 %149, ptr %12, align 4
+  br label %113, !llvm.loop !9
 
-144:                                              ; preds = %78
-  %145 = load ptr, ptr @currentState, align 8
-  %146 = call ptr @findNode(ptr noundef %145)
-  store ptr %146, ptr %12, align 8
-  %147 = load ptr, ptr %12, align 8
-  %148 = icmp ne ptr %147, null
-  br i1 %148, label %149, label %201
+150:                                              ; preds = %113
+  br label %151
 
-149:                                              ; preds = %144
-  %150 = load ptr, ptr %12, align 8
-  %151 = getelementptr inbounds %struct.AutomatonNode, ptr %150, i32 0, i32 3
-  %152 = load i32, ptr %151, align 8
-  %153 = icmp ne i32 %152, 0
-  br i1 %153, label %154, label %201
+151:                                              ; preds = %150
+  %152 = load i32, ptr %11, align 4
+  %153 = add nsw i32 %152, 1
+  store i32 %153, ptr %11, align 4
+  br label %88, !llvm.loop !10
 
-154:                                              ; preds = %149
-  %155 = load ptr, ptr @outputFile, align 8
-  %156 = load ptr, ptr @currentState, align 8
-  %157 = load ptr, ptr %12, align 8
-  %158 = getelementptr inbounds %struct.AutomatonNode, ptr %157, i32 0, i32 1
-  %159 = load ptr, ptr %158, align 8
-  %160 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %155, ptr noundef @.str.37, ptr noundef %156, ptr noundef %159)
-  %161 = load ptr, ptr %12, align 8
-  %162 = getelementptr inbounds %struct.AutomatonNode, ptr %161, i32 0, i32 1
-  %163 = load ptr, ptr %162, align 8
-  call void @setVerdict(ptr noundef %163)
-  %164 = load ptr, ptr %12, align 8
-  %165 = getelementptr inbounds %struct.AutomatonNode, ptr %164, i32 0, i32 1
-  %166 = load ptr, ptr %165, align 8
-  %167 = call i32 @shouldAbortOnVerdict(ptr noundef %166)
-  %168 = icmp ne i32 %167, 0
-  br i1 %168, label %169, label %187
+154:                                              ; preds = %88
+  %155 = load ptr, ptr @currentState, align 8
+  %156 = call ptr @findNode(ptr noundef %155)
+  store ptr %156, ptr %13, align 8
+  %157 = load ptr, ptr %13, align 8
+  %158 = icmp ne ptr %157, null
+  br i1 %158, label %159, label %211
 
-169:                                              ; preds = %154
-  %170 = load ptr, ptr @outputFile, align 8
-  %171 = load ptr, ptr @monitorPolicy, align 8
-  %172 = load ptr, ptr %12, align 8
-  %173 = getelementptr inbounds %struct.AutomatonNode, ptr %172, i32 0, i32 1
-  %174 = load ptr, ptr %173, align 8
-  %175 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %170, ptr noundef @.str.38, ptr noundef %171, ptr noundef %174)
-  %176 = load ptr, ptr @outputFile, align 8
-  %177 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %176, ptr noundef @.str.14)
-  %178 = load ptr, ptr @outputFile, align 8
-  %179 = call i32 @fflush(ptr noundef %178)
+159:                                              ; preds = %154
+  %160 = load ptr, ptr %13, align 8
+  %161 = getelementptr inbounds %struct.AutomatonNode, ptr %160, i32 0, i32 3
+  %162 = load i32, ptr %161, align 8
+  %163 = icmp ne i32 %162, 0
+  br i1 %163, label %164, label %211
+
+164:                                              ; preds = %159
+  %165 = load ptr, ptr @outputFile, align 8
+  %166 = load ptr, ptr @currentState, align 8
+  %167 = load ptr, ptr %13, align 8
+  %168 = getelementptr inbounds %struct.AutomatonNode, ptr %167, i32 0, i32 1
+  %169 = load ptr, ptr %168, align 8
+  %170 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %165, ptr noundef @.str.40, ptr noundef %166, ptr noundef %169)
+  %171 = load ptr, ptr %13, align 8
+  %172 = getelementptr inbounds %struct.AutomatonNode, ptr %171, i32 0, i32 1
+  %173 = load ptr, ptr %172, align 8
+  call void @setVerdict(ptr noundef %173)
+  %174 = load ptr, ptr %13, align 8
+  %175 = getelementptr inbounds %struct.AutomatonNode, ptr %174, i32 0, i32 1
+  %176 = load ptr, ptr %175, align 8
+  %177 = call i32 @shouldAbortOnVerdict(ptr noundef %176)
+  %178 = icmp ne i32 %177, 0
+  br i1 %178, label %179, label %197
+
+179:                                              ; preds = %164
   %180 = load ptr, ptr @outputFile, align 8
-  %181 = call i32 @fclose(ptr noundef %180)
+  %181 = load ptr, ptr @monitorPolicy, align 8
+  %182 = load ptr, ptr %13, align 8
+  %183 = getelementptr inbounds %struct.AutomatonNode, ptr %182, i32 0, i32 1
+  %184 = load ptr, ptr %183, align 8
+  %185 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %180, ptr noundef @.str.41, ptr noundef %181, ptr noundef %184)
+  %186 = load ptr, ptr @outputFile, align 8
+  %187 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %186, ptr noundef @.str.14)
+  %188 = load ptr, ptr @outputFile, align 8
+  %189 = call i32 @fflush(ptr noundef %188)
+  %190 = load ptr, ptr @outputFile, align 8
+  %191 = call i32 @fclose(ptr noundef %190)
   store ptr null, ptr @outputFile, align 8
   store i32 1, ptr @stopMonitoring, align 4
   store ptr null, ptr @automaton, align 8
-  %182 = load ptr, ptr @__stderrp, align 8
-  %183 = load ptr, ptr %12, align 8
-  %184 = getelementptr inbounds %struct.AutomatonNode, ptr %183, i32 0, i32 1
-  %185 = load ptr, ptr %184, align 8
-  %186 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %182, ptr noundef @.str.39, ptr noundef %185)
+  %192 = load ptr, ptr @__stderrp, align 8
+  %193 = load ptr, ptr %13, align 8
+  %194 = getelementptr inbounds %struct.AutomatonNode, ptr %193, i32 0, i32 1
+  %195 = load ptr, ptr %194, align 8
+  %196 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %192, ptr noundef @.str.42, ptr noundef %195)
   call void @exit(i32 noundef 1) #3
   unreachable
 
-187:                                              ; preds = %154
-  %188 = load ptr, ptr @outputFile, align 8
-  %189 = load ptr, ptr %12, align 8
-  %190 = getelementptr inbounds %struct.AutomatonNode, ptr %189, i32 0, i32 1
-  %191 = load ptr, ptr %190, align 8
-  %192 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %188, ptr noundef @.str.40, ptr noundef %191)
-  %193 = load ptr, ptr @outputFile, align 8
-  %194 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %193, ptr noundef @.str.41)
-  %195 = load ptr, ptr @outputFile, align 8
-  %196 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %195, ptr noundef @.str.14)
-  %197 = load ptr, ptr @outputFile, align 8
-  %198 = call i32 @fflush(ptr noundef %197)
-  %199 = load ptr, ptr @outputFile, align 8
-  %200 = call i32 @fclose(ptr noundef %199)
+197:                                              ; preds = %164
+  %198 = load ptr, ptr @outputFile, align 8
+  %199 = load ptr, ptr %13, align 8
+  %200 = getelementptr inbounds %struct.AutomatonNode, ptr %199, i32 0, i32 1
+  %201 = load ptr, ptr %200, align 8
+  %202 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %198, ptr noundef @.str.43, ptr noundef %201)
+  %203 = load ptr, ptr @outputFile, align 8
+  %204 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %203, ptr noundef @.str.44)
+  %205 = load ptr, ptr @outputFile, align 8
+  %206 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %205, ptr noundef @.str.14)
+  %207 = load ptr, ptr @outputFile, align 8
+  %208 = call i32 @fflush(ptr noundef %207)
+  %209 = load ptr, ptr @outputFile, align 8
+  %210 = call i32 @fclose(ptr noundef %209)
   store ptr null, ptr @outputFile, align 8
   store i32 1, ptr @stopMonitoring, align 4
   store ptr null, ptr @automaton, align 8
-  br label %204
+  br label %214
 
-201:                                              ; preds = %149, %144
-  %202 = load ptr, ptr @outputFile, align 8
-  %203 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %202, ptr noundef @.str.42)
-  br label %204
+211:                                              ; preds = %159, %154
+  %212 = load ptr, ptr @outputFile, align 8
+  %213 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %212, ptr noundef @.str.45)
+  br label %214
 
-204:                                              ; preds = %201, %187
-  %205 = load ptr, ptr @outputFile, align 8
-  %206 = icmp ne ptr %205, null
-  br i1 %206, label %207, label %210
+214:                                              ; preds = %211, %197
+  %215 = load ptr, ptr @outputFile, align 8
+  %216 = icmp ne ptr %215, null
+  br i1 %216, label %217, label %220
 
-207:                                              ; preds = %204
-  %208 = load ptr, ptr @outputFile, align 8
-  %209 = call i32 @fflush(ptr noundef %208)
-  br label %210
+217:                                              ; preds = %214
+  %218 = load ptr, ptr @outputFile, align 8
+  %219 = call i32 @fflush(ptr noundef %218)
+  br label %220
 
-210:                                              ; preds = %21, %27, %32, %207, %204
+220:                                              ; preds = %22, %28, %42, %217, %214
   ret void
 }
 

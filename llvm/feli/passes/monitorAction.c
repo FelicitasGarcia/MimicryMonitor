@@ -26,8 +26,8 @@ static FILE* outputFile = NULL;
 static int extraInstructions = 0;
 static char* monitorPolicy = NULL;
 
-// [MM_FUZZER] variable global leída por el harness de Rust
-uint8_t MM_VERDICT = 0; // 0=NV, 1=V, 2=IV
+// [MM_FUZZER] variable global
+uint8_t MM_VERDICT = 0;
 
 AutomatonNode* findNode(const char* nodeId) {
     if (!automaton || !nodeId)
@@ -55,7 +55,7 @@ int shouldAbortOnVerdict(const char* verdict) {
     return 0;
 }
 
-// [MM_FUZZER] escribe el veredicto en MM_VERDICT
+// [MM_FUZZER] escribe veredicto en MM_VERDICT y en /tmp/mm_verdict
 static void setVerdict(const char *verdict)
 {
     if (strcmp(verdict, "IV") == 0)
@@ -64,6 +64,13 @@ static void setVerdict(const char *verdict)
         MM_VERDICT = 1;
     else
         MM_VERDICT = 0;
+
+    FILE *f = fopen("/tmp/mm_verdict", "w");
+    if (f)
+    {
+        fprintf(f, "%d", MM_VERDICT);
+        fclose(f);
+    }
 }
 
 void monitorAction(const char* transitionType) {
@@ -189,6 +196,12 @@ void initAutomaton(AutomatonNode* nodes, int size, const char* initialNodeId) {
 
     // [MM_FUZZER] resetear veredicto al inicio de cada ejecución
     MM_VERDICT = 0;
+    FILE *f = fopen("/tmp/mm_verdict", "w");
+    if (f)
+    {
+        fprintf(f, "0");
+        fclose(f);
+    }
 
     outputFile = fopen("/Users/felicitasgarcia/monitor_output.txt", "a");
     if (outputFile == NULL) {
