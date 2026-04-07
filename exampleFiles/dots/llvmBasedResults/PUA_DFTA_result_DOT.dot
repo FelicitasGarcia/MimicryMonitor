@@ -1,0 +1,21 @@
+digraph DFTA {
+  rankdir=TB; // Top to bottom layout
+  rank=min;
+  nodesep=0.5; // Increase node separation
+  ranksep=0.8; // Increase rank separation
+edge [curvature=0.3];  node [fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9];
+
+  0 [label="valid", style=filled, fillcolor="darkolivegreen3", shape=diamond, margin="0.15,0.15"];
+  1 [label="invalid", style=filled, fillcolor="coral2", shape=diamond, margin="0.15,0.15"];
+
+  0 -> 0 [label="result = -1;\\l", id=24, arrowhead=normal, penwidth=1.2];
+  1 -> 0 [label="result = -1;\\l", id=24, arrowhead=normal, penwidth=1.2];
+  0 -> 1 [label="3: result ! PUA", id=26, arrowhead=normal, penwidth=1.2];
+  1 -> 1 [label="3: result ! PUA", id=26, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="result = 1; /* BUG: should be ...", id=28, arrowhead=normal, penwidth=1.2];
+  1 -> 0 [label="result = 1; /* BUG: should be ...", id=28, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="result = 2;\\l", id=30, arrowhead=normal, penwidth=1.2];
+  1 -> 0 [label="result = 2;\\l", id=30, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="printf('%d\\n', result);\\l", id=31, arrowhead=normal, penwidth=1.2];
+}

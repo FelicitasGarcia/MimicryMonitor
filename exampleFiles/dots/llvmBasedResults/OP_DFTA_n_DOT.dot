@@ -1,0 +1,23 @@
+digraph DFTA {
+  rankdir=TB; // Top to bottom layout
+  rank=min;
+  nodesep=0.5; // Increase node separation
+  ranksep=0.8; // Increase rank separation
+edge [curvature=0.3];  node [fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9];
+
+  0 [label="valid", style=filled, fillcolor="darkolivegreen3", shape=diamond, margin="0.15,0.15"];
+  1 [label="invalid", style=filled, fillcolor="coral2", shape=diamond, margin="0.15,0.15"];
+
+  0 -> 0 [label="if (n \< 0)\\l?", id=17, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="if (n \< 0)\\l: then", id=17, arrowhead=vee, penwidth=1.2];
+  0 -> 0 [label="if (n \< 0)\\l: else", id=17, arrowhead=dot, penwidth=1.2];
+  0 -> 0 [label="if (n == 0)\\l?", id=19, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="if (n == 0)\\l: then", id=19, arrowhead=vee, penwidth=1.2];
+  0 -> 0 [label="if (n == 0)\\l: else", id=19, arrowhead=dot, penwidth=1.2];
+  0 -> 0 [label="if (n \< 128)\\l?", id=21, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="if (n \< 128)\\l: then", id=21, arrowhead=vee, penwidth=1.2];
+  0 -> 0 [label="if (n \< 128)\\l: else", id=21, arrowhead=dot, penwidth=1.2];
+  0 -> 1 [label="2: n ! OP", id=15, arrowhead=normal, penwidth=1.2];
+  1 -> 1 [label="2: n ! OP", id=15, arrowhead=normal, penwidth=1.2];
+}

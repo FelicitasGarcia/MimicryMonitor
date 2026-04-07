@@ -1,85 +1,33 @@
+/* Program Under Analysis (PUA) — new version with a regression.
+ *
+ * REGRESSION: the boundary in classify() was changed from 128 to 127
+ * (off-by-one).  For input n=127, OP returns 1 but PUA returns 2,
+ * so MM will emit verdict IV for that input.
+ *
+ * All other seeds (0, 1, -1, 255, 256, INT_MIN, INT_MAX) behave
+ * identically to the OP, so the fuzzer must mutate to discover 127.
+ *
+ * Usage: ./pua <integer>
+ */
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-
-// Function prototypes
-bool Cond0(int var0);
-bool Cond1(int var0);
-bool isEven(int var0);
-int AComputation(int var0);
-bool Cond(int var0);
-int HeavyRComputation(int var0, int var1);
-int ChangedRComputation(int var0, int var1);
-void logMessage(const char *message);
-void logValue(int value);
-bool PredR(int var0, int var1);
 
 int main(int argc, char *argv[]) {
-    // R Initial Value random idk
-    int R = 10;
-    // P parametro
-    int P = argv[1] ? atoi(argv[1]) : 0;
-    // A desp la definimos
-    int A = 0;
-
-
-    if (Cond0(P)) {
-        logMessage("Error0");
-    } else {
-        if (Cond1(P)) {
-            A = AComputation(P);
-            if (Cond(A)) {
-                R = HeavyRComputation(P, A);
-            } else {
-                R = ChangedRComputation(P, A);
-            }
-        } else {
-            logMessage("Error");
-        }
-
-        logValue(R);
+    if (argc < 2)
+    {
+        fprintf(stderr, "usage: %s <integer>\n", argv[0]);
+        return 1;
     }
-
-    return R;
-}
-
-// Function definitions
-bool Cond0(int var0) {
-    return var0 > 0;
-}
-
-bool Cond1(int var0) {
-    return isEven(var0);
-}
-
-bool isEven(int var0) {
-    return var0 % 2 == 0;
-}
-
-int AComputation(int var0) {
-    return var0 * 2;
-}
-
-bool Cond(int var0) {
-    return var0 < 0;
-}
-
-int HeavyRComputation(int var0, int var1) {
-    return var0 + var1;
-}
-
-int ChangedRComputation(int var0, int var1) {
-    return var0 - var1;
-}
-
-void logMessage(const char *message) {
-    // printf("LOG: %s\n", message);
-}
-
-void logValue(int value) {
-    // printf("LOG: %d\n", value);
-}
-
-bool PredR(int var0, int var1) {
-    return var0 > var1;
+    int n = atoi(argv[1]);
+    int result;
+    if (n < 0)
+        result = -1;
+    else if (n == 0)
+        result = 0;
+    else if (n < 127)
+        result = 1; /* BUG: should be 128 — off-by-one regression */
+    else
+        result = 2;
+    printf("%d\n", result);
+    return 0;
 }
