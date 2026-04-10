@@ -24,10 +24,9 @@ int main(int argc, char *argv[]) {
         result = -1;
     else if (n == 0)
         result = 0;
-    else if (n < 127)
-        result = 1; /* BUG: should be 128 — off-by-one regression */
+    else if (n < 128)
+        result = 1;
     else
         result = 2;
-    printf("%d\n", result);
-    return 0;
+    return 10 / result;
 }

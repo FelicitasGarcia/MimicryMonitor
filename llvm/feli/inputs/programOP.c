@@ -13,15 +13,14 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     int n = atoi(argv[1]);
-    int result;
+    int result = 10;
     if (n < 0)
-        result = -1; /* negative              */
+        result = -1;
     else if (n == 0)
-        result = 0; /* zero                  */
+        result = 1;
     else if (n < 128)
-        result = 1; /* small positive [1,127] */
+        result = 1;
     else
-        result = 2; /* large positive [128,∞) */
-    printf("%d\n", result);
-    return 0;
+        result = 2;
+    return 10 / result;
 }

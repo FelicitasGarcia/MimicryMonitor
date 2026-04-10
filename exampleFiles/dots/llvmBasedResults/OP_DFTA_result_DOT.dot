@@ -9,13 +9,15 @@ edge [curvature=0.3];  node [fontname="Helvetica", fontsize=10];
   0 [label="valid", style=filled, fillcolor="darkolivegreen3", shape=diamond, margin="0.15,0.15"];
   1 [label="invalid", style=filled, fillcolor="coral2", shape=diamond, margin="0.15,0.15"];
 
-  0 -> 0 [label="result = -1; /* negative      ...", id=18, arrowhead=normal, penwidth=1.2];
-  1 -> 0 [label="result = -1; /* negative      ...", id=18, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="int result = 10;\\l", id=16, arrowhead=normal, penwidth=1.2];
+  1 -> 0 [label="int result = 10;\\l", id=16, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="result = -1;\\l", id=18, arrowhead=normal, penwidth=1.2];
+  1 -> 0 [label="result = -1;\\l", id=18, arrowhead=normal, penwidth=1.2];
   0 -> 1 [label="2: result ! OP", id=20, arrowhead=normal, penwidth=1.2];
   1 -> 1 [label="2: result ! OP", id=20, arrowhead=normal, penwidth=1.2];
-  0 -> 0 [label="result = 1; /* small positive ...", id=22, arrowhead=normal, penwidth=1.2];
-  1 -> 0 [label="result = 1; /* small positive ...", id=22, arrowhead=normal, penwidth=1.2];
-  0 -> 0 [label="result = 2; /* large positive ...", id=24, arrowhead=normal, penwidth=1.2];
-  1 -> 0 [label="result = 2; /* large positive ...", id=24, arrowhead=normal, penwidth=1.2];
-  0 -> 0 [label="printf('%d\\n', result);\\l", id=25, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="result = 1;\\l", id=22, arrowhead=normal, penwidth=1.2];
+  1 -> 0 [label="result = 1;\\l", id=22, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="result = 2;\\l", id=24, arrowhead=normal, penwidth=1.2];
+  1 -> 0 [label="result = 2;\\l", id=24, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="return 10 / result;\\l", id=25, arrowhead=normal, penwidth=1.2];
 }

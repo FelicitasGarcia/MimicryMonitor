@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdint.h>
+#include <crt_externs.h>
 
 typedef struct {
     const char* transitionType;
@@ -225,6 +226,12 @@ void initAutomaton(AutomatonNode* nodes, int size, const char* initialNodeId) {
     fprintf(outputFile, "\n================================\n");
     fprintf(outputFile, "NEW EXECUTION - %s\n", timeStr ? timeStr : "Unknown time");
     fprintf(outputFile, "================================\n");
+    int argc = *_NSGetArgc();
+    char **argv = *_NSGetArgv();
+    fprintf(outputFile, "Input:");
+    for (int i = 0; i < argc; i++)
+        fprintf(outputFile, " %s", argv[i]);
+    fprintf(outputFile, "\n");
     fprintf(outputFile, "Automaton initialized with %d nodes. Initial state: %s\n", size, currentState);
     fprintf(outputFile, "Monitor policy: %s\n", monitorPolicy ? monitorPolicy : "none");
 
