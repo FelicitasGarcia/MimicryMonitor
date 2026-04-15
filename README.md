@@ -26,7 +26,7 @@ This approach leverages common code fragments between trusted and untrusted prog
 - Clang compiler
 - Java JDK 22 
   - (If using another version, be sure to change the `pom.xml` file, or run the Java code with your own configurations)
-- Maven or Gradle (for building the Java component)
+- Maven (for building the Java component)
 - GraphViz (`dot` command for rendering CFGs)
 - Bash shell environment
 - Ninja build system (recommended)

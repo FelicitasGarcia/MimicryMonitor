@@ -1,13 +1,13 @@
-; ModuleID = '/Users/felicitasgarcia/MM/mimicrymonitor/llvm/feli/inputs/programOP.c'
-source_filename = "/Users/felicitasgarcia/MM/mimicrymonitor/llvm/feli/inputs/programOP.c"
-target datalayout = "e-m:o-i64:64-i128:128-n32:64-S128"
-target triple = "arm64-apple-macosx15.0.0"
+; ModuleID = '/home/felicitas/DOC/MM/MimicryMonitor/llvm/feli/inputs/programOP.c'
+source_filename = "/home/felicitas/DOC/MM/MimicryMonitor/llvm/feli/inputs/programOP.c"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux-gnu"
 
-@__stderrp = external global ptr, align 8
+@stderr = external global ptr, align 8
 @.str = private unnamed_addr constant [21 x i8] c"usage: %s <integer>\0A\00", align 1, !dbg !0
 
-; Function Attrs: noinline nounwind ssp uwtable(sync)
-define i32 @main(i32 noundef %0, ptr noundef %1) #0 !dbg !18 {
+; Function Attrs: noinline nounwind uwtable
+define dso_local i32 @main(i32 noundef %0, ptr noundef %1) #0 !dbg !18 {
   %3 = alloca i32, align 4
   %4 = alloca i32, align 4
   %5 = alloca ptr, align 8
@@ -23,7 +23,7 @@ define i32 @main(i32 noundef %0, ptr noundef %1) #0 !dbg !18 {
   br i1 %9, label %10, label %16, !dbg !32
 
 10:                                               ; preds = %2
-  %11 = load ptr, ptr @__stderrp, align 8, !dbg !33
+  %11 = load ptr, ptr @stderr, align 8, !dbg !33
   %12 = load ptr, ptr %5, align 8, !dbg !35
   %13 = getelementptr inbounds ptr, ptr %12, i64 0, !dbg !35
   %14 = load ptr, ptr %13, align 8, !dbg !35
@@ -36,7 +36,7 @@ define i32 @main(i32 noundef %0, ptr noundef %1) #0 !dbg !18 {
   %17 = load ptr, ptr %5, align 8, !dbg !40
   %18 = getelementptr inbounds ptr, ptr %17, i64 1, !dbg !40
   %19 = load ptr, ptr %18, align 8, !dbg !40
-  %20 = call i32 @atoi(ptr noundef %19), !dbg !41
+  %20 = call i32 @atoi(ptr noundef %19) #4, !dbg !41
   store i32 %20, ptr %6, align 4, !dbg !39
   call void @llvm.dbg.declare(metadata ptr %7, metadata !42, metadata !DIExpression()), !dbg !43
   store i32 10, ptr %7, align 4, !dbg !43
@@ -92,35 +92,38 @@ declare void @llvm.dbg.declare(metadata, metadata, metadata) #1
 
 declare i32 @fprintf(ptr noundef, ptr noundef, ...) #2
 
-declare i32 @atoi(ptr noundef) #2
+; Function Attrs: nounwind willreturn memory(read)
+declare i32 @atoi(ptr noundef) #3
 
-attributes #0 = { noinline nounwind ssp uwtable(sync) "frame-pointer"="non-leaf" "no-trapping-math"="true" "probe-stack"="__chkstk_darwin" "stack-protector-buffer-size"="8" "target-cpu"="apple-m1" "target-features"="+aes,+crc,+dotprod,+fp-armv8,+fp16fml,+fullfp16,+lse,+neon,+ras,+rcpc,+rdm,+sha2,+sha3,+v8.1a,+v8.2a,+v8.3a,+v8.4a,+v8.5a,+v8a,+zcm,+zcz" }
+attributes #0 = { noinline nounwind uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 attributes #1 = { nocallback nofree nosync nounwind speculatable willreturn memory(none) }
-attributes #2 = { "frame-pointer"="non-leaf" "no-trapping-math"="true" "probe-stack"="__chkstk_darwin" "stack-protector-buffer-size"="8" "target-cpu"="apple-m1" "target-features"="+aes,+crc,+dotprod,+fp-armv8,+fp16fml,+fullfp16,+lse,+neon,+ras,+rcpc,+rdm,+sha2,+sha3,+v8.1a,+v8.2a,+v8.3a,+v8.4a,+v8.5a,+v8a,+zcm,+zcz" }
+attributes #2 = { "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #3 = { nounwind willreturn memory(read) "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #4 = { nounwind willreturn memory(read) }
 
-!llvm.module.flags = !{!7, !8, !9, !10, !11, !12, !13}
-!llvm.dbg.cu = !{!14}
+!llvm.dbg.cu = !{!7}
+!llvm.module.flags = !{!10, !11, !12, !13, !14, !15, !16}
 !llvm.ident = !{!17}
 
 !0 = !DIGlobalVariableExpression(var: !1, expr: !DIExpression())
 !1 = distinct !DIGlobalVariable(scope: null, file: !2, line: 12, type: !3, isLocal: true, isDefinition: true)
-!2 = !DIFile(filename: "inputs/programOP.c", directory: "/Users/felicitasgarcia/MM/mimicrymonitor/llvm/feli", checksumkind: CSK_MD5, checksum: "6e4dffb36584090d4fad5e2ef73f6abb")
+!2 = !DIFile(filename: "inputs/programOP.c", directory: "/home/felicitas/DOC/MM/MimicryMonitor/llvm/feli", checksumkind: CSK_MD5, checksum: "6e4dffb36584090d4fad5e2ef73f6abb")
 !3 = !DICompositeType(tag: DW_TAG_array_type, baseType: !4, size: 168, elements: !5)
 !4 = !DIBasicType(name: "char", size: 8, encoding: DW_ATE_signed_char)
 !5 = !{!6}
 !6 = !DISubrange(count: 21)
-!7 = !{i32 2, !"SDK Version", [2 x i32] [i32 15, i32 2]}
-!8 = !{i32 7, !"Dwarf Version", i32 5}
-!9 = !{i32 2, !"Debug Info Version", i32 3}
-!10 = !{i32 1, !"wchar_size", i32 4}
-!11 = !{i32 8, !"PIC Level", i32 2}
-!12 = !{i32 7, !"uwtable", i32 1}
-!13 = !{i32 7, !"frame-pointer", i32 1}
-!14 = distinct !DICompileUnit(language: DW_LANG_C11, file: !15, producer: "Apple clang version 16.0.0 (clang-1600.0.26.6)", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, globals: !16, splitDebugInlining: false, nameTableKind: Apple, sysroot: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk", sdk: "MacOSX.sdk")
-!15 = !DIFile(filename: "/Users/felicitasgarcia/MM/mimicrymonitor/llvm/feli/inputs/programOP.c", directory: "/Users/felicitasgarcia/MM/mimicrymonitor/llvm/feli/scripts", checksumkind: CSK_MD5, checksum: "6e4dffb36584090d4fad5e2ef73f6abb")
-!16 = !{!0}
-!17 = !{!"Apple clang version 16.0.0 (clang-1600.0.26.6)"}
-!18 = distinct !DISubprogram(name: "main", scope: !2, file: !2, line: 9, type: !19, scopeLine: 9, flags: DIFlagPrototyped, spFlags: DISPFlagDefinition, unit: !14, retainedNodes: !24)
+!7 = distinct !DICompileUnit(language: DW_LANG_C11, file: !8, producer: "Ubuntu clang version 18.1.3 (1ubuntu1)", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, globals: !9, splitDebugInlining: false, nameTableKind: None)
+!8 = !DIFile(filename: "/home/felicitas/DOC/MM/MimicryMonitor/llvm/feli/inputs/programOP.c", directory: "/home/felicitas/DOC/MM/MimicryMonitor/llvm/feli/scripts", checksumkind: CSK_MD5, checksum: "6e4dffb36584090d4fad5e2ef73f6abb")
+!9 = !{!0}
+!10 = !{i32 7, !"Dwarf Version", i32 5}
+!11 = !{i32 2, !"Debug Info Version", i32 3}
+!12 = !{i32 1, !"wchar_size", i32 4}
+!13 = !{i32 8, !"PIC Level", i32 2}
+!14 = !{i32 7, !"PIE Level", i32 2}
+!15 = !{i32 7, !"uwtable", i32 2}
+!16 = !{i32 7, !"frame-pointer", i32 2}
+!17 = !{!"Ubuntu clang version 18.1.3 (1ubuntu1)"}
+!18 = distinct !DISubprogram(name: "main", scope: !2, file: !2, line: 9, type: !19, scopeLine: 9, flags: DIFlagPrototyped, spFlags: DISPFlagDefinition, unit: !7, retainedNodes: !24)
 !19 = !DISubroutineType(types: !20)
 !20 = !{!21, !21, !22}
 !21 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)

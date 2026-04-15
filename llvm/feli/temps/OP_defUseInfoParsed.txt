@@ -4,7 +4,7 @@
 (25, result, Read) 
 (10, argc, Read) 
 (12, .str, Read) 
-(12, __stderrp, Read) 
+(12, stderr, Read) 
 (12, argv, Read) 
 (15, argv, Read) 
 (16, result, Write) 

@@ -1,6 +1,6 @@
 (16, argc, Read) 
 (18, .str, Read) 
-(18, __stderrp, Read) 
+(18, stderr, Read) 
 (18, argv, Read) 
 (21, argv, Read) 
 (23, n, Read) 

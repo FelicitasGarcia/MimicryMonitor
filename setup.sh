@@ -43,6 +43,10 @@ LLVM_DIR="$MIMICRY_DIR/llvm"
 LLVM_PROJECT_DIR="$LLVM_DIR/llvm-project"
 BUILD_DIR="$LLVM_PROJECT_DIR/build"
 CUSTOM_PASSES_DIR="$LLVM_DIR/feli/passes"
+LLVM_SOURCE_DIR=""
+LLVM_VERSION_TAG="llvmorg-19.1.7"
+CC_COMPILER="${CC:-clang}"
+CXX_COMPILER="${CXX:-clang++}"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do
@@ -80,14 +84,38 @@ echo -e "${YELLOW}BUILD_DIR: ${RESET}$BUILD_DIR"
 echo -e "${CYAN}=================================================${RESET}"
 
 # Step 1: Clone LLVM if not already present
+if [ -d "$LLVM_PROJECT_DIR" ] && [ ! -f "$LLVM_PROJECT_DIR/llvm/CMakeLists.txt" ]; then
+  BACKUP_DIR="${LLVM_PROJECT_DIR}_backup_$(date +%Y%m%d_%H%M%S)"
+  print_info "Existing directory at $LLVM_PROJECT_DIR does not contain full LLVM sources."
+  print_info "Moving it to: $BACKUP_DIR"
+  mv "$LLVM_PROJECT_DIR" "$BACKUP_DIR"
+fi
+
 if [ ! -d "$LLVM_PROJECT_DIR" ]; then
-    echo -e "${BLUE}STEP 0: CLONING LLVM PROJECT${RESET}"
-    print_info "This may take a while..."
-    git clone --depth 1 https://github.com/llvm/llvm-project.git "$LLVM_PROJECT_DIR"
-    cd "$LLVM_PROJECT_DIR"
-    # Use a stable version of LLVM (adjust as needed)
+  echo -e "${BLUE}STEP 0: CLONING LLVM PROJECT${RESET}"
+  print_info "This may take a while..."
+  git clone --branch "$LLVM_VERSION_TAG" --depth 1 https://github.com/llvm/llvm-project.git "$LLVM_PROJECT_DIR"
 else
-    print_info "Using existing LLVM project at $LLVM_PROJECT_DIR"
+  print_info "Using existing LLVM project at $LLVM_PROJECT_DIR"
+fi
+
+if [ -d "$LLVM_PROJECT_DIR/.git" ]; then
+  print_info "Checking out LLVM version $LLVM_VERSION_TAG"
+  git -C "$LLVM_PROJECT_DIR" fetch --depth 1 origin "tag/$LLVM_VERSION_TAG:$LLVM_VERSION_TAG" >/dev/null 2>&1 || true
+  git -C "$LLVM_PROJECT_DIR" checkout -q "$LLVM_VERSION_TAG"
+fi
+
+LLVM_SOURCE_DIR="$LLVM_PROJECT_DIR/llvm"
+if [ ! -f "$LLVM_SOURCE_DIR/CMakeLists.txt" ]; then
+  print_error "LLVM source directory is invalid: $LLVM_SOURCE_DIR (missing CMakeLists.txt)"
+fi
+
+if ! command -v "$CC_COMPILER" >/dev/null 2>&1; then
+  print_error "C compiler not found: $CC_COMPILER"
+fi
+
+if ! command -v "$CXX_COMPILER" >/dev/null 2>&1; then
+  print_error "C++ compiler not found: $CXX_COMPILER"
 fi
 
 # Step 2: Copy custom pass files to LLVM
@@ -126,8 +154,14 @@ cd "$BUILD_DIR"
 
 # ==== CONFIGURE CMAKE ====
 echo -e "${BLUE}STEP 3: CONFIGURING WITH CMAKE + NINJA${RESET}"
-cmake -S "$LLVM_PROJECT_DIR/llvm" -B "$BUILD_DIR" -G Ninja \
+cmake -S "$LLVM_SOURCE_DIR" -B "$BUILD_DIR" -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_C_COMPILER="$CC_COMPILER" \
+  -DCMAKE_CXX_COMPILER="$CXX_COMPILER" \
+  -DLLVM_INCLUDE_TESTS=OFF
+
+# Build tablegen and generated headers first to avoid first-build ordering issues.
+cmake --build "$BUILD_DIR" --target llvm-tblgen include/llvm/IR/intrinsics_gen include/llvm/IR/Attributes.inc
 
 cmake --build "$BUILD_DIR"
 
@@ -139,6 +173,21 @@ chmod +x "$MIMICRY_DIR/run-mimicry.sh"
 
 echo -e "${BLUE}STEP 5: SETTING UP JAVA PROJECT${RESET}"
 cd "$MIMICRY_DIR"
+
+if ! command -v java >/dev/null 2>&1; then
+  print_error "Java not found. Install JDK 22 (or adjust pom.xml to your installed Java version)."
+fi
+
+JAVA_VERSION_RAW=$(java -version 2>&1 | head -n 1)
+JAVA_MAJOR=$(echo "$JAVA_VERSION_RAW" | sed -E 's/.*version "([0-9]+).*/\1/')
+if [ "$JAVA_MAJOR" != "22" ]; then
+  print_error "Java 22 is required. Detected: $JAVA_VERSION_RAW"
+fi
+
+if ! command -v mvn >/dev/null 2>&1; then
+  print_error "Maven not found. Install Maven and re-run setup."
+fi
+
 mvn clean package
 
 echo -e "${YELLOW}SETUP COMPLETE"

@@ -2,8 +2,8 @@ Processing instruction:   %8 = load i32, ptr %4, align 4, !dbg !29
 entry@16 | Variable: argc | Action: R
 Processing instruction:   %9 = icmp slt i32 %8, 2, !dbg !31
 Processing instruction:   br i1 %9, label %10, label %16, !dbg !32
-Processing instruction:   %11 = load ptr, ptr @__stderrp, align 8, !dbg !33
-entry@18 | Variable: __stderrp | Action: R
+Processing instruction:   %11 = load ptr, ptr @stderr, align 8, !dbg !33
+entry@18 | Variable: stderr | Action: R
 Processing instruction:   %12 = load ptr, ptr %5, align 8, !dbg !35
 entry@18 | Variable: argv | Action: R
 Processing instruction:   %13 = getelementptr inbounds ptr, ptr %12, i64 0, !dbg !35
@@ -17,7 +17,7 @@ Processing instruction:   %17 = load ptr, ptr %5, align 8, !dbg !40
 entry@21 | Variable: argv | Action: R
 Processing instruction:   %18 = getelementptr inbounds ptr, ptr %17, i64 1, !dbg !40
 Processing instruction:   %19 = load ptr, ptr %18, align 8, !dbg !40
-Processing instruction:   %20 = call i32 @atoi(ptr noundef %19), !dbg !41
+Processing instruction:   %20 = call i32 @atoi(ptr noundef %19) #4, !dbg !41
 Processing instruction:   store i32 %20, ptr %6, align 4, !dbg !39
 entry@21 | Variable: n | Action: W
 Processing instruction:   %21 = load i32, ptr %6, align 4, !dbg !44
