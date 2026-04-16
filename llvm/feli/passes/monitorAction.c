@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdint.h>
+#ifdef __APPLE__
 #include <crt_externs.h>
+#endif
 
 typedef struct
 {
@@ -228,7 +230,7 @@ void initAutomaton(AutomatonNode *nodes, int size, const char *initialNodeId)
         fclose(f);
     }
 
-    outputFile = fopen("/Users/felicitasgarcia/monitor_output.txt", "a");
+    outputFile = fopen("/tmp/monitor_output.txt", "a");
     if (outputFile == NULL)
     {
         fprintf(stderr, "[ERROR] Could not open output file monitor_output.txt\n");
@@ -252,11 +254,25 @@ void initAutomaton(AutomatonNode *nodes, int size, const char *initialNodeId)
     fprintf(outputFile, "\n================================\n");
     fprintf(outputFile, "NEW EXECUTION - %s\n", timeStr ? timeStr : "Unknown time");
     fprintf(outputFile, "================================\n");
+    fprintf(outputFile, "Input:");
+#ifdef __APPLE__
     int argc = *_NSGetArgc();
     char **argv = *_NSGetArgv();
-    fprintf(outputFile, "Input:");
     for (int i = 0; i < argc; i++)
         fprintf(outputFile, " %s", argv[i]);
+#else
+    FILE *cmdline_f = fopen("/proc/self/cmdline", "r");
+    if (cmdline_f) {
+        char buf[4096];
+        int len = (int)fread(buf, 1, sizeof(buf) - 1, cmdline_f);
+        fclose(cmdline_f);
+        buf[len] = '\0';
+        for (int i = 0; i < len; ) {
+            fprintf(outputFile, " %s", buf + i);
+            i += (int)strlen(buf + i) + 1;
+        }
+    }
+#endif
     fprintf(outputFile, "\n");
     fprintf(outputFile, "Automaton initialized with %d nodes. Initial state: %s\n", size, currentState);
     fprintf(outputFile, "Monitor policy: %s\n", monitorPolicy ? monitorPolicy : "none");
