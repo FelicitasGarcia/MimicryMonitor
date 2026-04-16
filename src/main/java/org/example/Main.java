@@ -36,9 +36,6 @@ public class Main {
 
         // PUA Processing
         DOTParser llvmPUAParsed = new DOTParser(dotFilePathPUA, llvmAnalysisPathPUA, "PUA");
-        DOTExporter dotExporter = new DOTExporter("prueba", llvmPUAParsed.parsedNodes, llvmPUAParsed.parsedEdges,
-                "llvm/PRUEBA");
-        dotExporter.render();
         LLVMProcessing transformedPUA = new LLVMProcessing(llvmPUAParsed, llvmIRPUA, programPathPUAC, "PUA");
 
         // OP Processing
