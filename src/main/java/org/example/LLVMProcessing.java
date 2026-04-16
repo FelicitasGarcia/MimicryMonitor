@@ -19,7 +19,6 @@ public class LLVMProcessing extends Automata {
 
     public LLVMProcessing(DOTParser llvmCFG, String dbgFilePath, String cProgramFilePath, String type)
             throws IOException, InterruptedException {
-        generateRender("pruebaPreProcesamiento", "llvm/" + type + "_preProcesamiento");
         this.llvmCFG = llvmCFG;
         this.dbgFilePath = dbgFilePath;
         // Map all og locations to instructions

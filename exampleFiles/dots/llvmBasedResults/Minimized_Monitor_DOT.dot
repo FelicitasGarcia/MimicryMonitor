@@ -6,6 +6,22 @@ digraph Minimized_Monitor {
 edge [curvature=0.3];  node [fontname="Helvetica", fontsize=10];
   edge [fontname="Helvetica", fontsize=9];
 
+  -2 [label="V", style=filled, fillcolor="darkolivegreen3", shape=diamond, margin="0.15,0.15"];
   -1 [label="IV", style=filled, fillcolor="lightcoral", shape=diamond, margin="0.15,0.15"];
+  1 [label="NV", style=filled, fillcolor="lightgoldenrod2", shape=diamond, margin="0.15,0.15"];
+  2 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  3 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  5 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  6 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  7 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
 
+  1 -> 2 [label="if (argc \< 2)\\l?", id=0, arrowhead=normal, penwidth=1.2];
+  2 -> 3 [label="if (argc \< 2)\\l: else", id=1, arrowhead=dot, penwidth=1.2];
+  2 -> -2 [label="if (argc \< 2)\\l: then", id=2, arrowhead=vee, penwidth=1.2];
+  3 -> 5 [label="if (n \< 0)\\l?", id=3, arrowhead=normal, penwidth=1.2];
+  5 -> 6 [label="if (n \< 0)\\l: else", id=4, arrowhead=dot, penwidth=1.2];
+  5 -> -2 [label="if (n \< 0)\\l: then", id=5, arrowhead=vee, penwidth=1.2];
+  6 -> 7 [label="if (n == 0)\\l?", id=6, arrowhead=normal, penwidth=1.2];
+  7 -> -2 [label="if (n == 0)\\l: else", id=7, arrowhead=dot, penwidth=1.2];
+  7 -> -1 [label="if (n == 0)\\l: then", id=8, arrowhead=vee, penwidth=1.2];
 }

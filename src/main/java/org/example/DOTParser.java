@@ -40,7 +40,9 @@ public class DOTParser {
                 "^(Node0x([A-Za-z0-9]+)" + // Source Node Id
                         "(:\\s*s(\\d+)){0,1}" + // :s0 or :s1 if exists
                         "\\s*->\\s*" + // ->
-                        "(Node0x([A-Za-z0-9]+)))\\s*;"); // Target Node Id
+                        "(Node0x([A-Za-z0-9]+)))" + // Target Node Id
+                        "(\\s*\\[[^\\]]*\\])?" + // Optional bracket attributes e.g. tooltip
+                        "\\s*;");
 
         // **First pass: Parse nodes**
         int nodeNumber = 0;

@@ -6,6 +6,28 @@ digraph Verdicts_Compacted {
 edge [curvature=0.3];  node [fontname="Helvetica", fontsize=10];
   edge [fontname="Helvetica", fontsize=9];
 
+  67 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  -2 [label="V", style=filled, fillcolor="darkolivegreen3", shape=diamond, margin="0.15,0.15"];
   -1 [label="IV", style=filled, fillcolor="lightcoral", shape=diamond, margin="0.15,0.15"];
+  229 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  0 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  31 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  14 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  157 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  299 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  256 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  99 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
 
+  31 -> 67 [label="if (argc \< 2)\\l: else", id=16, arrowhead=dot, penwidth=1.2];
+  99 -> 157 [label="int result = 10;\\l", id=16, arrowhead=normal, penwidth=1.2];
+  0 -> 14 [label="Entry", id=16, arrowhead=normal, penwidth=1.2];
+  14 -> 31 [label="if (argc \< 2)\\l?", id=16, arrowhead=normal, penwidth=1.2];
+  31 -> -2 [label="if (argc \< 2)\\l: then", id=16, arrowhead=vee, penwidth=1.2];
+  67 -> 99 [label="int n = atoi(argv[1]);\\l", id=21, arrowhead=normal, penwidth=1.2];
+  157 -> 229 [label="if (n \< 0)\\l?", id=23, arrowhead=normal, penwidth=1.2];
+  229 -> 256 [label="if (n \< 0)\\l: else", id=23, arrowhead=dot, penwidth=1.2];
+  229 -> -2 [label="if (n \< 0)\\l: then", id=23, arrowhead=vee, penwidth=1.2];
+  256 -> 299 [label="if (n == 0)\\l?", id=25, arrowhead=normal, penwidth=1.2];
+  299 -> -2 [label="if (n == 0)\\l: else", id=25, arrowhead=dot, penwidth=1.2];
+  299 -> -1 [label="if (n == 0)\\l: then", id=25, arrowhead=vee, penwidth=1.2];
 }

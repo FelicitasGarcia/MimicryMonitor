@@ -9,22 +9,13 @@ edge [curvature=0.3];  node [fontname="Helvetica", fontsize=10];
   0 [label="valid", style=filled, fillcolor="darkolivegreen3", shape=diamond, margin="0.15,0.15"];
   1 [label="invalid", style=filled, fillcolor="coral2", shape=diamond, margin="0.15,0.15"];
 
-  0 -> 0 [label="Entry", id=24, arrowhead=normal, penwidth=1.2];
-  1 -> 0 [label="Entry", id=24, arrowhead=normal, penwidth=1.2];
   0 -> 0 [label="result = -1;\\l", id=24, arrowhead=normal, penwidth=1.2];
   1 -> 0 [label="result = -1;\\l", id=24, arrowhead=normal, penwidth=1.2];
-  0 -> 1 [label="Entry", id=26, arrowhead=normal, penwidth=1.2];
-  1 -> 1 [label="Entry", id=26, arrowhead=normal, penwidth=1.2];
   0 -> 1 [label="2: result ! PUA", id=26, arrowhead=normal, penwidth=1.2];
   1 -> 1 [label="2: result ! PUA", id=26, arrowhead=normal, penwidth=1.2];
-  0 -> 0 [label="Entry", id=28, arrowhead=normal, penwidth=1.2];
-  1 -> 0 [label="Entry", id=28, arrowhead=normal, penwidth=1.2];
   0 -> 0 [label="result = 1;\\l", id=28, arrowhead=normal, penwidth=1.2];
   1 -> 0 [label="result = 1;\\l", id=28, arrowhead=normal, penwidth=1.2];
-  0 -> 0 [label="Entry", id=30, arrowhead=normal, penwidth=1.2];
-  1 -> 0 [label="Entry", id=30, arrowhead=normal, penwidth=1.2];
   0 -> 0 [label="result = 2;\\l", id=30, arrowhead=normal, penwidth=1.2];
   1 -> 0 [label="result = 2;\\l", id=30, arrowhead=normal, penwidth=1.2];
-  0 -> 0 [label="Entry", id=31, arrowhead=normal, penwidth=1.2];
   0 -> 0 [label="return 10 / result;\\l", id=31, arrowhead=normal, penwidth=1.2];
 }

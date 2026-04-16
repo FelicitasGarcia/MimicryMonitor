@@ -9,10 +9,56 @@ target triple = "x86_64-pc-linux-gnu"
 @stderr = external global ptr, align 8
 @.str = private unnamed_addr constant [21 x i8] c"usage: %s <integer>\0A\00", align 1, !dbg !0
 @id.str.1 = private constant [2 x i8] c"1\00"
-@verdict.str.1 = private constant [3 x i8] c"IV\00"
+@verdict.str.1 = private constant [3 x i8] c"NV\00"
 @condition.str.1 = private constant [1 x i8] zeroinitializer
-@transitions.array.1 = private constant [0 x %AutomatonTransition] zeroinitializer
-@automatonArray = internal constant [1 x %AutomatonNode] [%AutomatonNode { ptr @id.str.1, ptr @verdict.str.1, ptr @condition.str.1, i1 true, ptr @transitions.array.1, i32 0 }]
+@trans.type.1.cond = private constant [5 x i8] c"cond\00"
+@trans.target.1.cond = private constant [2 x i8] c"2\00"
+@transitions.array.1 = private constant [1 x %AutomatonTransition] [%AutomatonTransition { ptr @trans.type.1.cond, ptr @trans.target.1.cond }]
+@id.str.2 = private constant [2 x i8] c"2\00"
+@verdict.str.2 = private constant [3 x i8] c"NV\00"
+@condition.str.2 = private constant [1 x i8] zeroinitializer
+@trans.type.2.else = private constant [5 x i8] c"else\00"
+@trans.target.2.else = private constant [2 x i8] c"3\00"
+@trans.type.2.then = private constant [5 x i8] c"then\00"
+@trans.target.2.then = private constant [2 x i8] c"8\00"
+@transitions.array.2 = private constant [2 x %AutomatonTransition] [%AutomatonTransition { ptr @trans.type.2.else, ptr @trans.target.2.else }, %AutomatonTransition { ptr @trans.type.2.then, ptr @trans.target.2.then }]
+@id.str.3 = private constant [2 x i8] c"3\00"
+@verdict.str.3 = private constant [3 x i8] c"NV\00"
+@condition.str.3 = private constant [1 x i8] zeroinitializer
+@trans.type.3.cond = private constant [5 x i8] c"cond\00"
+@trans.target.3.cond = private constant [2 x i8] c"5\00"
+@transitions.array.3 = private constant [1 x %AutomatonTransition] [%AutomatonTransition { ptr @trans.type.3.cond, ptr @trans.target.3.cond }]
+@id.str.5 = private constant [2 x i8] c"5\00"
+@verdict.str.5 = private constant [3 x i8] c"NV\00"
+@condition.str.5 = private constant [1 x i8] zeroinitializer
+@trans.type.5.else = private constant [5 x i8] c"else\00"
+@trans.target.5.else = private constant [2 x i8] c"6\00"
+@trans.type.5.then = private constant [5 x i8] c"then\00"
+@trans.target.5.then = private constant [2 x i8] c"8\00"
+@transitions.array.5 = private constant [2 x %AutomatonTransition] [%AutomatonTransition { ptr @trans.type.5.else, ptr @trans.target.5.else }, %AutomatonTransition { ptr @trans.type.5.then, ptr @trans.target.5.then }]
+@id.str.6 = private constant [2 x i8] c"6\00"
+@verdict.str.6 = private constant [3 x i8] c"NV\00"
+@condition.str.6 = private constant [1 x i8] zeroinitializer
+@trans.type.6.cond = private constant [5 x i8] c"cond\00"
+@trans.target.6.cond = private constant [2 x i8] c"7\00"
+@transitions.array.6 = private constant [1 x %AutomatonTransition] [%AutomatonTransition { ptr @trans.type.6.cond, ptr @trans.target.6.cond }]
+@id.str.7 = private constant [2 x i8] c"7\00"
+@verdict.str.7 = private constant [3 x i8] c"NV\00"
+@condition.str.7 = private constant [1 x i8] zeroinitializer
+@trans.type.7.else = private constant [5 x i8] c"else\00"
+@trans.target.7.else = private constant [2 x i8] c"8\00"
+@trans.type.7.then = private constant [5 x i8] c"then\00"
+@trans.target.7.then = private constant [2 x i8] c"9\00"
+@transitions.array.7 = private constant [2 x %AutomatonTransition] [%AutomatonTransition { ptr @trans.type.7.else, ptr @trans.target.7.else }, %AutomatonTransition { ptr @trans.type.7.then, ptr @trans.target.7.then }]
+@id.str.8 = private constant [2 x i8] c"8\00"
+@verdict.str.8 = private constant [2 x i8] c"V\00"
+@condition.str.8 = private constant [1 x i8] zeroinitializer
+@transitions.array.8 = private constant [0 x %AutomatonTransition] zeroinitializer
+@id.str.9 = private constant [2 x i8] c"9\00"
+@verdict.str.9 = private constant [3 x i8] c"IV\00"
+@condition.str.9 = private constant [1 x i8] zeroinitializer
+@transitions.array.9 = private constant [0 x %AutomatonTransition] zeroinitializer
+@automatonArray = internal constant [8 x %AutomatonNode] [%AutomatonNode { ptr @id.str.1, ptr @verdict.str.1, ptr @condition.str.1, i1 false, ptr @transitions.array.1, i32 1 }, %AutomatonNode { ptr @id.str.2, ptr @verdict.str.2, ptr @condition.str.2, i1 false, ptr @transitions.array.2, i32 2 }, %AutomatonNode { ptr @id.str.3, ptr @verdict.str.3, ptr @condition.str.3, i1 false, ptr @transitions.array.3, i32 1 }, %AutomatonNode { ptr @id.str.5, ptr @verdict.str.5, ptr @condition.str.5, i1 false, ptr @transitions.array.5, i32 2 }, %AutomatonNode { ptr @id.str.6, ptr @verdict.str.6, ptr @condition.str.6, i1 false, ptr @transitions.array.6, i32 1 }, %AutomatonNode { ptr @id.str.7, ptr @verdict.str.7, ptr @condition.str.7, i1 false, ptr @transitions.array.7, i32 2 }, %AutomatonNode { ptr @id.str.8, ptr @verdict.str.8, ptr @condition.str.8, i1 true, ptr @transitions.array.8, i32 0 }, %AutomatonNode { ptr @id.str.9, ptr @verdict.str.9, ptr @condition.str.9, i1 true, ptr @transitions.array.9, i32 0 }]
 @0 = private unnamed_addr constant [2 x i8] c"n\00", align 1
 @1 = private unnamed_addr constant [2 x i8] c"1\00", align 1
 @llvm.global_ctors = appending global [1 x { i32, ptr, ptr }] [{ i32, ptr, ptr } { i32 0, ptr @automaton.init, ptr null }]
@@ -155,7 +201,7 @@ declare void @setMonitorPolicy(ptr)
 define internal void @automaton.init() {
 entry:
   call void @setMonitorPolicy(ptr @0)
-  call void @initAutomaton(ptr @automatonArray, i32 1, ptr @1)
+  call void @initAutomaton(ptr @automatonArray, i32 8, ptr @1)
   ret void
 }
 
