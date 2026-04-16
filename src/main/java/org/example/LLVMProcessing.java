@@ -17,7 +17,9 @@ public class LLVMProcessing extends Automata {
     private Map<String, Map<String, Node>> nodeMap = new HashMap<>(); // BasicBlock Label -> Original Instructions
     private Map<String, Node> locationsNode = new HashMap<>();
 
-    public LLVMProcessing(DOTParser llvmCFG, String dbgFilePath, String cProgramFilePath, String type) throws IOException, InterruptedException {
+    public LLVMProcessing(DOTParser llvmCFG, String dbgFilePath, String cProgramFilePath, String type)
+            throws IOException, InterruptedException {
+        generateRender("pruebaPreProcesamiento", "llvm/" + type + "_preProcesamiento");
         this.llvmCFG = llvmCFG;
         this.dbgFilePath = dbgFilePath;
         // Map all og locations to instructions
@@ -35,7 +37,6 @@ public class LLVMProcessing extends Automata {
 
         castDualVersion();
     }
-
 
     // TODO: Refactorear esta cosa horrible
     // Transform CFG to Dual Version
@@ -58,7 +59,7 @@ public class LLVMProcessing extends Automata {
 
         // Build node to node mapping first
         for (Node node : nodes) {
-            Node dualNode = new Node(nodeId++, "Node" + (nodeId-1));
+            Node dualNode = new Node(nodeId++, "Node" + (nodeId - 1));
             nodeToNode.put(node, dualNode);
             newNodes.add(dualNode);
         }
@@ -76,7 +77,7 @@ public class LLVMProcessing extends Automata {
         for (Node node : nodes) {
             if (outgoingEdges.getOrDefault(node, Collections.emptyList()).size() > 1) {
                 // This is a branching node, create an intermediate node
-                Node intermediateNode = new Node(nodeId++, "Node" + (nodeId-1));
+                Node intermediateNode = new Node(nodeId++, "Node" + (nodeId - 1));
                 branchingNodeToIntermediate.put(node, intermediateNode);
                 newNodes.add(intermediateNode);
             }
@@ -120,7 +121,8 @@ public class LLVMProcessing extends Automata {
             if (branchingNodeToIntermediate.containsKey(sourceNode)) {
                 Node intermediateNode = branchingNodeToIntermediate.get(sourceNode);
 
-                // If this is the first edge we're processing for this node, connect dual -> intermediate
+                // If this is the first edge we're processing for this node, connect dual ->
+                // intermediate
                 if (!newEdges.stream().anyMatch(e -> e.getEdgeSource().equals(dualSourceNode) &&
                         e.getEdgeTarget().equals(intermediateNode))) {
                     newEdges.add(new Edge(dualSourceNode, intermediateNode, sourceNode.getContent() + "?", location));
@@ -154,7 +156,8 @@ public class LLVMProcessing extends Automata {
         nodes = newNodes;
     }
 
-    private void addDefUseInfo(Map<Integer, Set<String>> readsPerLocation, Map<Integer, Set<String>> writesPerLocation) throws FileNotFoundException {
+    private void addDefUseInfo(Map<Integer, Set<String>> readsPerLocation, Map<Integer, Set<String>> writesPerLocation)
+            throws FileNotFoundException {
         for (Node node : nodes) {
             // Get location
             String location = node.llvmId;
@@ -183,17 +186,17 @@ public class LLVMProcessing extends Automata {
 
             String[] statements = content.split("\n");
 
-        int counter = 0;
-        for (String statement : statements) {
+            int counter = 0;
+            for (String statement : statements) {
                 counter++;
-                statement = statement.replace("{", "" );
-                statement = statement.replace("}", "" );
-                statement = statement.replace("else", "" );
-                statement = statement.replace("\"", "'" );
+                statement = statement.replace("{", "");
+                statement = statement.replace("}", "");
+                statement = statement.replace("else", "");
+                statement = statement.replace("\"", "'");
                 statement = statement.trim();
 
                 locationsMap.put(counter, statement);
-        }
+            }
         } catch (IOException e) {
             System.err.println("Error reading C program file: " + e.getMessage());
         }
@@ -221,7 +224,8 @@ public class LLVMProcessing extends Automata {
         }
     }
 
-    // Split Basic Blocks into multiple nodes, wher each corresponds to an original source code lines
+    // Split Basic Blocks into multiple nodes, wher each corresponds to an original
+    // source code lines
     private void splitBasicBlocks() throws IOException {
         int nodeId = 0;
         int edgeId = 0;
@@ -235,11 +239,11 @@ public class LLVMProcessing extends Automata {
                 // If it is an instruction with a location in og source code
                 // Avoid processing branches and unreachable code
                 if (location != null
-                && !instruction.trim().startsWith("br" )
-                && !instruction.trim().startsWith("unreachable")) {
+                        && !instruction.trim().startsWith("br")
+                        && !instruction.trim().startsWith("unreachable")) {
                     // and a new source code Instruction
                     // Same original lines are obv in the same bb and adjacent NOT SO OBVIOUS
-                    if (!location.equals(prevLocation)/* && !visitedLocations.contains(locationInt)*/) {
+                    if (!location.equals(prevLocation)/* && !visitedLocations.contains(locationInt) */) {
                         Node node = new Node(nodeId++, location, block.basicBlockLabel + "@" + location, instruction);
                         nodeMap.computeIfAbsent(block.basicBlockLabel,
                                 k -> new HashMap<>()).put(location, node);
@@ -259,7 +263,8 @@ public class LLVMProcessing extends Automata {
                 }
             }
 
-            // Some blocks dont have real code insts, so we just make a dummy one for clarity
+            // Some blocks dont have real code insts, so we just make a dummy one for
+            // clarity
             if (!nodeMap.containsKey(block.basicBlockLabel)) {
                 block.basicBlockLabel = "";
             }
@@ -272,8 +277,8 @@ public class LLVMProcessing extends Automata {
             List<String> nextNonEmptyBlocks = getNextNonEmptyBlock(edge.getEdgeTarget());
 
             // From: Last instruction from source block
-            for (String previousLabel: previousNonEmptyBlocks) {
-                for (String nextLabel: nextNonEmptyBlocks) {
+            for (String previousLabel : previousNonEmptyBlocks) {
+                for (String nextLabel : nextNonEmptyBlocks) {
                     // From: Last instruction from source block
                     Node source = getLastLoc(nodeMap.get(previousLabel));
                     // To: First instruction from target block
@@ -300,7 +305,7 @@ public class LLVMProcessing extends Automata {
 
     private boolean shouldAddEdge(Node source, Node target, String label) {
         if (source.getChildren().contains(target)) {
-            for (Edge edge: edges) {
+            for (Edge edge : edges) {
                 if (edge.getEdgeSource().equals(source) &&
                         edge.getEdgeTarget().equals(target) &&
                         (edge.getEdgeLabel().equals(label) || label.isEmpty())) {
@@ -311,7 +316,8 @@ public class LLVMProcessing extends Automata {
         return true;
     }
 
-    // Get all next non-empty blocks at the closest distance from the given edge target node
+    // Get all next non-empty blocks at the closest distance from the given edge
+    // target node
     private List<String> getNextNonEmptyBlock(Node edgeTarget) {
         Queue<Node> nodesToVisit = new ArrayDeque<Node>();
         nodesToVisit.add(edgeTarget);
@@ -324,7 +330,8 @@ public class LLVMProcessing extends Automata {
 
             for (int i = 0; i < levelSize; i++) {
                 Node currentNode = nodesToVisit.poll();
-                if (currentNode == null) continue;
+                if (currentNode == null)
+                    continue;
 
                 String blockLabel = currentNode.basicBlockLabel;
 
@@ -356,7 +363,8 @@ public class LLVMProcessing extends Automata {
         return results;
     }
 
-    // Get all previous non-empty blocks at the closest distance from the given edge source node
+    // Get all previous non-empty blocks at the closest distance from the given edge
+    // source node
     private List<String> getPreviousNonEmptyBlock(Node edgeSource) {
         Queue<Node> nodesToVisit = new ArrayDeque<Node>();
         nodesToVisit.add(edgeSource);
@@ -369,7 +377,8 @@ public class LLVMProcessing extends Automata {
 
             for (int i = 0; i < levelSize; i++) {
                 Node currentNode = nodesToVisit.poll();
-                if (currentNode == null) continue;
+                if (currentNode == null)
+                    continue;
 
                 String blockLabel = currentNode.basicBlockLabel;
 
@@ -405,7 +414,8 @@ public class LLVMProcessing extends Automata {
         return results;
     }
 
-    // Get first ll instruction of a group of ll instructions that map to the same C instruction
+    // Get first ll instruction of a group of ll instructions that map to the same C
+    // instruction
     private Node getFirstLoc(Map<String, Node> sameBlockIns) {
         int min = Integer.MAX_VALUE;
         for (String location : sameBlockIns.keySet()) {
@@ -418,7 +428,8 @@ public class LLVMProcessing extends Automata {
         return sameBlockIns.get(minS);
     }
 
-    // Get last ll instruction of a group of ll instructions that map to the same C instruction
+    // Get last ll instruction of a group of ll instructions that map to the same C
+    // instruction
     private Node getLastLoc(Map<String, Node> sameBlockIns) {
         int max = Integer.MIN_VALUE;
         for (String location : sameBlockIns.keySet()) {

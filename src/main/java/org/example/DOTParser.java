@@ -6,11 +6,11 @@ import java.util.regex.*;
 
 public class DOTParser {
     private final Map<String, Node> nodeMap = new HashMap<>();
-    private Set<Node> parsedNodes = new HashSet<>();
-    private final Set<Edge> parsedEdges = new HashSet<>();
+    public Set<Node> parsedNodes = new HashSet<>();
+    public final Set<Edge> parsedEdges = new HashSet<>();
     private final Map<String, Integer> temporaryNodeNameToNodeId = new HashMap<>();
-    protected Map<Integer, Set<String>> readsPerLocation= new HashMap<>();
-    protected Map<Integer, Set<String>> writesPerLocation= new HashMap<>();
+    protected Map<Integer, Set<String>> readsPerLocation = new HashMap<>();
+    protected Map<Integer, Set<String>> writesPerLocation = new HashMap<>();
     private String type = "";
 
     public DOTParser(String filepath, String analysisFilePath, String type) {
@@ -28,20 +28,19 @@ public class DOTParser {
         BufferedReader br = new BufferedReader(new FileReader(filepath));
         String line;
 
-        Pattern nodePattern = Pattern.compile("Node0x(.*)" +                                     // LLVM NODE ID #1
-                "\\s*\\[shape=record," +                          // Shape
-                "color=\\s*\"\\B#([A-Za-z0-9]{2,})(?![~!@#$%^&*()=+_`\\-\\|\\/'\\[\\]\\{\\}]|[?.,]*\\w)\", " +  // Color
-                "style\\s*=\\s*([A-Za-z]+), "+                    // Style
-                "fillcolor\\s*=\\s*\"(?:[^\"]|\"\")*\"\\s*" +     // Fill Color
-                "fontname\\s*=\\s*\"([A-Za-z]+)\","+              // Font Name
-                "label\\s*=\\s*(\"\\{(.*):\\\\l\\|\\s*" +         // BASIC BLOCK LABEL #7
-                "((.*)\\\\l)*(.*)}\"\\]);");                        // INSTRUCTIONS #8
+        Pattern nodePattern = Pattern.compile("Node0x(.*)" + // LLVM NODE ID #1
+                "\\s*\\[shape=record," + // Shape
+                "color=\\s*\"\\B#([A-Za-z0-9]{2,})(?![~!@#$%^&*()=+_`\\-\\|\\/'\\[\\]\\{\\}]|[?.,]*\\w)\", " + // Color
+                "style\\s*=\\s*([A-Za-z]+), " + // Style
+                "fillcolor\\s*=\\s*\"(?:[^\"]|\"\")*\"\\s*" + // Fill Color
+                "fontname\\s*=\\s*\"([A-Za-z]+)\"," + // Font Name
+                "label\\s*=\\s*(\"\\{(.*):\\\\l\\|\\s*" + // BASIC BLOCK LABEL #7
+                "((.*)\\\\l)*(.*)}\"\\]);"); // INSTRUCTIONS #8
         Pattern edgePattern = Pattern.compile(
-                "^(Node0x([A-Za-z0-9]+)" +                         // Source Node Id
-                        "(:\\s*s(\\d+)){0,1}" +                             // :s0 or :s1 if exists
-                        "\\s*->\\s*" +                                      // ->
-                        "(Node0x([A-Za-z0-9]+)))\\s*;"
-        );                 // Target Node Id
+                "^(Node0x([A-Za-z0-9]+)" + // Source Node Id
+                        "(:\\s*s(\\d+)){0,1}" + // :s0 or :s1 if exists
+                        "\\s*->\\s*" + // ->
+                        "(Node0x([A-Za-z0-9]+)))\\s*;"); // Target Node Id
 
         // **First pass: Parse nodes**
         int nodeNumber = 0;
@@ -72,7 +71,7 @@ public class DOTParser {
                     newNode.setSwitchCases(slotMap);
                 }
 
-                nodeMap.put(basicBlockLabel, newNode);  // Store by label
+                nodeMap.put(basicBlockLabel, newNode); // Store by label
             }
         }
         // **Reset the reader to reprocess the file**
@@ -123,7 +122,8 @@ public class DOTParser {
                 }
 
                 // Process instruction lines containing variable access info
-                Pattern recordPattern = Pattern.compile("((.*)@([0-9]+))\\s\\|\\sVariable:\\s(.*)\\|\\sAction:\\s(R|W|RW)(\\s)*");
+                Pattern recordPattern = Pattern
+                        .compile("((.*)@([0-9]+))\\s\\|\\sVariable:\\s(.*)\\|\\sAction:\\s(R|W|RW)(\\s)*");
                 Matcher recordMatcher = recordPattern.matcher(line);
                 if (recordMatcher.matches()) {
                     Integer originalLineNumb = Integer.parseInt(recordMatcher.group(3).trim());
@@ -151,16 +151,17 @@ public class DOTParser {
     }
 
     public Map<Integer, Set<String>> printDefUseInfo() throws IOException {
-        OutputStreamWriter output = new OutputStreamWriter(new FileOutputStream("llvm/feli/temps/" + type +"_defUseInfoParsed.txt"));
+        OutputStreamWriter output = new OutputStreamWriter(
+                new FileOutputStream("llvm/feli/temps/" + type + "_defUseInfoParsed.txt"));
         for (Map.Entry<Integer, Set<String>> entry : readsPerLocation.entrySet()) {
             for (String variable : entry.getValue()) {
-                output.write("(" + entry.getKey() + ", " + variable +", Read) \n");
+                output.write("(" + entry.getKey() + ", " + variable + ", Read) \n");
             }
         }
 
         for (Map.Entry<Integer, Set<String>> entry : writesPerLocation.entrySet()) {
             for (String variable : entry.getValue()) {
-                output.write("(" + entry.getKey() + ", " + variable +", Write) \n");
+                output.write("(" + entry.getKey() + ", " + variable + ", Write) \n");
             }
         }
         output.close();
@@ -175,4 +176,3 @@ public class DOTParser {
         return parsedEdges;
     }
 }
-

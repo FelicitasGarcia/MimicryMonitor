@@ -1,0 +1,10 @@
+digraph pruebaPreProcesamiento {
+  rankdir=TB; // Top to bottom layout
+  rank=min;
+  nodesep=0.5; // Increase node separation
+  ranksep=0.8; // Increase rank separation
+edge [curvature=0.3];  node [fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9];
+
+
+}

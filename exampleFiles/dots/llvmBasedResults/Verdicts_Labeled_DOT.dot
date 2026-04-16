@@ -6,11 +6,11 @@ digraph Verdicts_Labeled {
 edge [curvature=0.3];  node [fontname="Helvetica", fontsize=10];
   edge [fontname="Helvetica", fontsize=9];
 
-  15 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
-  21 [label="V", style=filled, fillcolor="darkolivegreen3", shape=diamond, margin="0.15,0.15"];
-  40 [label="IVP, IV", style=filled, fillcolor="lightcoral", shape=diamond, margin="0.15,0.15"];
   0 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   12 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  15 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  40 [label="IVP, IV", style=filled, fillcolor="lightcoral", shape=diamond, margin="0.15,0.15"];
+  21 [label="V", style=filled, fillcolor="darkolivegreen3", shape=diamond, margin="0.15,0.15"];
 
   12 -> 21 [label="if (argc \< 2)\\l", id=16, arrowhead=normal, penwidth=1.2];
   0 -> 15 [label="2: result ! OP", id=20, arrowhead=normal, penwidth=1.2];

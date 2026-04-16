@@ -21,7 +21,7 @@ public class Main {
         }
 
         // Pre existing Files
-        String dotFilePathOP = inputFilePath + "/cfgs/mainOP.dot" ; // LLVM OUTPUT
+        String dotFilePathOP = inputFilePath + "/cfgs/mainOP.dot"; // LLVM OUTPUT
         String dotFilePathPUA = inputFilePath + "/cfgs/mainPUA.dot"; // LLVM OUTPUT
 
         String llvmAnalysisPathOP = inputFilePath + "/temps/defUseOP.txt"; // LLVM OUTPUT
@@ -36,14 +36,18 @@ public class Main {
 
         // PUA Processing
         DOTParser llvmPUAParsed = new DOTParser(dotFilePathPUA, llvmAnalysisPathPUA, "PUA");
+        DOTExporter dotExporter = new DOTExporter("prueba", llvmPUAParsed.parsedNodes, llvmPUAParsed.parsedEdges,
+                "llvm/PRUEBA");
+        dotExporter.render();
         LLVMProcessing transformedPUA = new LLVMProcessing(llvmPUAParsed, llvmIRPUA, programPathPUAC, "PUA");
 
-        //OP Processing
+        // OP Processing
         DOTParser llvmOPParsed = new DOTParser(dotFilePathOP, llvmAnalysisPathOP, "OP");
         LLVMProcessing transformedOP = new LLVMProcessing(llvmOPParsed, llvmIRPathOP, programPathOPC, "OP");
 
         // Construct monitor and run program.cpp
-        Automata mimicryMonitor = new MonitorConstructor(transformedOP, transformedPUA, sigmaFilePath, OPvariableDataPath, PUAvariableDataPath);
+        Automata mimicryMonitor = new MonitorConstructor(transformedOP, transformedPUA, sigmaFilePath,
+                OPvariableDataPath, PUAvariableDataPath);
         mimicryMonitor.generateRender("MM", "monitor");
     }
 }
