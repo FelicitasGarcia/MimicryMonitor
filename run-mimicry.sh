@@ -7,11 +7,11 @@ GREEN='\033[1;32m'
 BLUE='\033[1;34m'
 CYAN='\033[1;36m'
 PINK='\033[1;35m'
-RESET='\033[0m'
-YELLOW='\033[1;33m'
 RED='\033[1;31m'
+YELLOW='\033[1;33m'
+RESET='\033[0m'
 
-# Define static paths
+# Default paths
 MIMICRY_DIR=$(pwd)
 LLVM_DIR="$MIMICRY_DIR/llvm"
 SCRIPTS_DIR="$LLVM_DIR/feli/scripts"
@@ -20,77 +20,109 @@ INPUTS_DIR="$LLVM_DIR/feli/inputs"
 PUA_PATH="$INPUTS_DIR/programPUA.c"
 OP_PATH="$INPUTS_DIR/programOP.c"
 SIGMA_PATH="$INPUTS_DIR/sigma.txt"
+
 IANALYZE=""
 IANALYZEBOOL=0
 IINSTRUMENT=()
 IINSTRUMENTBOOL=0
 
+# Flags que se propagan a instrument.sh
+AFLFUZZ=0
+LOGFILE=""
+POLICY=""
+
 print_usage() {
   echo "Usage: $0 [options]"
-  echo "Options:"
-  echo "  -pua PATH          Path to PUA program source (default: $PUA_PATH)"
-  echo "  -op PATH           Path to OP program source (default: $OP_PATH)"
-  echo "  -sigma PATH        Path to sigma pairing (default: $SIGMA_PATH)"
-  echo "  -Ianalyze PATH     Path to include directory in the input LL compilation (default: none)"
-  echo "  -Iinstrument PATH1 [PATH2] [PATH3] ...  Multiple include paths for instrumented LL compilation"
-  echo "  -h                 Show this help message"
-  exit 1
+  echo ""
+  echo "Input files:"
+  echo "  -pua PATH                 Path to PUA source (default: inputs/programPUA.c)"
+  echo "  -op PATH                  Path to OP source (default: inputs/programOP.c)"
+  echo "  -sigma PATH               Path to sigma pairing (default: inputs/sigma.txt)"
+  echo ""
+  echo "Include paths:"
+  echo "  -Ianalyze PATH            Include dir for analyze step"
+  echo "  -Iinstrument F1 [F2 ...]  Extra files to link at instrumentation"
+  echo ""
+  echo "Instrumentation options:"
+  echo "  -afl                      Compile with AFL++ for fuzzing"
+  echo "  -log [PATH]               Enable monitor logging (default: /tmp/mm_monitor.log)"
+  echo "  -policy POLICY            Monitor policy: stop-v, stop-iv, or n"
+  echo ""
+  echo "  -h                        Show this help"
+  exit 0
 }
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    -pua) PUA_PATH="$2"; shift 2 ;;
-    -op) OP_PATH="$2"; shift 2 ;;
-    -sigma) SIGMA_PATH="$2"; shift 2 ;;
-    -h) print_usage ;;
-    -Ianalyze) IANALYZEBOOL=1;
-        IANALYZE="$2"; shift 2;;
+    -pua)    PUA_PATH="$2"; shift 2 ;;
+    -op)     OP_PATH="$2"; shift 2 ;;
+    -sigma)  SIGMA_PATH="$2"; shift 2 ;;
+    -Ianalyze)
+      IANALYZEBOOL=1
+      IANALYZE="$2"; shift 2
+      ;;
     -Iinstrument)
-        IINSTRUMENTBOOL=1
+      IINSTRUMENTBOOL=1
+      shift
+      while [[ $# -gt 0 && ! "$1" =~ ^- ]]; do
+        IINSTRUMENT+=("$1")
         shift
-        # Collect all arguments until the next option (starting with -)
-        while [[ $# -gt 0 && ! "$1" =~ ^- ]]; do
-            IINSTRUMENT+=("$1")
-            shift
-        done
-        ;;
-    *) echo -e "${RED}Unknown option: $1${RESET}"; print_usage ;;
+      done
+      ;;
+    -afl)    AFLFUZZ=1; shift ;;
+    -log)
+      shift
+      if [[ $# -gt 0 && ! $1 =~ ^- ]]; then
+        LOGFILE="$1"; shift
+      else
+        LOGFILE="/tmp/mm_monitor.log"
+      fi
+      ;;
+    -policy) POLICY="$2"; shift 2 ;;
+    -h) print_usage ;;
+    *)
+      echo -e "${RED}Unknown option: $1${RESET}"
+      print_usage
+      ;;
   esac
 done
 
+# --- Construir flags para instrument.sh ---
+INSTRUMENT_FLAGS=()
+[[ "$AFLFUZZ" == "1" ]]   && INSTRUMENT_FLAGS+=(-afl)
+[[ -n "$LOGFILE" ]]        && INSTRUMENT_FLAGS+=(-log "$LOGFILE")
+[[ -n "$POLICY" ]]         && INSTRUMENT_FLAGS+=(-policy "$POLICY")
+[[ "$IINSTRUMENTBOOL" == "1" ]] && INSTRUMENT_FLAGS+=(-I "${IINSTRUMENT[@]}")
+
 echo -e "${CYAN}===== MIMICRY ANALYSIS PIPELINE =====${RESET}"
+echo -e "${YELLOW}PUA:     ${RESET}$PUA_PATH"
+echo -e "${YELLOW}OP:      ${RESET}$OP_PATH"
+echo -e "${YELLOW}Sigma:   ${RESET}$SIGMA_PATH"
+[[ "$AFLFUZZ" == "1" ]] && echo -e "${YELLOW}Mode:    ${RESET}AFL++ fuzzing"
+echo -e "${CYAN}=====================================${RESET}"
 
-echo -e "${BLUE}Step 1: ${RESET}Analyzing programs"
+# --- Step 1: Analyze ---
+echo -e "${BLUE}Step 1:${RESET} Analyzing programs"
 cd "$SCRIPTS_DIR"
-if [ "$IANALYZEBOOL" = "1" ]; then
-    ./analyze.sh -pua "$PUA_PATH" -op "$OP_PATH" -sigma "$SIGMA_PATH" -I "$IANALYZE"
-else
-    ./analyze.sh -pua "$PUA_PATH" -op "$OP_PATH" -sigma "$SIGMA_PATH"
-fi
+ANALYZE_FLAGS=(-pua "$PUA_PATH" -op "$OP_PATH" -sigma "$SIGMA_PATH")
+[[ "$IANALYZEBOOL" == "1" ]] && ANALYZE_FLAGS+=(-I "$IANALYZE")
+./analyze.sh "${ANALYZE_FLAGS[@]}"
 
-echo -e "${BLUE}Step 2: ${RESET}Construction of MM"
-
-echo -e "${CYAN}===== MONITOR CONSTRUCTION =====${RESET}"
-
+# --- Step 2: Monitor construction ---
+echo -e "${BLUE}Step 2:${RESET} Constructing Mimicry Monitor"
 cd "$MIMICRY_DIR"
+mvn exec:java \
+  -Dexec.mainClass="org.example.Main" \
+  -Dexec.args="$OP_PATH $PUA_PATH $SIGMA_PATH"
 
-# Step 2.1: Run the main class
-MAIN_CLASS="org.example.Main"
-mvn exec:java -Dexec.mainClass="$MAIN_CLASS" -Dexec.args="$OP_PATH $PUA_PATH $SIGMA_PATH"
-
-echo -e "${CYAN}========================${RESET}"
-
-echo -e "${BLUE}Step 3:${RESET} Instrumenting PUA program"
+# --- Step 3: Instrument ---
+echo -e "${BLUE}Step 3:${RESET} Instrumenting PUA"
 cd "$SCRIPTS_DIR"
-if [ "$IINSTRUMENTBOOL" = "1" ]; then
-    # Use eval to properly handle the multiple arguments with spaces
-    eval ./instrument.sh -I "${IINSTRUMENT[@]}"
-else
-    ./instrument.sh
-fi
+./instrument.sh "${INSTRUMENT_FLAGS[@]}"
 
+# --- Done ---
 echo -e "${CYAN}===== PIPELINE COMPLETE =====${RESET}"
-echo -e "${YELLOW}Results are available in $OUTPUTS_DIR${RESET}"
+echo -e "${YELLOW}Results: ${RESET}$OUTPUTS_DIR"
 echo -e "${PINK}
                   ^~^  ,
                  ('Y') )

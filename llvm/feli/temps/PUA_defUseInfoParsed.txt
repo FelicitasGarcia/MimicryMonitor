@@ -1,4 +1,4 @@
-(32, .str.1, Read) 
+(32, result, Read) 
 (17, argc, Read) 
 (19, .str, Read) 
 (19, stderr, Read) 
@@ -7,7 +7,6 @@
 (24, n, Read) 
 (26, n, Read) 
 (28, n, Read) 
-(32, .str.1, Write) 
 (19, .str, Write) 
 (22, n, Write) 
 (25, result, Write) 

@@ -17,9 +17,23 @@ OUTPUT_FILE="$MIMICRY_DIR/llvm/feli/temps/instrumentedPUA.ll"
 EXECUTABLE_NAME="$MIMICRY_DIR/llvm/feli/outputs/instrumentedPUA"
 LLVM_DIR="$MIMICRY_DIR/llvm"
 BUILD_DIR="$LLVM_DIR/llvm-project/build"
+
 IBOOL=0
 AFLFUZZ=0
+LOGFILE=""
+POLICY=""
 ILIBS=()
+
+print_usage() {
+  echo "Usage: $0 [options]"
+  echo "Options:"
+  echo "  -afl               Compile with afl-clang-fast for fuzzing"
+  echo "  -log [PATH]        Enable logging (default: /tmp/mm_monitor.log)"
+  echo "  -policy POLICY     Monitor policy: stop-v, stop-iv, or n (default: interactive prompt)"
+  echo "  -I FILE1 [FILE2]   Extra libraries to link"
+  echo "  -h                 Show this help message"
+  exit 0
+}
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -35,27 +49,56 @@ while [[ $# -gt 0 ]]; do
       AFLFUZZ=1
       shift
       ;;
+    -log)
+      shift
+      if [[ $# -gt 0 && ! $1 =~ ^- ]]; then
+        LOGFILE="$1"
+        shift
+      else
+        LOGFILE="/tmp/mm_monitor.log"
+      fi
+      ;;
+    -policy)
+      shift
+      POLICY="$1"
+      shift
+      ;;
+    -h) print_usage ;;
     *)
       echo -e "${RED}Unknown option: $1${RESET}"
-      exit 1
+      print_usage
       ;;
   esac
 done
 
-# Seleccionar compilador según modo
+# --- Seleccionar compilador ---
 if [[ "$AFLFUZZ" == "1" ]]; then
-  CC="afl-clang-fast"
+  AFL_SEARCH_PATHS=("" "/usr/local/bin" "$HOME/AFLplusplus" "$HOME/afl++" "/opt/aflplusplus")
+  CC=""
+  for p in "${AFL_SEARCH_PATHS[@]}"; do
+    candidate="${p:+$p/}afl-clang-fast"
+    if command -v "$candidate" &>/dev/null; then
+      CC="$candidate"
+      break
+    fi
+  done
+  if [[ -z "$CC" ]]; then
+    echo -e "${RED}Error:${RESET} afl-clang-fast not found."
+    echo -e "${YELLOW}Tip:${RESET} export PATH=\$PATH:/path/to/AFLplusplus"
+    exit 1
+  fi
+  echo -e "${GREEN}AFL++ found:${RESET} $CC"
 else
   CC="clang"
 fi
 
-# Compile .c files in ILIBS to .o files
+# --- Compilar dependencias extra ---
 OBJECTS=()
 for lib in "${ILIBS[@]}"; do
   if [[ "$lib" == *.c ]]; then
     obj="${lib%.c}.o"
     echo -e "${BLUE}Compiling${RESET} $lib → $obj"
-    $CC -c "$lib" /Users/felicitasgarcia/coreutils/lib/libcoreutils.a -o "$obj"
+    $CC -c "$lib" -o "$obj"
     if [ $? -ne 0 ]; then
       echo -e "${RED}Error:${RESET} Compilation of $lib failed!"
       exit 1
@@ -66,90 +109,89 @@ for lib in "${ILIBS[@]}"; do
   fi
 done
 
-# Detect the platform and set the correct extension
+# --- Detectar plugin ---
 if [[ "$(uname)" == "Darwin" ]]; then
     PLUGIN_EXT="dylib"
 else
     PLUGIN_EXT="so"
 fi
-
 PLUGIN_PATH="$BUILD_DIR/lib/LLVMMimicryPasses.$PLUGIN_EXT"
 
-# Print header
-echo -e "${CYAN}========== LLVM Mimicry Instrumentation Script ==========${RESET}"
-echo -e "${YELLOW}Input file:     ${RESET}$INPUT_FILE"
-echo -e "${YELLOW}Dot file:       ${RESET}$DOT_FILE"
-echo -e "${YELLOW}Output file:    ${RESET}$OUTPUT_FILE"
-echo -e "${YELLOW}Executable:     ${RESET}$EXECUTABLE_NAME"
-echo -e "${CYAN}=================================================${RESET}"
+# --- Header ---
+echo -e "${CYAN}========== LLVM Mimicry Instrumentation ==========${RESET}"
+echo -e "${YELLOW}Input:     ${RESET}$INPUT_FILE"
+echo -e "${YELLOW}Dot:       ${RESET}$DOT_FILE"
+echo -e "${YELLOW}Output:    ${RESET}$OUTPUT_FILE"
+echo -e "${YELLOW}Binary:    ${RESET}$EXECUTABLE_NAME"
+echo -e "${YELLOW}Compiler:  ${RESET}$CC"
+echo -e "${YELLOW}Log:       ${RESET}${LOGFILE:-stderr}"
 
-# Optional: Ask if user wants to run the program immediately
-echo -e "${YELLOW}Do you want the instrumented version to abort at IV, V, or not? (i/v/n): ${RESET}"
-read -r policy
-if [[ "$policy" == "i" || "$RUN_NOW" == "I" ]]; then
-  POLICY="stop-iv"
-elif [[ "$policy" == "v" || "$RUN_NOW" == "V" ]]; then
-  POLICY="stop-v"
-else
-  POLICY="n"
+# --- Policy: flag o prompt interactivo ---
+if [[ -z "$POLICY" ]]; then
+  echo -e "${YELLOW}Abort policy — IV, V, or none? (i/v/n): ${RESET}"
+  read -r policy_input
+  case "$policy_input" in
+    i|I) POLICY="stop-iv" ;;
+    v|V) POLICY="stop-v"  ;;
+    *)   POLICY="n"        ;;
+  esac
 fi
+echo -e "${YELLOW}Policy:    ${RESET}$POLICY"
+echo -e "${CYAN}==================================================${RESET}"
 
-# Step 1: Run the instrumentation pass
+# --- Step 1: Instrumentation pass ---
 echo -e "${BLUE}Step 1:${RESET} Running mimicry-instrument pass..."
-$BUILD_DIR/bin/opt -load-pass-plugin=$PLUGIN_PATH -passes=mimicry-instrument -S "$INPUT_FILE" -dot-file="$DOT_FILE" -monitor-policy="$POLICY" -o "$OUTPUT_FILE"
+"$BUILD_DIR/bin/opt" \
+  -load-pass-plugin="$PLUGIN_PATH" \
+  -passes=mimicry-instrument \
+  -S "$INPUT_FILE" \
+  -dot-file="$DOT_FILE" \
+  -monitor-policy="$POLICY" \
+  -o "$OUTPUT_FILE"
 
-# Check if the instrumentation was successful
-if [ $? -ne 0 ]; then
-  echo -e "${RED}Error:${RESET} Instrumentation failed!"
-  exit 1
-fi
-
-# Step 1.1: sanitize debug pseudo-directives for compatibility across LLVM builds
-# This does NOT change your LLVM version or analysis stage; it only cleans the generated instrumented IR.
+# Sanitize debug pseudo-directives
 if grep -qE '^[[:space:]]*#dbg_' "$OUTPUT_FILE"; then
-  echo -e "${YELLOW}Sanitizing invalid debug pseudo-instructions (#dbg_*) in instrumented IR...${RESET}"
+  echo -e "${YELLOW}Sanitizing #dbg_* pseudo-instructions...${RESET}"
   tmp_output="${OUTPUT_FILE}.tmp"
   sed -E '/^[[:space:]]*#dbg_[a-zA-Z0-9_]*\(/d' "$OUTPUT_FILE" > "$tmp_output"
   mv "$tmp_output" "$OUTPUT_FILE"
 fi
 
-echo -e "${GREEN}Instrumentation completed successfully!${RESET}"
- 
-# Step 2: Compile the instrumented .ll file to executable
-echo -e "${BLUE}Step 2:${RESET} Compiling instrumented code to executable..."
+echo -e "${GREEN}Instrumentation completed.${RESET}"
 
-# Archivos del runtime del monitor
-MONITOR_RUNTIME="../passes/monitor_runtime.c ../passes/mm_verdict_reporter.c"
+# --- Step 2: Compile ---
+echo -e "${BLUE}Step 2:${RESET} Compiling instrumented code..."
 
-# Si estamos en modo AFL, agregar el reporter específico
+MONITOR_RUNTIME=(
+  ../passes/monitor_runtime.c
+  ../passes/mm_verdict_reporter.c
+  ../passes/mm_log_reporter.c
+)
+
+CFLAGS=()
+
+if [[ -n "$LOGFILE" ]]; then
+  echo -e "${YELLOW}Logging → $LOGFILE${RESET}"
+  CFLAGS+=("-DMM_LOG_FILE=\"$LOGFILE\"")
+fi
+
 if [[ "$AFLFUZZ" == "1" ]]; then
-  echo -e "${YELLOW}Modo AFL++: usando mm_afl_reporter${RESET}"
-  MONITOR_RUNTIME="$MONITOR_RUNTIME ../passes/mm_afl_reporter.c"
+  echo -e "${YELLOW}Including AFL++ reporter${RESET}"
+  MONITOR_RUNTIME+=(../passes/mm_afl_reporter.c)
 fi
 
-if [ "$IBOOL" = "1" ]; then
-    echo -e "${YELLOW}Including libraries in the instrumented LL compilation${RESET}"
-    $CC "$OUTPUT_FILE" $MONITOR_RUNTIME "${OBJECTS[@]}" -o "$EXECUTABLE_NAME"
-else
-    echo -e "${YELLOW}Not including libraries in the instrumented LL compilation${RESET}"
-    $CC "$OUTPUT_FILE" $MONITOR_RUNTIME -o "$EXECUTABLE_NAME"
-fi
+$CC "${CFLAGS[@]}" "$OUTPUT_FILE" "${MONITOR_RUNTIME[@]}" "${OBJECTS[@]}" -o "$EXECUTABLE_NAME"
 
-# Check if compilation was successful
-if [ $? -ne 0 ]; then
-  echo -e "${RED}Error:${RESET} Compilation failed!"
-  exit 1
-fi
+echo -e "${GREEN}Build complete: ${RESET}$EXECUTABLE_NAME"
 
-echo -e "${GREEN}Compilation completed successfully!${RESET}"
-echo -e "${YELLOW}You can run the instrumented program with:${RESET} ./$EXECUTABLE_NAME"
-
-# Optional: Ask if user wants to run the program immediately
-echo -e "${YELLOW}Do you want to run the instrumented program now? (y/n): ${RESET}"
-read -r RUN_NOW
-if [[ "$RUN_NOW" == "y" || "$RUN_NOW" == "Y" ]]; then
-  echo -e "${YELLOW}Input desired parameters for the instrumented program: ${RESET}"
-  read -r params
-  echo -e "${BLUE}Running instrumented program...${RESET}"
-  ./"$EXECUTABLE_NAME" $params
+# --- Optional: run ---
+if [[ -t 0 ]]; then
+  echo -e "${YELLOW}Run now? (y/n): ${RESET}"
+  read -r RUN_NOW
+  if [[ "$RUN_NOW" == "y" || "$RUN_NOW" == "Y" ]]; then
+    echo -e "${YELLOW}Parameters: ${RESET}"
+    read -r params
+    echo -e "${BLUE}Running...${RESET}"
+    ./"$EXECUTABLE_NAME" $params
+  fi
 fi

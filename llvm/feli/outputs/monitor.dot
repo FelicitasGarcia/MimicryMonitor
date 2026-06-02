@@ -1,15 +1,10 @@
 digraph MM {
-  6 [label="V"];
-  7 [label="IV"];
+  3 [label="V"];
+  4 [label="IV"];
   1 [label="NV"];
   2 [label="NV"];
-  3 [label="NV"];
-  5 [label="NV"];
 
   1 -> 2 [label="if (argc \< 2)\\l?", id=0];
-  2 -> 3 [label="if (argc \< 2)\\l: else", id=1];
-  2 -> 6 [label="if (argc \< 2)\\l: then", id=2];
-  3 -> 5 [label="if (n \< 0)\\l?", id=3];
-  5 -> 7 [label="if (n \< 0)\\l: else", id=4];
-  5 -> 6 [label="if (n \< 0)\\l: then", id=5];
+  2 -> 4 [label="if (argc \< 2)\\l: else", id=1];
+  2 -> 3 [label="if (argc \< 2)\\l: then", id=2];
 }
