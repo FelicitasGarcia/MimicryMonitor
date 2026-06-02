@@ -1,52 +1,51 @@
-Processing instruction:   %8 = load i32, ptr %4, align 4, !dbg !29
-entry@16 | Variable: argc | Action: R
-Processing instruction:   %9 = icmp slt i32 %8, 2, !dbg !31
-Processing instruction:   br i1 %9, label %10, label %16, !dbg !32
-Processing instruction:   %11 = load ptr, ptr @stderr, align 8, !dbg !33
-entry@18 | Variable: stderr | Action: R
-Processing instruction:   %12 = load ptr, ptr %5, align 8, !dbg !35
-entry@18 | Variable: argv | Action: R
-Processing instruction:   %13 = getelementptr inbounds ptr, ptr %12, i64 0, !dbg !35
-Processing instruction:   %14 = load ptr, ptr %13, align 8, !dbg !35
-Processing instruction:   %15 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %11, ptr noundef @.str, ptr noundef %14), !dbg !36
-entry@18 | Variable: .str | Action: R
-entry@18 | Variable: .str | Action: W
-Processing instruction:   store i32 1, ptr %3, align 4, !dbg !37
-Processing instruction:   br label %38, !dbg !37
-Processing instruction:   %17 = load ptr, ptr %5, align 8, !dbg !40
-entry@21 | Variable: argv | Action: R
-Processing instruction:   %18 = getelementptr inbounds ptr, ptr %17, i64 1, !dbg !40
-Processing instruction:   %19 = load ptr, ptr %18, align 8, !dbg !40
-Processing instruction:   %20 = call i32 @atoi(ptr noundef %19) #4, !dbg !41
-Processing instruction:   store i32 %20, ptr %6, align 4, !dbg !39
-entry@21 | Variable: n | Action: W
-Processing instruction:   %21 = load i32, ptr %6, align 4, !dbg !44
-entry@23 | Variable: n | Action: R
-Processing instruction:   %22 = icmp slt i32 %21, 0, !dbg !46
-Processing instruction:   br i1 %22, label %23, label %24, !dbg !47
-Processing instruction:   store i32 -1, ptr %7, align 4, !dbg !48
-entry@24 | Variable: result | Action: W
-Processing instruction:   br label %35, !dbg !49
-Processing instruction:   %25 = load i32, ptr %6, align 4, !dbg !50
-entry@25 | Variable: n | Action: R
-Processing instruction:   %26 = icmp eq i32 %25, 0, !dbg !52
-Processing instruction:   br i1 %26, label %27, label %28, !dbg !53
-Processing instruction:   store i32 0, ptr %7, align 4, !dbg !54
-entry@26 | Variable: result | Action: W
-Processing instruction:   br label %34, !dbg !55
-Processing instruction:   %29 = load i32, ptr %6, align 4, !dbg !56
-entry@27 | Variable: n | Action: R
-Processing instruction:   %30 = icmp slt i32 %29, 128, !dbg !58
-Processing instruction:   br i1 %30, label %31, label %32, !dbg !59
-Processing instruction:   store i32 1, ptr %7, align 4, !dbg !60
-entry@28 | Variable: result | Action: W
-Processing instruction:   br label %33, !dbg !61
-Processing instruction:   store i32 2, ptr %7, align 4, !dbg !62
-entry@30 | Variable: result | Action: W
-Processing instruction:   %36 = load i32, ptr %7, align 4, !dbg !63
-entry@31 | Variable: result | Action: R
-Processing instruction:   %37 = sdiv i32 10, %36, !dbg !64
-Processing instruction:   store i32 %37, ptr %3, align 4, !dbg !65
-Processing instruction:   br label %38, !dbg !65
-Processing instruction:   %39 = load i32, ptr %3, align 4, !dbg !66
-Processing instruction:   ret i32 %39, !dbg !66
+Processing instruction:   %8 = load i32, ptr %4, align 4, !dbg !34
+entry@17 | Variable: argc | Action: R
+Processing instruction:   %9 = icmp slt i32 %8, 2, !dbg !36
+Processing instruction:   br i1 %9, label %10, label %16, !dbg !37
+Processing instruction:   %11 = load ptr, ptr @stderr, align 8, !dbg !38
+entry@19 | Variable: stderr | Action: R
+Processing instruction:   %12 = load ptr, ptr %5, align 8, !dbg !40
+entry@19 | Variable: argv | Action: R
+Processing instruction:   %13 = getelementptr inbounds ptr, ptr %12, i64 0, !dbg !40
+Processing instruction:   %14 = load ptr, ptr %13, align 8, !dbg !40
+Processing instruction:   %15 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %11, ptr noundef @.str, ptr noundef %14), !dbg !41
+entry@19 | Variable: .str | Action: R
+entry@19 | Variable: .str | Action: W
+Processing instruction:   store i32 1, ptr %3, align 4, !dbg !42
+Processing instruction:   br label %37, !dbg !42
+Processing instruction:   %17 = load ptr, ptr %5, align 8, !dbg !45
+entry@22 | Variable: argv | Action: R
+Processing instruction:   %18 = getelementptr inbounds ptr, ptr %17, i64 1, !dbg !45
+Processing instruction:   %19 = load ptr, ptr %18, align 8, !dbg !45
+Processing instruction:   %20 = call i32 @atoi(ptr noundef %19) #4, !dbg !46
+Processing instruction:   store i32 %20, ptr %6, align 4, !dbg !44
+entry@22 | Variable: n | Action: W
+Processing instruction:   %21 = load i32, ptr %6, align 4, !dbg !49
+entry@24 | Variable: n | Action: R
+Processing instruction:   %22 = icmp slt i32 %21, 0, !dbg !51
+Processing instruction:   br i1 %22, label %23, label %24, !dbg !52
+Processing instruction:   store i32 -1, ptr %7, align 4, !dbg !53
+entry@25 | Variable: result | Action: W
+Processing instruction:   br label %35, !dbg !54
+Processing instruction:   %25 = load i32, ptr %6, align 4, !dbg !55
+entry@26 | Variable: n | Action: R
+Processing instruction:   %26 = icmp eq i32 %25, 0, !dbg !57
+Processing instruction:   br i1 %26, label %27, label %28, !dbg !58
+Processing instruction:   store i32 0, ptr %7, align 4, !dbg !59
+entry@27 | Variable: result | Action: W
+Processing instruction:   br label %34, !dbg !60
+Processing instruction:   %29 = load i32, ptr %6, align 4, !dbg !61
+entry@28 | Variable: n | Action: R
+Processing instruction:   %30 = icmp slt i32 %29, 128, !dbg !63
+Processing instruction:   br i1 %30, label %31, label %32, !dbg !64
+Processing instruction:   store i32 1, ptr %7, align 4, !dbg !65
+entry@29 | Variable: result | Action: W
+Processing instruction:   br label %33, !dbg !66
+Processing instruction:   store i32 2, ptr %7, align 4, !dbg !67
+entry@31 | Variable: result | Action: W
+Processing instruction:   %36 = call i32 (ptr, ...) @printf(ptr noundef @.str.1), !dbg !68
+entry@32 | Variable: .str.1 | Action: R
+entry@32 | Variable: .str.1 | Action: W
+Processing instruction:   br label %37, !dbg !69
+Processing instruction:   %38 = load i32, ptr %3, align 4, !dbg !69
+Processing instruction:   ret i32 %38, !dbg !69

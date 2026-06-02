@@ -18,6 +18,7 @@ EXECUTABLE_NAME="$MIMICRY_DIR/llvm/feli/outputs/instrumentedPUA"
 LLVM_DIR="$MIMICRY_DIR/llvm"
 BUILD_DIR="$LLVM_DIR/llvm-project/build"
 IBOOL=0
+AFLFUZZ=0
 ILIBS=()
 
 while [[ $# -gt 0 ]]; do
@@ -30,6 +31,10 @@ while [[ $# -gt 0 ]]; do
         shift
       done
       ;;
+    -afl)
+      AFLFUZZ=1
+      shift
+      ;;
     *)
       echo -e "${RED}Unknown option: $1${RESET}"
       exit 1
@@ -37,13 +42,20 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Seleccionar compilador según modo
+if [[ "$AFLFUZZ" == "1" ]]; then
+  CC="afl-clang-fast"
+else
+  CC="clang"
+fi
+
 # Compile .c files in ILIBS to .o files
 OBJECTS=()
 for lib in "${ILIBS[@]}"; do
   if [[ "$lib" == *.c ]]; then
     obj="${lib%.c}.o"
     echo -e "${BLUE}Compiling${RESET} $lib → $obj"
-    clang -c "$lib" /Users/felicitasgarcia/coreutils/lib/libcoreutils.a -o "$obj"
+    $CC -c "$lib" /Users/felicitasgarcia/coreutils/lib/libcoreutils.a -o "$obj"
     if [ $? -ne 0 ]; then
       echo -e "${RED}Error:${RESET} Compilation of $lib failed!"
       exit 1
@@ -106,14 +118,21 @@ echo -e "${GREEN}Instrumentation completed successfully!${RESET}"
 # Step 2: Compile the instrumented .ll file to executable
 echo -e "${BLUE}Step 2:${RESET} Compiling instrumented code to executable..."
 
-clang -S -emit-llvm ../passes/monitorAction.c -o ../passes/monitorAction.ll
+# Archivos del runtime del monitor
+MONITOR_RUNTIME="../passes/monitor_runtime.c ../passes/mm_verdict_reporter.c"
+
+# Si estamos en modo AFL, agregar el reporter específico
+if [[ "$AFLFUZZ" == "1" ]]; then
+  echo -e "${YELLOW}Modo AFL++: usando mm_afl_reporter${RESET}"
+  MONITOR_RUNTIME="$MONITOR_RUNTIME ../passes/mm_afl_reporter.c"
+fi
 
 if [ "$IBOOL" = "1" ]; then
     echo -e "${YELLOW}Including libraries in the instrumented LL compilation${RESET}"
-    clang "$OUTPUT_FILE" ../passes/monitorAction.ll "${OBJECTS[@]}" -o "$EXECUTABLE_NAME"
+    $CC "$OUTPUT_FILE" $MONITOR_RUNTIME "${OBJECTS[@]}" -o "$EXECUTABLE_NAME"
 else
     echo -e "${YELLOW}Not including libraries in the instrumented LL compilation${RESET}"
-    clang "$OUTPUT_FILE" ../passes/monitorAction.c -o "$EXECUTABLE_NAME"
+    $CC "$OUTPUT_FILE" $MONITOR_RUNTIME -o "$EXECUTABLE_NAME"
 fi
 
 # Check if compilation was successful
