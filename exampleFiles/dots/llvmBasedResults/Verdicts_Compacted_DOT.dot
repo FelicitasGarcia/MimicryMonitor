@@ -12,8 +12,8 @@ edge [curvature=0.3];  node [fontname="Helvetica", fontsize=10];
   43 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   0 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
 
-  43 -> -2 [label="if (argc \< 2)\\l: then", id=17, arrowhead=vee, penwidth=1.2];
-  43 -> -1 [label="if (argc \< 2)\\l: else", id=17, arrowhead=dot, penwidth=1.2];
   0 -> 8 [label="Entry", id=17, arrowhead=normal, penwidth=1.2];
   8 -> 43 [label="if (argc \< 2)\\l?", id=17, arrowhead=normal, penwidth=1.2];
+  43 -> -2 [label="if (argc \< 2)\\l: then", id=17, arrowhead=vee, penwidth=1.2];
+  43 -> -1 [label="if (argc \< 2)\\l: else", id=17, arrowhead=dot, penwidth=1.2];
 }

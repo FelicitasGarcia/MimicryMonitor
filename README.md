@@ -140,6 +140,40 @@ cd llvm/feli/scripts
 
 This instruments the PUA with the monitor and compiles it.
 
+#### Monitor Logging
+
+You can enable runtime monitor logs with:
+
+```bash
+cd llvm/feli/scripts
+./instrument.sh -log /tmp/mm_monitor.log
+```
+
+The log is now human-readable (no timestamp/pid prefix) and includes section headers/dividers when needed, for example:
+
+```text
+------------------------------------------------------------
+NEW MONITORING ITERATION
+------------------------------------------------------------
+log file cleared for new iteration: /tmp/mm_monitor.log
+------------------------------------------------------------
+AUTOMATON SNAPSHOT
+------------------------------------------------------------
+init automaton: nodes=4, initial_node=1, policy=stop-iv
+node 1: verdict=No Verdict yet, terminal=no, condition=(none), transitions=2
+   transition: 1 --then--> 2
+   transition: 1 --else--> 3
+------------------------------------------------------------
+MONITOR START
+------------------------------------------------------------
+start at node 1, verdict: No Verdict yet
+instruction executed: i++, node: 4, verdict: No Verdict yet
+------------------------------------------------------------
+MONITOR ABORT
+------------------------------------------------------------
+ABORT: policy 'stop-iv' triggered at node 4 with verdict IV
+```
+
 ### Step 3: Run the Instrumented Program
 
 ```bash
@@ -165,6 +199,46 @@ The LLVM pass:
 2. Identifies instrumentation points in the PUA
 3. Inserts runtime verification code
 4. Produces an executable that validates PUA behavior
+
+### Reporter Architecture (New)
+
+The monitor runtime now uses an explicit reporter pipeline, enabled only by instrumentation parameters.
+
+1. **Reporter core (`mm_verdict_reporter`)**:
+   - Keeps an in-memory list of reporters.
+   - Exposes `mm_add_reporter`, `mm_clear_reporters`, `mm_report_verdict`, and `mm_report_abort`.
+2. **Runtime-controlled registration (`monitor_runtime`)**:
+   - `configureReporters()` is called from `initAutomaton()`.
+   - Registration happens once per process (`reportersConfigured` guard).
+   - No automatic constructor-based registration is used.
+3. **Compile-time gates (set by `instrument.sh`)**:
+   - `MM_ENABLE_LOG_REPORTER=1` only when `-log` is passed.
+   - `MM_ENABLE_AFL_REPORTER=1` only when `-afl` is passed.
+4. **Log reporter (`mm_log_reporter`)**:
+   - Logs human-readable runtime events.
+   - Clears the log at each new automaton iteration (`mm_log_clear_file`).
+   - Adds section headers/dividers for important phases (snapshot, start, abort, terminal).
+5. **AFL reporter (`mm_afl_reporter`)**:
+   - Registered only when AFL mode is requested.
+   - Uses weak AFL symbols and non-coverage attributes to avoid linker/runtime issues in helper code.
+
+### Instrumentation Mechanic (New)
+
+Current instrumentation behavior is split into two layers: LLVM IR instrumentation and runtime assembly/link configuration.
+
+1. **IR instrumentation phase**:
+   - `opt` loads `LLVMMimicryPasses` and runs `mimicry-instrument`.
+   - The pass injects monitor calls and monitor-policy initialization into the generated IR.
+2. **Runtime composition phase (in `instrument.sh`)**:
+   - Always links `monitor_runtime.c` + `mm_verdict_reporter.c`.
+   - Conditionally links `mm_log_reporter.c` when `-log` is set.
+   - Conditionally enables AFL reporter when `-afl` is set.
+3. **AFL-specific build detail**:
+   - Final target is still compiled with `afl-clang-fast` in AFL mode.
+   - `mm_afl_reporter.c` is compiled separately with `clang` and then linked, to prevent AFL self-instrumentation side effects.
+4. **Runtime execution flow**:
+   - `initAutomaton()` configures reporters, clears per-iteration logs (if enabled), logs automaton snapshot, and emits initial verdict.
+   - `monitorAction()` logs each instruction transition, updates verdict, and reports abort/terminal states with explicit sections.
 
 ## Included tests:
 In the llvm/feli/otherInputs dir there are a few test cases available. Most of them borrowed from the Core Utils GNU Project,

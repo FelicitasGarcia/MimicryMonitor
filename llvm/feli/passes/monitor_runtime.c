@@ -15,6 +15,9 @@
 void mm_register_log_reporter(void);
 void mm_log_set_file(const char *path);
 void mm_log_clear_file(void);
+void mm_log_runtimef(const char *fmt, ...);
+void mm_log_divider(void);
+void mm_log_header(const char *title);
 #endif
 
 #if MM_ENABLE_AFL_REPORTER
@@ -88,6 +91,49 @@ static int shouldAbort(const char *verdict)
     return 0;
 }
 
+static const char *verdictForHumans(const char *verdict)
+{
+    if (!verdict || strcmp(verdict, "NV") == 0 || strcmp(verdict, "UNKNOWN") == 0)
+        return "No Verdict yet";
+    if (strcmp(verdict, "V") == 0)
+        return "V";
+    if (strcmp(verdict, "IV") == 0)
+        return "IV";
+    return verdict;
+}
+
+#if MM_ENABLE_LOG_REPORTER
+static void logAutomatonSnapshot(const char *initialNodeId)
+{
+    mm_log_header("AUTOMATON SNAPSHOT");
+    mm_log_runtimef("init automaton: nodes=%d, initial_node=%s, policy=%s",
+                    automatonSize,
+                    initialNodeId ? initialNodeId : "(null)",
+                    monitorPolicy ? monitorPolicy : "(none)");
+
+    for (int i = 0; i < automatonSize; i++)
+    {
+        const AutomatonNode *n = &automaton[i];
+        mm_log_runtimef("node %s: verdict=%s, terminal=%s, condition=%s, transitions=%d",
+                        n->id ? n->id : "(null)",
+                        verdictForHumans(n->verdict),
+                        n->isTerminal ? "yes" : "no",
+                        (n->conditionName && n->conditionName[0]) ? n->conditionName : "(none)",
+                        n->numTransitions);
+
+        for (int t = 0; t < n->numTransitions; t++)
+        {
+            const AutomatonTransition *tr = &n->transitions[t];
+            mm_log_runtimef("  transition: %s --%s--> %s",
+                            n->id ? n->id : "(null)",
+                            tr->transitionType ? tr->transitionType : "(null)",
+                            tr->targetNodeId ? tr->targetNodeId : "(null)");
+        }
+    }
+    mm_log_divider();
+}
+#endif
+
 static void configureReporters(void)
 {
     if (reportersConfigured)
@@ -143,9 +189,20 @@ void initAutomaton(AutomatonNode *nodes, int size, const char *initialNodeId)
     currentState = initialNodeId;
     stopMonitoring = 0;
 
+#if MM_ENABLE_LOG_REPORTER
+    logAutomatonSnapshot(initialNodeId);
+#endif
+
     AutomatonNode *initial = findNode(currentState);
     if (!initial)
         return;
+
+#if MM_ENABLE_LOG_REPORTER
+    mm_log_header("MONITOR START");
+    mm_log_runtimef("start at node %s, verdict: %s",
+                    currentState,
+                    verdictForHumans(initial->verdict));
+#endif
 
     MMVerdict v = verdictFromString(initial->verdict);
     mm_report_verdict(v);
@@ -186,6 +243,12 @@ void monitorAction(const char *transitionType)
     if (!newState)
     {
         /* Transición no definida — detener sin veredicto */
+#if MM_ENABLE_LOG_REPORTER
+        mm_log_header("MONITOR STOPPED");
+        mm_log_runtimef("instruction executed: %s, node: %s, verdict: No Verdict yet, transition: missing -> monitoring stopped",
+                        transitionType ? transitionType : "(null)",
+                        currentState ? currentState : "(null)");
+#endif
         stopMonitoring = 1;
         automaton = NULL;
         return;
@@ -197,14 +260,36 @@ void monitorAction(const char *transitionType)
     if (!newNode)
         return;
 
+#if MM_ENABLE_LOG_REPORTER
+    mm_log_runtimef("instruction executed: %s, node: %s, verdict: %s",
+                    transitionType ? transitionType : "(null)",
+                    currentState ? currentState : "(null)",
+                    verdictForHumans(newNode->verdict));
+#endif
+
     MMVerdict v = verdictFromString(newNode->verdict);
     mm_report_verdict(v);
 
     if (shouldAbort(newNode->verdict))
+    {
+#if MM_ENABLE_LOG_REPORTER
+        mm_log_header("MONITOR ABORT");
+        mm_log_runtimef("ABORT: policy '%s' triggered at node %s with verdict %s",
+                        monitorPolicy ? monitorPolicy : "(none)",
+                        currentState ? currentState : "(null)",
+                        verdictForHumans(newNode->verdict));
+#endif
         mm_report_abort(v); /* no retorna */
+    }
 
     if (newNode->isTerminal)
     {
+#if MM_ENABLE_LOG_REPORTER
+        mm_log_header("MONITOR TERMINAL");
+        mm_log_runtimef("terminal node reached: %s, verdict: %s",
+                        currentState ? currentState : "(null)",
+                        verdictForHumans(newNode->verdict));
+#endif
         stopMonitoring = 1;
         automaton = NULL;
     }
