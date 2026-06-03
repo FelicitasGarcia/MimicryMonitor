@@ -27,8 +27,8 @@ ILIBS=()
 print_usage() {
   echo "Usage: $0 [options]"
   echo "Options:"
-  echo "  -afl               Compile with afl-clang-fast for fuzzing"
-  echo "  -log [PATH]        Enable logging (default: /tmp/mm_monitor.log)"
+  echo "  -afl               Enable and register AFL reporter"
+  echo "  -log [PATH]        Enable and register log reporter (default: /tmp/mm_monitor.log)"
   echo "  -policy POLICY     Monitor policy: stop-v, stop-iv, or n (default: interactive prompt)"
   echo "  -I FILE1 [FILE2]   Extra libraries to link"
   echo "  -h                 Show this help message"
@@ -165,18 +165,20 @@ echo -e "${BLUE}Step 2:${RESET} Compiling instrumented code..."
 MONITOR_RUNTIME=(
   ../passes/monitor_runtime.c
   ../passes/mm_verdict_reporter.c
-  ../passes/mm_log_reporter.c
 )
 
 CFLAGS=()
 
 if [[ -n "$LOGFILE" ]]; then
   echo -e "${YELLOW}Logging → $LOGFILE${RESET}"
+  CFLAGS+=("-DMM_ENABLE_LOG_REPORTER=1")
   CFLAGS+=("-DMM_LOG_FILE=\"$LOGFILE\"")
+  MONITOR_RUNTIME+=(../passes/mm_log_reporter.c)
 fi
 
 if [[ "$AFLFUZZ" == "1" ]]; then
   echo -e "${YELLOW}Including AFL++ reporter${RESET}"
+  CFLAGS+=("-DMM_ENABLE_AFL_REPORTER=1")
   MONITOR_RUNTIME+=(../passes/mm_afl_reporter.c)
 fi
 

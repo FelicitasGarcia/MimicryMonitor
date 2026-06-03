@@ -7,7 +7,8 @@ static int reporter_count = 0;
 
 void mm_add_reporter(const MMVerdictReporter *reporter) {
     if (!reporter || reporter_count >= MM_MAX_REPORTERS) return;
-    reporters[reporter_count++] = *reporter;
+    reporters[reporter_count] = *reporter;
+    reporter_count++;
 }
 
 void mm_clear_reporters(void) {

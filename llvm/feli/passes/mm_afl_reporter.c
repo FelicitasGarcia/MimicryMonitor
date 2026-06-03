@@ -56,11 +56,4 @@ void mm_register_afl_reporter(void)
     mm_add_reporter(&afl_reporter);
 }
 
-/*
- * Constructor automático: si linkeas este archivo junto al target
- * no necesitás llamar mm_register_afl_reporter() manualmente.
- */
-__attribute__((constructor)) static void mm_afl_auto_register(void)
-{
-    mm_register_afl_reporter();
-}
+/* Sin constructor automático: el runtime decide cuándo registrarlo. */
