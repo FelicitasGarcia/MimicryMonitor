@@ -3,14 +3,25 @@
 #include <string.h>
 
 /* Exportadas por afl-compiler-rt cuando se compila con afl-clang-fast */
+#if defined(__GNUC__) || defined(__clang__)
+extern uint8_t *__afl_area_ptr __attribute__((weak));
+extern uint32_t __afl_map_size __attribute__((weak));
+#else
 extern uint8_t *__afl_area_ptr;
 extern uint32_t __afl_map_size;
+#endif
+
+#if defined(__clang__)
+#define MM_NO_COVERAGE __attribute__((no_sanitize("coverage")))
+#else
+#define MM_NO_COVERAGE
+#endif
 
 /* ------------------------------------------------------------------ */
 /* Callbacks                                                            */
 /* ------------------------------------------------------------------ */
 
-static void afl_on_verdict(MMVerdict verdict, void *ctx)
+static MM_NO_COVERAGE void afl_on_verdict(MMVerdict verdict, void *ctx)
 {
     (void)ctx;
     /*
@@ -25,7 +36,7 @@ static void afl_on_verdict(MMVerdict verdict, void *ctx)
     (void)verdict;
 }
 
-static void afl_on_abort(MMVerdict verdict, void *ctx)
+static MM_NO_COVERAGE void afl_on_abort(MMVerdict verdict, void *ctx)
 {
     (void)ctx;
     (void)verdict;
@@ -33,7 +44,7 @@ static void afl_on_abort(MMVerdict verdict, void *ctx)
      * Limpiamos el bitmap antes de que AFL++ lo lea.
      * Así el input abortado no aporta coverage falsa y AFL++ lo descarta.
      */
-    if (__afl_area_ptr)
+    if (__afl_area_ptr && __afl_map_size)
         memset(__afl_area_ptr, 0, __afl_map_size);
 }
 
@@ -51,7 +62,7 @@ static const MMVerdictReporter afl_reporter = {
  * Llamar esto desde main() del target, o marcar con
  * __attribute__((constructor)) para que se ejecute automáticamente.
  */
-void mm_register_afl_reporter(void)
+MM_NO_COVERAGE void mm_register_afl_reporter(void)
 {
     mm_add_reporter(&afl_reporter);
 }

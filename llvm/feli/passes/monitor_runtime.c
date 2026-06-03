@@ -14,6 +14,7 @@
 #if MM_ENABLE_LOG_REPORTER
 void mm_register_log_reporter(void);
 void mm_log_set_file(const char *path);
+void mm_log_clear_file(void);
 #endif
 
 #if MM_ENABLE_AFL_REPORTER
@@ -132,6 +133,10 @@ void initAutomaton(AutomatonNode *nodes, int size, const char *initialNodeId)
     }
 
     configureReporters();
+
+#if MM_ENABLE_LOG_REPORTER
+    mm_log_clear_file();
+#endif
 
     automaton = nodes;
     automatonSize = size;

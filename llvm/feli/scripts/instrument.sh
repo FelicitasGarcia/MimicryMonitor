@@ -167,6 +167,8 @@ MONITOR_RUNTIME=(
   ../passes/mm_verdict_reporter.c
 )
 
+EXTRA_OBJECTS=()
+
 CFLAGS=()
 
 if [[ -n "$LOGFILE" ]]; then
@@ -179,10 +181,13 @@ fi
 if [[ "$AFLFUZZ" == "1" ]]; then
   echo -e "${YELLOW}Including AFL++ reporter${RESET}"
   CFLAGS+=("-DMM_ENABLE_AFL_REPORTER=1")
-  MONITOR_RUNTIME+=(../passes/mm_afl_reporter.c)
+  AFL_REPORTER_OBJ="../temps/mm_afl_reporter.o"
+  echo -e "${YELLOW}Compiling AFL reporter with clang (no AFL instrumentation):${RESET} $AFL_REPORTER_OBJ"
+  clang -c ../passes/mm_afl_reporter.c -o "$AFL_REPORTER_OBJ"
+  EXTRA_OBJECTS+=("$AFL_REPORTER_OBJ")
 fi
 
-$CC "${CFLAGS[@]}" "$OUTPUT_FILE" "${MONITOR_RUNTIME[@]}" "${OBJECTS[@]}" -o "$EXECUTABLE_NAME"
+$CC "${CFLAGS[@]}" "$OUTPUT_FILE" "${MONITOR_RUNTIME[@]}" "${EXTRA_OBJECTS[@]}" "${OBJECTS[@]}" -o "$EXECUTABLE_NAME"
 
 echo -e "${GREEN}Build complete: ${RESET}$EXECUTABLE_NAME"
 
@@ -194,6 +199,14 @@ if [[ -t 0 ]]; then
     echo -e "${YELLOW}Parameters: ${RESET}"
     read -r params
     echo -e "${BLUE}Running...${RESET}"
-    ./"$EXECUTABLE_NAME" $params
+    read -r -a params_array <<< "$params"
+    set +e
+    ./$EXECUTABLE_NAME "${params_array[@]}"
+    run_status=$?
+    set -e
+    if [[ $run_status -ne 0 ]]; then
+      echo -e "${YELLOW}Instrumented program exited with status ${run_status}.${RESET}"
+    fi
+    echo -e "${BLUE}Finished running, instrumented program available at llvm/feli/outputs/instrumentedPUA${RESET}"
   fi
 fi
