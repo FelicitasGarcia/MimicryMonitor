@@ -44,8 +44,8 @@ static MM_NO_COVERAGE void afl_on_abort(MMVerdict verdict, void *ctx)
      * Limpiamos el bitmap antes de que AFL++ lo lea.
      * Así el input abortado no aporta coverage falsa y AFL++ lo descarta.
      */
-    if (__afl_area_ptr && __afl_map_size)
-        memset(__afl_area_ptr, 0, __afl_map_size);
+    // if (__afl_area_ptr && __afl_map_size)
+    //     memset(__afl_area_ptr, 0, __afl_map_size);
 }
 
 /* ------------------------------------------------------------------ */

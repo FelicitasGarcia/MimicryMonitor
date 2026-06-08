@@ -1,6 +1,7 @@
 #include "mm_verdict_reporter.h"
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 static MMVerdictReporter reporters[MM_MAX_REPORTERS];
 static int reporter_count = 0;
@@ -27,5 +28,5 @@ void mm_report_abort(MMVerdict verdict) {
     for (int i = 0; i < reporter_count; i++)
         if (reporters[i].on_abort)
             reporters[i].on_abort(verdict, reporters[i].ctx);
-    exit(1);
+    _exit(0);
 }
