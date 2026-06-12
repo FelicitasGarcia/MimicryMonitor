@@ -21,7 +21,7 @@ PUA_PATH="$INPUTS_DIR/programPUA.c"
 OP_PATH="$INPUTS_DIR/programOP.c"
 SIGMA_PATH="$INPUTS_DIR/sigma.txt"
 IBOOL=0
-ILIB=""
+ILIBS=()
 RENDER=1
 
 # Detect the platform and set the correct extension
@@ -51,9 +51,14 @@ while [[ $# -gt 0 ]]; do
     -sigma) SIGMA_PATH="$2"; shift 2 ;;
     -h) print_usage ;;
     -no-render) RENDER=0; shift ;;
-    -I) IBOOL=1;
-           ILIB="$2";
-           shift 2;;
+    -I)
+      IBOOL=1
+      shift
+      while [[ $# -gt 0 && ! $1 =~ ^- ]]; do
+        ILIBS+=("$1")
+        shift
+      done
+      ;;
     *) echo -e "${RED}Unknown option: $1${RESET}"; print_usage ;;
   esac
 done
@@ -75,9 +80,11 @@ echo -e "${CYAN}=================================================${RESET}"
 echo -e "${BLUE}Step 1:${RESET} Generating LLVM IR files..."
 
 if [ "$IBOOL" = "1" ]; then
-    echo -e "${YELLOW}Including lib directory in the LL compilation${RESET}"
-    clang -S -I"$ILIB" -Xclang -disable-O0-optnone -g -emit-llvm "$PUA_PATH" -o "$TEMPS_DIR/programPUA.ll"
-    clang -S -I"$ILIB" -Xclang -disable-O0-optnone -g -emit-llvm "$OP_PATH" -o "$TEMPS_DIR/programOP.ll"
+    IFLAGS=()
+    for d in "${ILIBS[@]}"; do IFLAGS+=("-I$d"); done
+    echo -e "${YELLOW}Including lib directories in the LL compilation: ${ILIBS[*]}${RESET}"
+    clang -S "${IFLAGS[@]}" -Xclang -disable-O0-optnone -g -emit-llvm "$PUA_PATH" -o "$TEMPS_DIR/programPUA.ll"
+    clang -S "${IFLAGS[@]}" -Xclang -disable-O0-optnone -g -emit-llvm "$OP_PATH" -o "$TEMPS_DIR/programOP.ll"
 else
     echo -e "${YELLOW}Not including lib directory in the LL compilation${RESET}"
     clang -S -Xclang -disable-O0-optnone -g -emit-llvm "$PUA_PATH" -o "$TEMPS_DIR/programPUA.ll"

@@ -1,54 +1,1867 @@
-Processing instruction:   %8 = load i32, ptr %4, align 4, !dbg !29
-entry@10 | Variable: argc | Action: R
-Processing instruction:   %9 = icmp slt i32 %8, 2, !dbg !31
-Processing instruction:   br i1 %9, label %10, label %16, !dbg !32
-Processing instruction:   %11 = load ptr, ptr @stderr, align 8, !dbg !33
-entry@12 | Variable: stderr | Action: R
-Processing instruction:   %12 = load ptr, ptr %5, align 8, !dbg !35
-entry@12 | Variable: argv | Action: R
-Processing instruction:   %13 = getelementptr inbounds ptr, ptr %12, i64 0, !dbg !35
-Processing instruction:   %14 = load ptr, ptr %13, align 8, !dbg !35
-Processing instruction:   %15 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %11, ptr noundef @.str, ptr noundef %14), !dbg !36
-entry@12 | Variable: .str | Action: R
-entry@12 | Variable: .str | Action: W
-Processing instruction:   store i32 1, ptr %3, align 4, !dbg !37
-Processing instruction:   br label %38, !dbg !37
-Processing instruction:   %17 = load ptr, ptr %5, align 8, !dbg !40
-entry@15 | Variable: argv | Action: R
-Processing instruction:   %18 = getelementptr inbounds ptr, ptr %17, i64 1, !dbg !40
-Processing instruction:   %19 = load ptr, ptr %18, align 8, !dbg !40
-Processing instruction:   %20 = call i32 @atoi(ptr noundef %19) #4, !dbg !41
-Processing instruction:   store i32 %20, ptr %6, align 4, !dbg !39
-entry@15 | Variable: n | Action: W
-Processing instruction:   store i32 10, ptr %7, align 4, !dbg !43
-entry@16 | Variable: result | Action: W
-Processing instruction:   %21 = load i32, ptr %6, align 4, !dbg !44
-entry@17 | Variable: n | Action: R
-Processing instruction:   %22 = icmp slt i32 %21, 0, !dbg !46
-Processing instruction:   br i1 %22, label %23, label %24, !dbg !47
-Processing instruction:   store i32 -1, ptr %7, align 4, !dbg !48
-entry@18 | Variable: result | Action: W
-Processing instruction:   br label %35, !dbg !49
-Processing instruction:   %25 = load i32, ptr %6, align 4, !dbg !50
-entry@19 | Variable: n | Action: R
-Processing instruction:   %26 = icmp eq i32 %25, 0, !dbg !52
-Processing instruction:   br i1 %26, label %27, label %28, !dbg !53
-Processing instruction:   store i32 1, ptr %7, align 4, !dbg !54
-entry@20 | Variable: result | Action: W
-Processing instruction:   br label %34, !dbg !55
-Processing instruction:   %29 = load i32, ptr %6, align 4, !dbg !56
-entry@21 | Variable: n | Action: R
-Processing instruction:   %30 = icmp slt i32 %29, 128, !dbg !58
-Processing instruction:   br i1 %30, label %31, label %32, !dbg !59
-Processing instruction:   store i32 1, ptr %7, align 4, !dbg !60
-entry@22 | Variable: result | Action: W
-Processing instruction:   br label %33, !dbg !61
-Processing instruction:   store i32 2, ptr %7, align 4, !dbg !62
-entry@24 | Variable: result | Action: W
-Processing instruction:   %36 = load i32, ptr %7, align 4, !dbg !63
-entry@25 | Variable: result | Action: R
-Processing instruction:   %37 = sdiv i32 10, %36, !dbg !64
-Processing instruction:   store i32 %37, ptr %3, align 4, !dbg !65
-Processing instruction:   br label %38, !dbg !65
-Processing instruction:   %39 = load i32, ptr %3, align 4, !dbg !66
-Processing instruction:   ret i32 %39, !dbg !66
+Processing instruction:   %3 = load i32, ptr %2, align 4, !dbg !297
+entry@86 | Variable: status | Action: R
+Processing instruction:   %4 = icmp ne i32 %3, 0, !dbg !299
+Processing instruction:   br i1 %4, label %5, label %12, !dbg !300
+Processing instruction:   br label %6, !dbg !301
+Processing instruction:   %7 = load ptr, ptr @stderr, align 8, !dbg !302
+entry@87 | Variable: stderr | Action: R
+Processing instruction:   %8 = call ptr @gettext(ptr noundef @.str) #12, !dbg !302
+entry@87 | Variable: .str | Action: R
+entry@87 | Variable: .str | Action: W
+Processing instruction:   %9 = load ptr, ptr @program_name, align 8, !dbg !302
+entry@87 | Variable: program_name | Action: R
+Processing instruction:   %10 = call i32 (ptr, ptr, ...) @fprintf(ptr noundef %7, ptr noundef %8, ptr noundef %9), !dbg !302
+Processing instruction:   br label %11, !dbg !302
+Processing instruction:   br label %35, !dbg !302
+Processing instruction:   %13 = call ptr @gettext(ptr noundef @.str.1) #12, !dbg !304
+entry@90 | Variable: .str.1 | Action: R
+entry@90 | Variable: .str.1 | Action: W
+Processing instruction:   %14 = load ptr, ptr @program_name, align 8, !dbg !306
+entry@93 | Variable: program_name | Action: R
+Processing instruction:   %15 = call i32 (ptr, ...) @printf(ptr noundef %13, ptr noundef %14), !dbg !307
+Processing instruction:   %16 = call ptr @gettext(ptr noundef @.str.2) #12, !dbg !308
+entry@94 | Variable: .str.2 | Action: R
+entry@94 | Variable: .str.2 | Action: W
+Processing instruction:   %17 = load ptr, ptr @stdout, align 8, !dbg !308
+entry@94 | Variable: stdout | Action: R
+Processing instruction:   %18 = call i32 @fputs_unlocked(ptr noundef %16, ptr noundef %17), !dbg !308
+Processing instruction:   call void @emit_stdin_note(), !dbg !309
+Processing instruction:   %19 = call ptr @gettext(ptr noundef @.str.3) #12, !dbg !310
+entry@100 | Variable: .str.3 | Action: R
+entry@100 | Variable: .str.3 | Action: W
+Processing instruction:   %20 = load ptr, ptr @stdout, align 8, !dbg !310
+entry@100 | Variable: stdout | Action: R
+Processing instruction:   %21 = call i32 @fputs_unlocked(ptr noundef %19, ptr noundef %20), !dbg !310
+Processing instruction:   %22 = call ptr @gettext(ptr noundef @.str.4) #12, !dbg !311
+entry@109 | Variable: .str.4 | Action: R
+entry@109 | Variable: .str.4 | Action: W
+Processing instruction:   %23 = load ptr, ptr @stdout, align 8, !dbg !311
+entry@109 | Variable: stdout | Action: R
+Processing instruction:   %24 = call i32 @fputs_unlocked(ptr noundef %22, ptr noundef %23), !dbg !311
+Processing instruction:   %25 = call ptr @gettext(ptr noundef @.str.5) #12, !dbg !312
+entry@115 | Variable: .str.5 | Action: R
+entry@115 | Variable: .str.5 | Action: W
+Processing instruction:   %26 = load ptr, ptr @stdout, align 8, !dbg !312
+entry@115 | Variable: stdout | Action: R
+Processing instruction:   %27 = call i32 @fputs_unlocked(ptr noundef %25, ptr noundef %26), !dbg !312
+Processing instruction:   %28 = call ptr @gettext(ptr noundef @.str.6) #12, !dbg !313
+entry@116 | Variable: .str.6 | Action: R
+entry@116 | Variable: .str.6 | Action: W
+Processing instruction:   %29 = load ptr, ptr @stdout, align 8, !dbg !313
+entry@116 | Variable: stdout | Action: R
+Processing instruction:   %30 = call i32 @fputs_unlocked(ptr noundef %28, ptr noundef %29), !dbg !313
+Processing instruction:   %31 = call ptr @gettext(ptr noundef @.str.7) #12, !dbg !314
+entry@117 | Variable: .str.7 | Action: R
+entry@117 | Variable: .str.7 | Action: W
+Processing instruction:   %32 = load ptr, ptr @program_name, align 8, !dbg !315
+entry@123 | Variable: program_name | Action: R
+Processing instruction:   %33 = load ptr, ptr @program_name, align 8, !dbg !316
+entry@123 | Variable: program_name | Action: R
+Processing instruction:   %34 = call i32 (ptr, ...) @printf(ptr noundef %31, ptr noundef %32, ptr noundef %33), !dbg !317
+Processing instruction:   call void @emit_ancillary_info(ptr noundef @.str.8), !dbg !318
+entry@124 | Variable: .str.8 | Action: R
+entry@124 | Variable: .str.8 | Action: W
+Processing instruction:   %36 = load i32, ptr %2, align 4, !dbg !319
+entry@126 | Variable: status | Action: R
+Processing instruction:   call void @exit(i32 noundef %36) #13, !dbg !320
+Processing instruction:   unreachable, !dbg !320
+Processing instruction:   %1 = call ptr @gettext(ptr noundef @.str.32) #12, !dbg !295
+entry@533 | Variable: .str.32 | Action: R
+entry@533 | Variable: .str.32 | Action: W
+Processing instruction:   %2 = load ptr, ptr @stdout, align 8, !dbg !295
+entry@533 | Variable: stdout | Action: R
+Processing instruction:   %3 = call i32 @fputs_unlocked(ptr noundef %1, ptr noundef %2), !dbg !295
+Processing instruction:   ret void, !dbg !296
+Processing instruction:   call void @llvm.memcpy.p0.p0.i64(ptr align 16 %3, ptr align 16 @__const.emit_ancillary_info.infomap, i64 112, i1 false), !dbg !304
+entry@633 | Variable: infomap | Action: R
+entry@633 | Variable: __const.emit_ancillary_info.infomap | Action: R
+entry@633 | Variable: infomap | Action: W
+entry@633 | Variable: __const.emit_ancillary_info.infomap | Action: W
+Processing instruction:   %8 = load ptr, ptr %2, align 8, !dbg !307
+entry@643 | Variable: program | Action: R
+Processing instruction:   store ptr %8, ptr %4, align 8, !dbg !306
+entry@643 | Variable: node | Action: W
+Processing instruction:   %9 = getelementptr inbounds [7 x %struct.infomap], ptr %3, i64 0, i64 0, !dbg !311
+entry@644 | Variable: infomap | Action: R
+Processing instruction:   store ptr %9, ptr %5, align 8, !dbg !310
+entry@644 | Variable: map_prog | Action: W
+Processing instruction:   br label %10, !dbg !312
+Processing instruction:   %11 = load ptr, ptr %5, align 8, !dbg !313
+entry@646 | Variable: map_prog | Action: R
+Processing instruction:   %12 = getelementptr inbounds %struct.infomap, ptr %11, i32 0, i32 0, !dbg !314
+Processing instruction:   %13 = load ptr, ptr %12, align 8, !dbg !314
+Processing instruction:   %14 = icmp ne ptr %13, null, !dbg !313
+Processing instruction:   br i1 %14, label %15, label %23, !dbg !315
+Processing instruction:   %16 = load ptr, ptr %2, align 8, !dbg !316
+entry@646 | Variable: program | Action: R
+Processing instruction:   %17 = load ptr, ptr %5, align 8, !dbg !316
+entry@646 | Variable: map_prog | Action: R
+Processing instruction:   %18 = getelementptr inbounds %struct.infomap, ptr %17, i32 0, i32 0, !dbg !316
+Processing instruction:   %19 = load ptr, ptr %18, align 8, !dbg !316
+Processing instruction:   %20 = call i32 @strcmp(ptr noundef %16, ptr noundef %19) #12, !dbg !316
+entry@646 | Variable: infomap | Action: W (via alias)
+entry@646 | Variable: infomap | Action: W (via alias)
+Processing instruction:   %21 = icmp eq i32 %20, 0, !dbg !316
+Processing instruction:   %22 = xor i1 %21, true, !dbg !317
+Processing instruction:   %24 = phi i1 [ false, %10 ], [ %22, %15 ], !dbg !318
+Processing instruction:   br i1 %24, label %25, label %28, !dbg !312
+Processing instruction:   %26 = load ptr, ptr %5, align 8, !dbg !319
+entry@647 | Variable: map_prog | Action: R
+Processing instruction:   %27 = getelementptr inbounds %struct.infomap, ptr %26, i32 1, !dbg !319
+Processing instruction:   store ptr %27, ptr %5, align 8, !dbg !319
+entry@647 | Variable: map_prog | Action: W
+Processing instruction:   br label %10, !dbg !312, !llvm.loop !320
+Processing instruction:   %29 = load ptr, ptr %5, align 8, !dbg !322
+entry@649 | Variable: map_prog | Action: R
+Processing instruction:   %30 = getelementptr inbounds %struct.infomap, ptr %29, i32 0, i32 1, !dbg !324
+Processing instruction:   %31 = load ptr, ptr %30, align 8, !dbg !324
+Processing instruction:   %32 = icmp ne ptr %31, null, !dbg !322
+Processing instruction:   br i1 %32, label %33, label %37, !dbg !325
+Processing instruction:   %34 = load ptr, ptr %5, align 8, !dbg !326
+entry@650 | Variable: map_prog | Action: R
+Processing instruction:   %35 = getelementptr inbounds %struct.infomap, ptr %34, i32 0, i32 1, !dbg !327
+Processing instruction:   %36 = load ptr, ptr %35, align 8, !dbg !327
+Processing instruction:   store ptr %36, ptr %4, align 8, !dbg !328
+entry@650 | Variable: node | Action: W
+Processing instruction:   br label %37, !dbg !329
+Processing instruction:   call void @emit_bug_reporting_address(), !dbg !330
+Processing instruction:   %38 = call ptr @setlocale(i32 noundef 5, ptr noundef null) #13, !dbg !333
+Processing instruction:   store ptr %38, ptr %6, align 8, !dbg !332
+entry@656 | Variable: lc_messages | Action: W
+Processing instruction:   %39 = load ptr, ptr %6, align 8, !dbg !334
+entry@657 | Variable: lc_messages | Action: R
+Processing instruction:   %40 = icmp ne ptr %39, null, !dbg !334
+Processing instruction:   br i1 %40, label %41, label %49, !dbg !336
+Processing instruction:   %42 = load ptr, ptr %6, align 8, !dbg !337
+entry@657 | Variable: lc_messages | Action: R
+Processing instruction:   %43 = call i32 @strncmp(ptr noundef %42, ptr noundef @.str.41, i64 noundef 3) #12, !dbg !337
+entry@657 | Variable: .str.41 | Action: R
+entry@657 | Variable: infomap | Action: W (via alias)
+entry@657 | Variable: .str.41 | Action: W
+Processing instruction:   %44 = icmp ne i32 %43, 0, !dbg !337
+Processing instruction:   br i1 %44, label %45, label %49, !dbg !338
+Processing instruction:   %46 = call ptr @gettext(ptr noundef @.str.42) #13, !dbg !339
+entry@663 | Variable: .str.42 | Action: R
+entry@663 | Variable: .str.42 | Action: W
+Processing instruction:   %47 = load ptr, ptr @stdout, align 8, !dbg !339
+entry@663 | Variable: stdout | Action: R
+Processing instruction:   %48 = call i32 @fputs_unlocked(ptr noundef %46, ptr noundef %47), !dbg !339
+entry@663 | Variable: infomap | Action: W (via alias)
+entry@663 | Variable: infomap | Action: W (via alias)
+Processing instruction:   br label %49, !dbg !341
+Processing instruction:   %50 = load ptr, ptr %2, align 8, !dbg !344
+entry@669 | Variable: program | Action: R
+Processing instruction:   %51 = call i32 @strcmp(ptr noundef %50, ptr noundef @.str.33) #12, !dbg !344
+entry@669 | Variable: .str.33 | Action: R
+entry@669 | Variable: infomap | Action: W (via alias)
+entry@669 | Variable: .str.33 | Action: W
+Processing instruction:   %52 = icmp eq i32 %51, 0, !dbg !344
+Processing instruction:   br i1 %52, label %53, label %54, !dbg !344
+Processing instruction:   br label %56, !dbg !344
+Processing instruction:   %55 = load ptr, ptr %2, align 8, !dbg !345
+entry@669 | Variable: program | Action: R
+Processing instruction:   br label %56, !dbg !344
+Processing instruction:   %57 = phi ptr [ @.str.43, %53 ], [ %55, %54 ], !dbg !344
+Processing instruction:   store ptr %57, ptr %7, align 8, !dbg !343
+entry@669 | Variable: url_program | Action: W
+Processing instruction:   %58 = call ptr @gettext(ptr noundef @.str.44) #13, !dbg !346
+entry@670 | Variable: .str.44 | Action: R
+entry@670 | Variable: .str.44 | Action: W
+Processing instruction:   %59 = load ptr, ptr %7, align 8, !dbg !347
+entry@671 | Variable: url_program | Action: R
+Processing instruction:   %60 = call i32 (ptr, ...) @printf(ptr noundef %58, ptr noundef @.str.45, ptr noundef %59), !dbg !348
+entry@670 | Variable: .str.45 | Action: R
+entry@670 | Variable: infomap | Action: W (via alias)
+entry@670 | Variable: .str.45 | Action: W
+entry@670 | Variable: infomap | Action: W (via alias)
+Processing instruction:   %61 = call ptr @gettext(ptr noundef @.str.46) #13, !dbg !349
+entry@672 | Variable: .str.46 | Action: R
+entry@672 | Variable: .str.46 | Action: W
+Processing instruction:   %62 = load ptr, ptr %4, align 8, !dbg !350
+entry@673 | Variable: node | Action: R
+Processing instruction:   %63 = load ptr, ptr %4, align 8, !dbg !351
+entry@673 | Variable: node | Action: R
+Processing instruction:   %64 = load ptr, ptr %2, align 8, !dbg !352
+entry@673 | Variable: program | Action: R
+Processing instruction:   %65 = icmp eq ptr %63, %64, !dbg !353
+Processing instruction:   %66 = zext i1 %65 to i64, !dbg !351
+Processing instruction:   %67 = select i1 %65, ptr @.str.47, ptr @.str.18, !dbg !351
+Processing instruction:   %68 = call i32 (ptr, ...) @printf(ptr noundef %61, ptr noundef %62, ptr noundef %67), !dbg !354
+entry@672 | Variable: infomap | Action: W (via alias)
+entry@672 | Variable: infomap | Action: W (via alias)
+Processing instruction:   ret void, !dbg !355
+Processing instruction:   store i8 0, ptr %6, align 1, !dbg !297
+entry@533 | Variable: have_read_stdin | Action: W
+Processing instruction:   store i8 0, ptr %8, align 1, !dbg !338
+entry@538 | Variable: number | Action: W
+Processing instruction:   store i8 0, ptr %9, align 1, !dbg !340
+entry@539 | Variable: number_nonblank | Action: W
+Processing instruction:   store i8 0, ptr %10, align 1, !dbg !342
+entry@540 | Variable: squeeze_blank | Action: W
+Processing instruction:   store i8 0, ptr %11, align 1, !dbg !344
+entry@541 | Variable: show_ends | Action: W
+Processing instruction:   store i8 0, ptr %12, align 1, !dbg !346
+entry@542 | Variable: show_nonprinting | Action: W
+Processing instruction:   store i8 0, ptr %13, align 1, !dbg !348
+entry@543 | Variable: show_tabs | Action: W
+Processing instruction:   store i32 0, ptr %14, align 4, !dbg !350
+entry@544 | Variable: file_open_mode | Action: W
+Processing instruction:   %33 = load ptr, ptr %5, align 8, !dbg !351
+entry@561 | Variable: argv | Action: R
+Processing instruction:   %34 = getelementptr inbounds ptr, ptr %33, i64 0, !dbg !351
+Processing instruction:   %35 = load ptr, ptr %34, align 8, !dbg !351
+Processing instruction:   call void @set_program_name(ptr noundef %35), !dbg !352
+entry@561 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   %36 = call ptr @setlocale(i32 noundef 6, ptr noundef @.str.18) #12, !dbg !353
+entry@562 | Variable: .str.18 | Action: R
+entry@562 | Variable: .str.18 | Action: W
+Processing instruction:   %37 = call ptr @bindtextdomain(ptr noundef @.str.19, ptr noundef @.str.20) #12, !dbg !354
+entry@563 | Variable: .str.19 | Action: R
+entry@563 | Variable: .str.20 | Action: R
+entry@563 | Variable: .str.19 | Action: W
+entry@563 | Variable: .str.20 | Action: W
+Processing instruction:   %38 = call ptr @textdomain(ptr noundef @.str.19) #12, !dbg !355
+entry@564 | Variable: .str.19 | Action: R
+entry@564 | Variable: .str.19 | Action: W
+Processing instruction:   %39 = call i32 @atexit(ptr noundef @close_stdout) #12, !dbg !356
+entry@570 | Variable: close_stdout | Action: R
+entry@570 | Variable: close_stdout | Action: W
+Processing instruction:   br label %40, !dbg !359
+Processing instruction:   %41 = load i32, ptr %4, align 4, !dbg !360
+entry@575 | Variable: argc | Action: R
+Processing instruction:   %42 = load ptr, ptr %5, align 8, !dbg !361
+entry@575 | Variable: argv | Action: R
+Processing instruction:   %43 = call i32 @getopt_long(i32 noundef %41, ptr noundef %42, ptr noundef @.str.21, ptr noundef @main.long_options, ptr noundef null) #12, !dbg !362
+entry@575 | Variable: .str.21 | Action: R
+entry@575 | Variable: main.long_options | Action: R
+entry@575 | Variable: stat_buf | Action: W (via alias)
+entry@575 | Variable: .str.21 | Action: W
+entry@575 | Variable: main.long_options | Action: W
+Processing instruction:   store i32 %43, ptr %15, align 4, !dbg !363
+entry@575 | Variable: c | Action: W
+Processing instruction:   %44 = icmp ne i32 %43, -1, !dbg !364
+Processing instruction:   br i1 %44, label %45, label %65, !dbg !359
+Processing instruction:   %46 = load i32, ptr %15, align 4, !dbg !365
+entry@578 | Variable: c | Action: R
+Processing instruction:   switch i32 %46, label %63 [
+    i32 98, label %47
+    i32 101, label %48
+    i32 110, label %49
+    i32 115, label %50
+    i32 116, label %51
+    i32 117, label %52
+    i32 118, label %53
+    i32 65, label %54
+    i32 69, label %55
+    i32 84, label %56
+    i32 -130, label %57
+    i32 -131, label %58
+  ], !dbg !367
+Processing instruction:   store i8 1, ptr %8, align 1, !dbg !368
+entry@581 | Variable: number | Action: W
+Processing instruction:   store i8 1, ptr %9, align 1, !dbg !370
+entry@582 | Variable: number_nonblank | Action: W
+Processing instruction:   br label %64, !dbg !371
+Processing instruction:   store i8 1, ptr %11, align 1, !dbg !372
+entry@586 | Variable: show_ends | Action: W
+Processing instruction:   store i8 1, ptr %12, align 1, !dbg !373
+entry@587 | Variable: show_nonprinting | Action: W
+Processing instruction:   br label %64, !dbg !374
+Processing instruction:   store i8 1, ptr %8, align 1, !dbg !375
+entry@591 | Variable: number | Action: W
+Processing instruction:   br label %64, !dbg !376
+Processing instruction:   store i8 1, ptr %10, align 1, !dbg !377
+entry@595 | Variable: squeeze_blank | Action: W
+Processing instruction:   br label %64, !dbg !378
+Processing instruction:   store i8 1, ptr %13, align 1, !dbg !379
+entry@599 | Variable: show_tabs | Action: W
+Processing instruction:   store i8 1, ptr %12, align 1, !dbg !380
+entry@600 | Variable: show_nonprinting | Action: W
+Processing instruction:   br label %64, !dbg !381
+Processing instruction:   br label %64, !dbg !382
+Processing instruction:   store i8 1, ptr %12, align 1, !dbg !383
+entry@608 | Variable: show_nonprinting | Action: W
+Processing instruction:   br label %64, !dbg !384
+Processing instruction:   store i8 1, ptr %12, align 1, !dbg !385
+entry@612 | Variable: show_nonprinting | Action: W
+Processing instruction:   store i8 1, ptr %11, align 1, !dbg !386
+entry@613 | Variable: show_ends | Action: W
+Processing instruction:   store i8 1, ptr %13, align 1, !dbg !387
+entry@614 | Variable: show_tabs | Action: W
+Processing instruction:   br label %64, !dbg !388
+Processing instruction:   store i8 1, ptr %11, align 1, !dbg !389
+entry@618 | Variable: show_ends | Action: W
+Processing instruction:   br label %64, !dbg !390
+Processing instruction:   store i8 1, ptr %13, align 1, !dbg !391
+entry@622 | Variable: show_tabs | Action: W
+Processing instruction:   br label %64, !dbg !392
+Processing instruction:   call void @usage(i32 noundef 0) #13, !dbg !393
+Processing instruction:   unreachable, !dbg !393
+Processing instruction:   %59 = load ptr, ptr @stdout, align 8, !dbg !394
+entry@627 | Variable: stdout | Action: R
+Processing instruction:   %60 = load ptr, ptr @Version, align 8, !dbg !394
+entry@627 | Variable: Version | Action: R
+Processing instruction:   %61 = call ptr @proper_name_lite(ptr noundef @.str.23, ptr noundef @.str.24), !dbg !394
+entry@627 | Variable: .str.23 | Action: R
+entry@627 | Variable: .str.24 | Action: R
+entry@627 | Variable: .str.23 | Action: W
+entry@627 | Variable: .str.24 | Action: W
+Processing instruction:   %62 = call ptr @proper_name_lite(ptr noundef @.str.25, ptr noundef @.str.25), !dbg !394
+entry@627 | Variable: .str.25 | Action: R
+entry@627 | Variable: .str.25 | Action: W
+Processing instruction:   call void (ptr, ptr, ptr, ptr, ...) @version_etc(ptr noundef %59, ptr noundef @.str.8, ptr noundef @.str.22, ptr noundef %60, ptr noundef %61, ptr noundef %62, ptr noundef null), !dbg !394
+entry@627 | Variable: .str.8 | Action: R
+entry@627 | Variable: .str.22 | Action: R
+entry@627 | Variable: stat_buf | Action: W (via alias)
+entry@627 | Variable: .str.8 | Action: W
+entry@627 | Variable: .str.22 | Action: W
+entry@627 | Variable: stat_buf | Action: W (via alias)
+entry@627 | Variable: stat_buf | Action: W (via alias)
+entry@627 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   call void @exit(i32 noundef 0) #14, !dbg !394
+Processing instruction:   unreachable, !dbg !394
+Processing instruction:   call void @usage(i32 noundef 1) #13, !dbg !395
+Processing instruction:   unreachable, !dbg !395
+Processing instruction:   br label %40, !dbg !359, !llvm.loop !396
+Processing instruction:   %66 = call i32 @fstat(i32 noundef 1, ptr noundef %7) #12, !dbg !399
+entry@636 | Variable: stat_buf | Action: R
+entry@636 | Variable: stat_buf | Action: W
+Processing instruction:   %67 = icmp slt i32 %66, 0, !dbg !401
+Processing instruction:   br i1 %67, label %68, label %72, !dbg !402
+Processing instruction:   %69 = call ptr @__errno_location() #15, !dbg !403
+Processing instruction:   %70 = load i32, ptr %69, align 4, !dbg !403
+Processing instruction:   %71 = call ptr @gettext(ptr noundef @.str.26) #12, !dbg !403
+entry@637 | Variable: .str.26 | Action: R
+entry@637 | Variable: .str.26 | Action: W
+Processing instruction:   call void (i32, i32, ptr, ...) @error(i32 noundef 1, i32 noundef %70, ptr noundef %71) #16, !dbg !403
+entry@637 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   unreachable, !dbg !403
+Processing instruction:   %73 = call i64 @io_blksize(ptr noundef %7), !dbg !410
+entry@640 | Variable: stat_buf | Action: R
+entry@640 | Variable: stat_buf | Action: W
+Processing instruction:   store i64 %73, ptr %16, align 8, !dbg !409
+entry@640 | Variable: outsize | Action: W
+Processing instruction:   store i32 -2, ptr %19, align 4, !dbg !419
+entry@645 | Variable: out_flags | Action: W
+Processing instruction:   %74 = getelementptr inbounds %struct.stat, ptr %7, i32 0, i32 3, !dbg !422
+entry@646 | Variable: stat_buf | Action: R
+Processing instruction:   %75 = load i32, ptr %74, align 8, !dbg !422
+Processing instruction:   %76 = getelementptr inbounds %struct.stat, ptr %7, i32 0, i32 3, !dbg !422
+entry@646 | Variable: stat_buf | Action: R
+Processing instruction:   %77 = load i32, ptr %76, align 8, !dbg !422
+Processing instruction:   %78 = sub i32 %75, %77, !dbg !422
+Processing instruction:   %79 = icmp ne i32 %78, 0, !dbg !422
+Processing instruction:   br i1 %79, label %81, label %80, !dbg !423
+Processing instruction:   br label %81, !dbg !423
+Processing instruction:   %83 = xor i1 %82, true, !dbg !424
+Processing instruction:   %84 = zext i1 %83 to i8, !dbg !421
+Processing instruction:   store i8 %84, ptr %20, align 1, !dbg !421
+entry@646 | Variable: have_out_dev | Action: W
+Processing instruction:   %85 = load i8, ptr %20, align 1, !dbg !425
+entry@647 | Variable: have_out_dev | Action: R
+Processing instruction:   %86 = trunc i8 %85 to i1, !dbg !425
+Processing instruction:   br i1 %86, label %87, label %92, !dbg !427
+Processing instruction:   %88 = getelementptr inbounds %struct.stat, ptr %7, i32 0, i32 0, !dbg !428
+entry@649 | Variable: stat_buf | Action: R
+Processing instruction:   %89 = load i64, ptr %88, align 8, !dbg !428
+Processing instruction:   store i64 %89, ptr %17, align 8, !dbg !430
+entry@649 | Variable: out_dev | Action: W
+Processing instruction:   %90 = getelementptr inbounds %struct.stat, ptr %7, i32 0, i32 1, !dbg !431
+entry@650 | Variable: stat_buf | Action: R
+Processing instruction:   %91 = load i64, ptr %90, align 8, !dbg !431
+Processing instruction:   store i64 %91, ptr %18, align 8, !dbg !432
+entry@650 | Variable: out_ino | Action: W
+Processing instruction:   br label %92, !dbg !433
+Processing instruction:   %93 = getelementptr inbounds %struct.stat, ptr %7, i32 0, i32 3, !dbg !436
+entry@654 | Variable: stat_buf | Action: R
+Processing instruction:   %94 = load i32, ptr %93, align 8, !dbg !436
+Processing instruction:   %95 = and i32 %94, 61440, !dbg !436
+Processing instruction:   %96 = icmp eq i32 %95, 32768, !dbg !436
+Processing instruction:   %97 = zext i1 %96 to i32, !dbg !436
+Processing instruction:   %98 = icmp ne i32 %97, 0, !dbg !437
+Processing instruction:   %99 = zext i1 %98 to i8, !dbg !435
+Processing instruction:   store i8 %99, ptr %21, align 1, !dbg !435
+entry@654 | Variable: out_isreg | Action: W
+Processing instruction:   %100 = load i8, ptr %8, align 1, !dbg !438
+entry@656 | Variable: number | Action: R
+Processing instruction:   %101 = trunc i8 %100 to i1, !dbg !438
+Processing instruction:   br i1 %101, label %111, label %102, !dbg !440
+Processing instruction:   %103 = load i8, ptr %11, align 1, !dbg !441
+entry@656 | Variable: show_ends | Action: R
+Processing instruction:   %104 = trunc i8 %103 to i1, !dbg !441
+Processing instruction:   br i1 %104, label %111, label %105, !dbg !442
+Processing instruction:   %106 = load i8, ptr %10, align 1, !dbg !443
+entry@656 | Variable: squeeze_blank | Action: R
+Processing instruction:   %107 = trunc i8 %106 to i1, !dbg !443
+Processing instruction:   br i1 %107, label %111, label %108, !dbg !444
+Processing instruction:   %109 = load i32, ptr %14, align 4, !dbg !445
+entry@658 | Variable: file_open_mode | Action: R
+Processing instruction:   %110 = or i32 %109, 0, !dbg !445
+Processing instruction:   store i32 %110, ptr %14, align 4, !dbg !445
+entry@658 | Variable: file_open_mode | Action: W
+Processing instruction:   call void @xset_binary_mode(i32 noundef 1, i32 noundef 0), !dbg !447
+Processing instruction:   br label %111, !dbg !448
+Processing instruction:   store ptr @.str.27, ptr @infile, align 8, !dbg !449
+entry@664 | Variable: .str.27 | Action: R
+entry@664 | Variable: infile | Action: W
+Processing instruction:   %112 = load i32, ptr @optind, align 4, !dbg !452
+entry@665 | Variable: optind | Action: R
+Processing instruction:   store i32 %112, ptr %22, align 4, !dbg !451
+entry@665 | Variable: argind | Action: W
+Processing instruction:   store i8 1, ptr %23, align 1, !dbg !454
+entry@666 | Variable: ok | Action: W
+Processing instruction:   %113 = call i32 @getpagesize() #15, !dbg !457
+Processing instruction:   %114 = sext i32 %113 to i64, !dbg !457
+Processing instruction:   store i64 %114, ptr %24, align 8, !dbg !456
+entry@667 | Variable: page_size | Action: W
+Processing instruction:   br label %115, !dbg !458
+Processing instruction:   %116 = load i32, ptr %22, align 4, !dbg !459
+entry@671 | Variable: argind | Action: R
+Processing instruction:   %117 = load i32, ptr %4, align 4, !dbg !462
+entry@671 | Variable: argc | Action: R
+Processing instruction:   %118 = icmp slt i32 %116, %117, !dbg !463
+Processing instruction:   br i1 %118, label %119, label %125, !dbg !464
+Processing instruction:   %120 = load ptr, ptr %5, align 8, !dbg !465
+entry@672 | Variable: argv | Action: R
+Processing instruction:   %121 = load i32, ptr %22, align 4, !dbg !466
+entry@672 | Variable: argind | Action: R
+Processing instruction:   %122 = sext i32 %121 to i64, !dbg !465
+Processing instruction:   %123 = getelementptr inbounds ptr, ptr %120, i64 %122, !dbg !465
+Processing instruction:   %124 = load ptr, ptr %123, align 8, !dbg !465
+Processing instruction:   store ptr %124, ptr @infile, align 8, !dbg !467
+entry@672 | Variable: infile | Action: W
+Processing instruction:   br label %125, !dbg !468
+Processing instruction:   %126 = load ptr, ptr @infile, align 8, !dbg !471
+entry@674 | Variable: infile | Action: R
+Processing instruction:   %127 = call i32 @strcmp(ptr noundef %126, ptr noundef @.str.27) #17, !dbg !471
+entry@674 | Variable: .str.27 | Action: R
+entry@674 | Variable: stat_buf | Action: W (via alias)
+entry@674 | Variable: .str.27 | Action: W
+Processing instruction:   %128 = icmp eq i32 %127, 0, !dbg !471
+Processing instruction:   %129 = zext i1 %128 to i8, !dbg !470
+Processing instruction:   store i8 %129, ptr %25, align 1, !dbg !470
+entry@674 | Variable: reading_stdin | Action: W
+Processing instruction:   %130 = load i8, ptr %25, align 1, !dbg !472
+entry@675 | Variable: reading_stdin | Action: R
+Processing instruction:   %131 = trunc i8 %130 to i1, !dbg !472
+Processing instruction:   br i1 %131, label %132, label %138, !dbg !474
+Processing instruction:   store i8 1, ptr %6, align 1, !dbg !475
+entry@677 | Variable: have_read_stdin | Action: W
+Processing instruction:   store i32 0, ptr @input_desc, align 4, !dbg !477
+entry@678 | Variable: input_desc | Action: W
+Processing instruction:   %133 = load i32, ptr %14, align 4, !dbg !478
+entry@679 | Variable: file_open_mode | Action: R
+Processing instruction:   %134 = and i32 %133, 0, !dbg !480
+Processing instruction:   %135 = icmp ne i32 %134, 0, !dbg !480
+Processing instruction:   br i1 %135, label %136, label %137, !dbg !481
+Processing instruction:   call void @xset_binary_mode(i32 noundef 0, i32 noundef 0), !dbg !482
+Processing instruction:   br label %137, !dbg !482
+Processing instruction:   br label %150, !dbg !483
+Processing instruction:   %139 = load ptr, ptr @infile, align 8, !dbg !484
+entry@684 | Variable: infile | Action: R
+Processing instruction:   %140 = load i32, ptr %14, align 4, !dbg !486
+entry@684 | Variable: file_open_mode | Action: R
+Processing instruction:   %141 = call i32 (ptr, i32, ...) @open(ptr noundef %139, i32 noundef %140), !dbg !487
+entry@684 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   store i32 %141, ptr @input_desc, align 4, !dbg !488
+entry@684 | Variable: input_desc | Action: W
+Processing instruction:   %142 = load i32, ptr @input_desc, align 4, !dbg !489
+entry@685 | Variable: input_desc | Action: R
+Processing instruction:   %143 = icmp slt i32 %142, 0, !dbg !491
+Processing instruction:   br i1 %143, label %144, label %149, !dbg !492
+Processing instruction:   %145 = call ptr @__errno_location() #15, !dbg !493
+Processing instruction:   %146 = load i32, ptr %145, align 4, !dbg !493
+Processing instruction:   %147 = load ptr, ptr @infile, align 8, !dbg !493
+entry@687 | Variable: infile | Action: R
+Processing instruction:   %148 = call ptr @quotearg_n_style_colon(i32 noundef 0, i32 noundef 3, ptr noundef %147), !dbg !493
+entry@687 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   call void (i32, i32, ptr, ...) @error(i32 noundef 0, i32 noundef %146, ptr noundef @.str.28, ptr noundef %148) #16, !dbg !493
+entry@687 | Variable: .str.28 | Action: R
+entry@687 | Variable: .str.28 | Action: W
+entry@687 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   store i8 0, ptr %23, align 1, !dbg !495
+entry@688 | Variable: ok | Action: W
+Processing instruction:   br label %351, !dbg !496
+Processing instruction:   %151 = load i32, ptr @input_desc, align 4, !dbg !497
+entry@693 | Variable: input_desc | Action: R
+Processing instruction:   %152 = call i32 @fstat(i32 noundef %151, ptr noundef %7) #12, !dbg !499
+entry@693 | Variable: stat_buf | Action: R
+entry@693 | Variable: stat_buf | Action: W
+Processing instruction:   %153 = icmp slt i32 %152, 0, !dbg !500
+Processing instruction:   br i1 %153, label %154, label %159, !dbg !501
+Processing instruction:   %155 = call ptr @__errno_location() #15, !dbg !502
+Processing instruction:   %156 = load i32, ptr %155, align 4, !dbg !502
+Processing instruction:   %157 = load ptr, ptr @infile, align 8, !dbg !502
+entry@695 | Variable: infile | Action: R
+Processing instruction:   %158 = call ptr @quotearg_n_style_colon(i32 noundef 0, i32 noundef 3, ptr noundef %157), !dbg !502
+entry@695 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   call void (i32, i32, ptr, ...) @error(i32 noundef 0, i32 noundef %156, ptr noundef @.str.28, ptr noundef %158) #16, !dbg !502
+entry@695 | Variable: .str.28 | Action: R
+entry@695 | Variable: .str.28 | Action: W
+entry@695 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   store i8 0, ptr %23, align 1, !dbg !504
+entry@696 | Variable: ok | Action: W
+Processing instruction:   br label %338, !dbg !505
+Processing instruction:   %160 = call i64 @io_blksize(ptr noundef %7), !dbg !508
+entry@701 | Variable: stat_buf | Action: R
+entry@701 | Variable: stat_buf | Action: W
+Processing instruction:   store i64 %160, ptr %26, align 8, !dbg !507
+entry@701 | Variable: insize | Action: W
+Processing instruction:   %161 = load i32, ptr @input_desc, align 4, !dbg !509
+entry@703 | Variable: input_desc | Action: R
+Processing instruction:   call void @fdadvise(i32 noundef %161, i64 noundef 0, i64 noundef 0, i32 noundef 2), !dbg !510
+Processing instruction:   %162 = getelementptr inbounds %struct.stat, ptr %7, i32 0, i32 3, !dbg !511
+entry@709 | Variable: stat_buf | Action: R
+Processing instruction:   %163 = load i32, ptr %162, align 8, !dbg !511
+Processing instruction:   %164 = and i32 %163, 61440, !dbg !511
+Processing instruction:   %165 = icmp eq i32 %164, 4096, !dbg !511
+Processing instruction:   br i1 %165, label %222, label %166, !dbg !513
+Processing instruction:   %167 = getelementptr inbounds %struct.stat, ptr %7, i32 0, i32 3, !dbg !514
+entry@709 | Variable: stat_buf | Action: R
+Processing instruction:   %168 = load i32, ptr %167, align 8, !dbg !514
+Processing instruction:   %169 = and i32 %168, 61440, !dbg !514
+Processing instruction:   %170 = icmp eq i32 %169, 49152, !dbg !514
+Processing instruction:   br i1 %170, label %222, label %171, !dbg !515
+Processing instruction:   %172 = getelementptr inbounds %struct.stat, ptr %7, i32 0, i32 3, !dbg !516
+entry@709 | Variable: stat_buf | Action: R
+Processing instruction:   %173 = load i32, ptr %172, align 8, !dbg !516
+Processing instruction:   %174 = getelementptr inbounds %struct.stat, ptr %7, i32 0, i32 3, !dbg !516
+entry@709 | Variable: stat_buf | Action: R
+Processing instruction:   %175 = load i32, ptr %174, align 8, !dbg !516
+Processing instruction:   %176 = sub i32 %173, %175, !dbg !516
+Processing instruction:   %177 = icmp ne i32 %176, 0, !dbg !516
+Processing instruction:   br i1 %177, label %222, label %178, !dbg !517
+Processing instruction:   %179 = load i8, ptr %20, align 1, !dbg !518
+entry@709 | Variable: have_out_dev | Action: R
+Processing instruction:   %180 = trunc i8 %179 to i1, !dbg !518
+Processing instruction:   br i1 %180, label %181, label %222, !dbg !519
+Processing instruction:   %182 = getelementptr inbounds %struct.stat, ptr %7, i32 0, i32 0, !dbg !520
+entry@709 | Variable: stat_buf | Action: R
+Processing instruction:   %183 = load i64, ptr %182, align 8, !dbg !520
+Processing instruction:   %184 = load i64, ptr %17, align 8, !dbg !521
+entry@709 | Variable: out_dev | Action: R
+Processing instruction:   %185 = icmp eq i64 %183, %184, !dbg !522
+Processing instruction:   br i1 %185, label %186, label %222, !dbg !523
+Processing instruction:   %187 = getelementptr inbounds %struct.stat, ptr %7, i32 0, i32 1, !dbg !524
+entry@709 | Variable: stat_buf | Action: R
+Processing instruction:   %188 = load i64, ptr %187, align 8, !dbg !524
+Processing instruction:   %189 = load i64, ptr %18, align 8, !dbg !525
+entry@709 | Variable: out_ino | Action: R
+Processing instruction:   %190 = icmp eq i64 %188, %189, !dbg !526
+Processing instruction:   br i1 %190, label %191, label %222, !dbg !527
+Processing instruction:   %192 = load i32, ptr @input_desc, align 4, !dbg !533
+entry@711 | Variable: input_desc | Action: R
+Processing instruction:   %193 = call i64 @lseek(i32 noundef %192, i64 noundef 0, i32 noundef 1) #12, !dbg !534
+Processing instruction:   store i64 %193, ptr %27, align 8, !dbg !532
+entry@711 | Variable: in_pos | Action: W
+Processing instruction:   %194 = load i64, ptr %27, align 8, !dbg !535
+entry@712 | Variable: in_pos | Action: R
+Processing instruction:   %195 = icmp sle i64 0, %194, !dbg !537
+Processing instruction:   br i1 %195, label %196, label %221, !dbg !538
+Processing instruction:   %197 = load i32, ptr %19, align 4, !dbg !539
+entry@714 | Variable: out_flags | Action: R
+Processing instruction:   %198 = icmp slt i32 %197, -1, !dbg !542
+Processing instruction:   br i1 %198, label %199, label %201, !dbg !543
+Processing instruction:   %200 = call i32 (i32, i32, ...) @rpl_fcntl(i32 noundef 1, i32 noundef 3), !dbg !544
+Processing instruction:   store i32 %200, ptr %19, align 4, !dbg !545
+entry@715 | Variable: out_flags | Action: W
+Processing instruction:   br label %201, !dbg !546
+Processing instruction:   %202 = load i32, ptr %19, align 4, !dbg !549
+entry@716 | Variable: out_flags | Action: R
+Processing instruction:   %203 = icmp sle i32 0, %202, !dbg !550
+Processing instruction:   br i1 %203, label %204, label %208, !dbg !551
+Processing instruction:   %205 = load i32, ptr %19, align 4, !dbg !552
+entry@716 | Variable: out_flags | Action: R
+Processing instruction:   %206 = and i32 %205, 1024, !dbg !553
+Processing instruction:   %207 = icmp ne i32 %206, 0, !dbg !551
+Processing instruction:   %209 = phi i1 [ false, %201 ], [ %207, %204 ], !dbg !554
+Processing instruction:   %210 = zext i1 %209 to i64, !dbg !555
+Processing instruction:   %211 = select i1 %209, i32 2, i32 1, !dbg !555
+Processing instruction:   store i32 %211, ptr %28, align 4, !dbg !548
+entry@716 | Variable: whence | Action: W
+Processing instruction:   %212 = load i64, ptr %27, align 8, !dbg !556
+entry@718 | Variable: in_pos | Action: R
+Processing instruction:   %213 = load i32, ptr %28, align 4, !dbg !558
+entry@718 | Variable: whence | Action: R
+Processing instruction:   %214 = call i64 @lseek(i32 noundef 1, i64 noundef 0, i32 noundef %213) #12, !dbg !559
+Processing instruction:   %215 = icmp slt i64 %212, %214, !dbg !560
+Processing instruction:   br i1 %215, label %216, label %220, !dbg !561
+Processing instruction:   %217 = call ptr @gettext(ptr noundef @.str.29) #12, !dbg !562
+entry@720 | Variable: .str.29 | Action: R
+entry@720 | Variable: .str.29 | Action: W
+Processing instruction:   %218 = load ptr, ptr @infile, align 8, !dbg !562
+entry@720 | Variable: infile | Action: R
+Processing instruction:   %219 = call ptr @quotearg_n_style_colon(i32 noundef 0, i32 noundef 3, ptr noundef %218), !dbg !562
+entry@720 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   call void (i32, i32, ptr, ...) @error(i32 noundef 0, i32 noundef 0, ptr noundef %217, ptr noundef %219) #16, !dbg !562
+entry@720 | Variable: stat_buf | Action: W (via alias)
+entry@720 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   store i8 0, ptr %23, align 1, !dbg !564
+entry@721 | Variable: ok | Action: W
+Processing instruction:   br label %338, !dbg !565
+Processing instruction:   br label %221, !dbg !566
+Processing instruction:   br label %222, !dbg !567
+Processing instruction:   %223 = load i8, ptr %8, align 1, !dbg !570
+entry@735 | Variable: number | Action: R
+Processing instruction:   %224 = trunc i8 %223 to i1, !dbg !570
+Processing instruction:   br i1 %224, label %286, label %225, !dbg !572
+Processing instruction:   %226 = load i8, ptr %11, align 1, !dbg !573
+entry@735 | Variable: show_ends | Action: R
+Processing instruction:   %227 = trunc i8 %226 to i1, !dbg !573
+Processing instruction:   br i1 %227, label %286, label %228, !dbg !574
+Processing instruction:   %229 = load i8, ptr %12, align 1, !dbg !575
+entry@735 | Variable: show_nonprinting | Action: R
+Processing instruction:   %230 = trunc i8 %229 to i1, !dbg !575
+Processing instruction:   br i1 %230, label %286, label %231, !dbg !576
+Processing instruction:   %232 = load i8, ptr %13, align 1, !dbg !577
+entry@735 | Variable: show_tabs | Action: R
+Processing instruction:   %233 = trunc i8 %232 to i1, !dbg !577
+Processing instruction:   br i1 %233, label %286, label %234, !dbg !578
+Processing instruction:   %235 = load i8, ptr %10, align 1, !dbg !579
+entry@735 | Variable: squeeze_blank | Action: R
+Processing instruction:   %236 = trunc i8 %235 to i1, !dbg !579
+Processing instruction:   br i1 %236, label %286, label %237, !dbg !580
+Processing instruction:   %238 = load i8, ptr %21, align 1, !dbg !584
+entry@738 | Variable: out_isreg | Action: R
+Processing instruction:   %239 = trunc i8 %238 to i1, !dbg !584
+Processing instruction:   br i1 %239, label %240, label %247, !dbg !585
+Processing instruction:   %241 = getelementptr inbounds %struct.stat, ptr %7, i32 0, i32 3, !dbg !586
+entry@738 | Variable: stat_buf | Action: R
+Processing instruction:   %242 = load i32, ptr %241, align 8, !dbg !586
+Processing instruction:   %243 = and i32 %242, 61440, !dbg !586
+Processing instruction:   %244 = icmp eq i32 %243, 32768, !dbg !586
+Processing instruction:   br i1 %244, label %245, label %247, !dbg !584
+Processing instruction:   %246 = call i32 @copy_cat(), !dbg !587
+Processing instruction:   br label %248, !dbg !584
+Processing instruction:   br label %248, !dbg !584
+Processing instruction:   %249 = phi i32 [ %246, %245 ], [ 0, %247 ], !dbg !584
+Processing instruction:   store i32 %249, ptr %30, align 4, !dbg !583
+entry@738 | Variable: copy_cat_status | Action: W
+Processing instruction:   %250 = load i32, ptr %30, align 4, !dbg !588
+entry@740 | Variable: copy_cat_status | Action: R
+Processing instruction:   %251 = icmp ne i32 %250, 0, !dbg !590
+Processing instruction:   br i1 %251, label %252, label %262, !dbg !591
+Processing instruction:   store ptr null, ptr %29, align 8, !dbg !592
+entry@742 | Variable: inbuf | Action: W
+Processing instruction:   %253 = load i32, ptr %30, align 4, !dbg !594
+entry@743 | Variable: copy_cat_status | Action: R
+Processing instruction:   %254 = icmp slt i32 0, %253, !dbg !595
+Processing instruction:   %255 = zext i1 %254 to i32, !dbg !595
+Processing instruction:   %256 = load i8, ptr %23, align 1, !dbg !596
+entry@743 | Variable: ok | Action: R
+Processing instruction:   %257 = trunc i8 %256 to i1, !dbg !596
+Processing instruction:   %258 = zext i1 %257 to i32, !dbg !596
+Processing instruction:   %259 = and i32 %258, %255, !dbg !596
+Processing instruction:   %260 = icmp ne i32 %259, 0, !dbg !596
+Processing instruction:   %261 = zext i1 %260 to i8, !dbg !596
+Processing instruction:   store i8 %261, ptr %23, align 1, !dbg !596
+entry@743 | Variable: ok | Action: W
+Processing instruction:   br label %285, !dbg !597
+Processing instruction:   %263 = load i64, ptr %26, align 8, !dbg !598
+entry@747 | Variable: insize | Action: R
+Processing instruction:   %264 = load i64, ptr %16, align 8, !dbg !598
+entry@747 | Variable: outsize | Action: R
+Processing instruction:   %265 = icmp sgt i64 %263, %264, !dbg !598
+Processing instruction:   br i1 %265, label %266, label %268, !dbg !598
+Processing instruction:   %267 = load i64, ptr %26, align 8, !dbg !598
+entry@747 | Variable: insize | Action: R
+Processing instruction:   br label %270, !dbg !598
+Processing instruction:   %269 = load i64, ptr %16, align 8, !dbg !598
+entry@747 | Variable: outsize | Action: R
+Processing instruction:   br label %270, !dbg !598
+Processing instruction:   %271 = phi i64 [ %267, %266 ], [ %269, %268 ], !dbg !598
+Processing instruction:   store i64 %271, ptr %26, align 8, !dbg !600
+entry@747 | Variable: insize | Action: W
+Processing instruction:   %272 = load i64, ptr %24, align 8, !dbg !601
+entry@748 | Variable: page_size | Action: R
+Processing instruction:   %273 = load i64, ptr %26, align 8, !dbg !602
+entry@748 | Variable: insize | Action: R
+Processing instruction:   %274 = call noalias nonnull ptr @xalignalloc(i64 noundef %272, i64 noundef %273) #18, !dbg !603
+Processing instruction:   store ptr %274, ptr %29, align 8, !dbg !604
+entry@748 | Variable: inbuf | Action: W
+Processing instruction:   %275 = load ptr, ptr %29, align 8, !dbg !605
+entry@749 | Variable: inbuf | Action: R
+Processing instruction:   %276 = load i64, ptr %26, align 8, !dbg !606
+entry@749 | Variable: insize | Action: R
+Processing instruction:   %277 = call zeroext i1 @simple_cat(ptr noundef %275, i64 noundef %276), !dbg !607
+entry@749 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   %278 = zext i1 %277 to i32, !dbg !607
+Processing instruction:   %279 = load i8, ptr %23, align 1, !dbg !608
+entry@749 | Variable: ok | Action: R
+Processing instruction:   %280 = trunc i8 %279 to i1, !dbg !608
+Processing instruction:   %281 = zext i1 %280 to i32, !dbg !608
+Processing instruction:   %282 = and i32 %281, %278, !dbg !608
+Processing instruction:   %283 = icmp ne i32 %282, 0, !dbg !608
+Processing instruction:   %284 = zext i1 %283 to i8, !dbg !608
+Processing instruction:   store i8 %284, ptr %23, align 1, !dbg !608
+entry@749 | Variable: ok | Action: W
+Processing instruction:   br label %336, !dbg !609
+Processing instruction:   %287 = load i64, ptr %24, align 8, !dbg !610
+entry@755 | Variable: page_size | Action: R
+Processing instruction:   %288 = load i64, ptr %26, align 8, !dbg !612
+entry@755 | Variable: insize | Action: R
+Processing instruction:   %289 = add nsw i64 %288, 1, !dbg !613
+Processing instruction:   %290 = call noalias nonnull ptr @xalignalloc(i64 noundef %287, i64 noundef %289) #18, !dbg !614
+Processing instruction:   store ptr %290, ptr %29, align 8, !dbg !615
+entry@755 | Variable: inbuf | Action: W
+Processing instruction:   %291 = load i64, ptr %26, align 8, !dbg !618
+entry@779 | Variable: insize | Action: R
+Processing instruction:   %292 = call { i64, i1 } @llvm.smul.with.overflow.i64(i64 %291, i64 4), !dbg !618
+Processing instruction:   %293 = extractvalue { i64, i1 } %292, 1, !dbg !618
+Processing instruction:   %294 = extractvalue { i64, i1 } %292, 0, !dbg !618
+Processing instruction:   store i64 %294, ptr %31, align 8, !dbg !618
+entry@779 | Variable: bufsize | Action: W
+Processing instruction:   br i1 %293, label %306, label %295, !dbg !620
+Processing instruction:   %296 = load i64, ptr %31, align 8, !dbg !621
+entry@779 | Variable: bufsize | Action: R
+Processing instruction:   %297 = load i64, ptr %16, align 8, !dbg !621
+entry@779 | Variable: outsize | Action: R
+Processing instruction:   %298 = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %296, i64 %297), !dbg !621
+Processing instruction:   %299 = extractvalue { i64, i1 } %298, 1, !dbg !621
+Processing instruction:   %300 = extractvalue { i64, i1 } %298, 0, !dbg !621
+Processing instruction:   store i64 %300, ptr %31, align 8, !dbg !621
+entry@779 | Variable: bufsize | Action: W
+Processing instruction:   br i1 %299, label %306, label %301, !dbg !622
+Processing instruction:   %302 = load i64, ptr %31, align 8, !dbg !623
+entry@779 | Variable: bufsize | Action: R
+Processing instruction:   %303 = call { i64, i1 } @llvm.sadd.with.overflow.i64(i64 %302, i64 19), !dbg !623
+Processing instruction:   %304 = extractvalue { i64, i1 } %303, 1, !dbg !623
+Processing instruction:   %305 = extractvalue { i64, i1 } %303, 0, !dbg !623
+Processing instruction:   store i64 %305, ptr %31, align 8, !dbg !623
+entry@779 | Variable: bufsize | Action: W
+Processing instruction:   br i1 %304, label %306, label %307, !dbg !624
+Processing instruction:   call void @xalloc_die() #13, !dbg !625
+Processing instruction:   unreachable, !dbg !625
+Processing instruction:   %308 = load i64, ptr %24, align 8, !dbg !628
+entry@783 | Variable: page_size | Action: R
+Processing instruction:   %309 = load i64, ptr %31, align 8, !dbg !629
+entry@783 | Variable: bufsize | Action: R
+Processing instruction:   %310 = call noalias nonnull ptr @xalignalloc(i64 noundef %308, i64 noundef %309) #18, !dbg !630
+Processing instruction:   store ptr %310, ptr %32, align 8, !dbg !627
+entry@783 | Variable: outbuf | Action: W
+Processing instruction:   %311 = load ptr, ptr %29, align 8, !dbg !631
+entry@785 | Variable: inbuf | Action: R
+Processing instruction:   %312 = load i64, ptr %26, align 8, !dbg !632
+entry@785 | Variable: insize | Action: R
+Processing instruction:   %313 = load ptr, ptr %32, align 8, !dbg !633
+entry@785 | Variable: outbuf | Action: R
+Processing instruction:   %314 = load i64, ptr %16, align 8, !dbg !634
+entry@785 | Variable: outsize | Action: R
+Processing instruction:   %315 = load i8, ptr %12, align 1, !dbg !635
+entry@785 | Variable: show_nonprinting | Action: R
+Processing instruction:   %316 = trunc i8 %315 to i1, !dbg !635
+Processing instruction:   %317 = load i8, ptr %13, align 1, !dbg !636
+entry@785 | Variable: show_tabs | Action: R
+Processing instruction:   %318 = trunc i8 %317 to i1, !dbg !636
+Processing instruction:   %319 = load i8, ptr %8, align 1, !dbg !637
+entry@785 | Variable: number | Action: R
+Processing instruction:   %320 = trunc i8 %319 to i1, !dbg !637
+Processing instruction:   %321 = load i8, ptr %9, align 1, !dbg !638
+entry@785 | Variable: number_nonblank | Action: R
+Processing instruction:   %322 = trunc i8 %321 to i1, !dbg !638
+Processing instruction:   %323 = load i8, ptr %11, align 1, !dbg !639
+entry@785 | Variable: show_ends | Action: R
+Processing instruction:   %324 = trunc i8 %323 to i1, !dbg !639
+Processing instruction:   %325 = load i8, ptr %10, align 1, !dbg !640
+entry@785 | Variable: squeeze_blank | Action: R
+Processing instruction:   %326 = trunc i8 %325 to i1, !dbg !640
+Processing instruction:   %327 = call zeroext i1 @cat(ptr noundef %311, i64 noundef %312, ptr noundef %313, i64 noundef %314, i1 noundef zeroext %316, i1 noundef zeroext %318, i1 noundef zeroext %320, i1 noundef zeroext %322, i1 noundef zeroext %324, i1 noundef zeroext %326), !dbg !641
+entry@785 | Variable: stat_buf | Action: W (via alias)
+entry@785 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   %328 = zext i1 %327 to i32, !dbg !641
+Processing instruction:   %329 = load i8, ptr %23, align 1, !dbg !642
+entry@785 | Variable: ok | Action: R
+Processing instruction:   %330 = trunc i8 %329 to i1, !dbg !642
+Processing instruction:   %331 = zext i1 %330 to i32, !dbg !642
+Processing instruction:   %332 = and i32 %331, %328, !dbg !642
+Processing instruction:   %333 = icmp ne i32 %332, 0, !dbg !642
+Processing instruction:   %334 = zext i1 %333 to i8, !dbg !642
+Processing instruction:   store i8 %334, ptr %23, align 1, !dbg !642
+entry@785 | Variable: ok | Action: W
+Processing instruction:   %335 = load ptr, ptr %32, align 8, !dbg !643
+entry@789 | Variable: outbuf | Action: R
+Processing instruction:   call void @alignfree(ptr noundef %335), !dbg !644
+entry@789 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   %337 = load ptr, ptr %29, align 8, !dbg !645
+entry@792 | Variable: inbuf | Action: R
+Processing instruction:   call void @alignfree(ptr noundef %337), !dbg !646
+entry@792 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   br label %338, !dbg !646
+Processing instruction:   %339 = load i8, ptr %25, align 1, !dbg !649
+entry@795 | Variable: reading_stdin | Action: R
+Processing instruction:   %340 = trunc i8 %339 to i1, !dbg !649
+Processing instruction:   br i1 %340, label %350, label %341, !dbg !651
+Processing instruction:   %342 = load i32, ptr @input_desc, align 4, !dbg !652
+entry@795 | Variable: input_desc | Action: R
+Processing instruction:   %343 = call i32 @close(i32 noundef %342), !dbg !653
+Processing instruction:   %344 = icmp slt i32 %343, 0, !dbg !654
+Processing instruction:   br i1 %344, label %345, label %350, !dbg !655
+Processing instruction:   %346 = call ptr @__errno_location() #15, !dbg !656
+Processing instruction:   %347 = load i32, ptr %346, align 4, !dbg !656
+Processing instruction:   %348 = load ptr, ptr @infile, align 8, !dbg !656
+entry@797 | Variable: infile | Action: R
+Processing instruction:   %349 = call ptr @quotearg_n_style_colon(i32 noundef 0, i32 noundef 3, ptr noundef %348), !dbg !656
+entry@797 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   call void (i32, i32, ptr, ...) @error(i32 noundef 0, i32 noundef %347, ptr noundef @.str.28, ptr noundef %349) #16, !dbg !656
+entry@797 | Variable: .str.28 | Action: R
+entry@797 | Variable: .str.28 | Action: W
+entry@797 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   store i8 0, ptr %23, align 1, !dbg !658
+entry@798 | Variable: ok | Action: W
+Processing instruction:   br label %350, !dbg !659
+Processing instruction:   br label %351, !dbg !660
+Processing instruction:   %352 = load i32, ptr %22, align 4, !dbg !661
+entry@801 | Variable: argind | Action: R
+Processing instruction:   %353 = add nsw i32 %352, 1, !dbg !661
+Processing instruction:   store i32 %353, ptr %22, align 4, !dbg !661
+entry@801 | Variable: argind | Action: W
+Processing instruction:   %354 = load i32, ptr %4, align 4, !dbg !662
+entry@801 | Variable: argc | Action: R
+Processing instruction:   %355 = icmp slt i32 %353, %354, !dbg !663
+Processing instruction:   br i1 %355, label %115, label %356, !dbg !660, !llvm.loop !664
+Processing instruction:   %357 = load i8, ptr @pending_cr, align 1, !dbg !666
+entry@803 | Variable: pending_cr | Action: R
+Processing instruction:   %358 = trunc i8 %357 to i1, !dbg !666
+Processing instruction:   br i1 %358, label %359, label %364, !dbg !668
+Processing instruction:   %360 = call i64 @full_write(i32 noundef 1, ptr noundef @.str.30, i64 noundef 1), !dbg !669
+entry@805 | Variable: .str.30 | Action: R
+entry@805 | Variable: .str.30 | Action: W
+Processing instruction:   %361 = icmp ne i64 %360, 1, !dbg !672
+Processing instruction:   br i1 %361, label %362, label %363, !dbg !673
+Processing instruction:   call void @write_error(), !dbg !674
+Processing instruction:   br label %363, !dbg !674
+Processing instruction:   br label %364, !dbg !675
+Processing instruction:   %365 = load i8, ptr %6, align 1, !dbg !676
+entry@809 | Variable: have_read_stdin | Action: R
+Processing instruction:   %366 = trunc i8 %365 to i1, !dbg !676
+Processing instruction:   br i1 %366, label %367, label %374, !dbg !678
+Processing instruction:   %368 = call i32 @close(i32 noundef 0), !dbg !679
+Processing instruction:   %369 = icmp slt i32 %368, 0, !dbg !680
+Processing instruction:   br i1 %369, label %370, label %374, !dbg !681
+Processing instruction:   %371 = call ptr @__errno_location() #15, !dbg !682
+Processing instruction:   %372 = load i32, ptr %371, align 4, !dbg !682
+Processing instruction:   %373 = call ptr @gettext(ptr noundef @.str.31) #12, !dbg !682
+entry@810 | Variable: .str.31 | Action: R
+entry@810 | Variable: .str.31 | Action: W
+Processing instruction:   call void (i32, i32, ptr, ...) @error(i32 noundef 1, i32 noundef %372, ptr noundef %373) #16, !dbg !682
+entry@810 | Variable: stat_buf | Action: W (via alias)
+Processing instruction:   unreachable, !dbg !682
+Processing instruction:   %375 = load i8, ptr %23, align 1, !dbg !683
+entry@812 | Variable: ok | Action: R
+Processing instruction:   %376 = trunc i8 %375 to i1, !dbg !683
+Processing instruction:   %377 = zext i1 %376 to i64, !dbg !683
+Processing instruction:   %378 = select i1 %376, i32 0, i32 1, !dbg !683
+Processing instruction:   ret i32 %378, !dbg !684
+Processing instruction:   %7 = load ptr, ptr %3, align 8, !dbg !342
+entry@83 | Variable: st | Action: R
+Processing instruction:   %8 = getelementptr inbounds %struct.stat, ptr %7, i32 0, i32 9, !dbg !342
+Processing instruction:   %9 = load i64, ptr %8, align 8, !dbg !342
+Processing instruction:   %10 = icmp slt i64 0, %9, !dbg !342
+Processing instruction:   br i1 %10, label %11, label %20, !dbg !342
+Processing instruction:   %12 = load ptr, ptr %3, align 8, !dbg !342
+entry@83 | Variable: st | Action: R
+Processing instruction:   %13 = getelementptr inbounds %struct.stat, ptr %12, i32 0, i32 9, !dbg !342
+Processing instruction:   %14 = load i64, ptr %13, align 8, !dbg !342
+Processing instruction:   %15 = icmp ule i64 %14, 2305843009213693952, !dbg !342
+Processing instruction:   br i1 %15, label %16, label %20, !dbg !342
+Processing instruction:   %17 = load ptr, ptr %3, align 8, !dbg !342
+entry@83 | Variable: st | Action: R
+Processing instruction:   %18 = getelementptr inbounds %struct.stat, ptr %17, i32 0, i32 9, !dbg !342
+Processing instruction:   %19 = load i64, ptr %18, align 8, !dbg !342
+Processing instruction:   br label %21, !dbg !342
+Processing instruction:   br label %21, !dbg !342
+Processing instruction:   %22 = phi i64 [ %19, %16 ], [ 512, %20 ], !dbg !342
+Processing instruction:   %23 = icmp sle i64 %22, 0, !dbg !343
+Processing instruction:   br i1 %23, label %24, label %25, !dbg !342
+Processing instruction:   br label %42, !dbg !342
+Processing instruction:   %26 = load ptr, ptr %3, align 8, !dbg !344
+entry@83 | Variable: st | Action: R
+Processing instruction:   %27 = getelementptr inbounds %struct.stat, ptr %26, i32 0, i32 9, !dbg !344
+Processing instruction:   %28 = load i64, ptr %27, align 8, !dbg !344
+Processing instruction:   %29 = icmp slt i64 0, %28, !dbg !344
+Processing instruction:   br i1 %29, label %30, label %39, !dbg !344
+Processing instruction:   %31 = load ptr, ptr %3, align 8, !dbg !344
+entry@83 | Variable: st | Action: R
+Processing instruction:   %32 = getelementptr inbounds %struct.stat, ptr %31, i32 0, i32 9, !dbg !344
+Processing instruction:   %33 = load i64, ptr %32, align 8, !dbg !344
+Processing instruction:   %34 = icmp ule i64 %33, 2305843009213693952, !dbg !344
+Processing instruction:   br i1 %34, label %35, label %39, !dbg !344
+Processing instruction:   %36 = load ptr, ptr %3, align 8, !dbg !344
+entry@83 | Variable: st | Action: R
+Processing instruction:   %37 = getelementptr inbounds %struct.stat, ptr %36, i32 0, i32 9, !dbg !344
+Processing instruction:   %38 = load i64, ptr %37, align 8, !dbg !344
+Processing instruction:   br label %40, !dbg !344
+Processing instruction:   br label %40, !dbg !344
+Processing instruction:   %41 = phi i64 [ %38, %35 ], [ 512, %39 ], !dbg !344
+Processing instruction:   br label %42, !dbg !342
+Processing instruction:   %43 = phi i64 [ 262144, %24 ], [ %41, %40 ], !dbg !342
+Processing instruction:   store i64 %43, ptr %4, align 8, !dbg !341
+entry@83 | Variable: blocksize | Action: W
+Processing instruction:   %44 = load i64, ptr %4, align 8, !dbg !345
+entry@87 | Variable: blocksize | Action: R
+Processing instruction:   %45 = srem i64 262143, %44, !dbg !346
+Processing instruction:   %46 = sub nsw i64 262143, %45, !dbg !347
+Processing instruction:   %47 = load i64, ptr %4, align 8, !dbg !348
+entry@87 | Variable: blocksize | Action: R
+Processing instruction:   %48 = add nsw i64 %47, %46, !dbg !348
+Processing instruction:   store i64 %48, ptr %4, align 8, !dbg !348
+entry@87 | Variable: blocksize | Action: W
+Processing instruction:   %49 = load ptr, ptr %3, align 8, !dbg !349
+entry@95 | Variable: st | Action: R
+Processing instruction:   %50 = getelementptr inbounds %struct.stat, ptr %49, i32 0, i32 3, !dbg !349
+Processing instruction:   %51 = load i32, ptr %50, align 8, !dbg !349
+Processing instruction:   %52 = and i32 %51, 61440, !dbg !349
+Processing instruction:   %53 = icmp eq i32 %52, 32768, !dbg !349
+Processing instruction:   br i1 %53, label %54, label %80, !dbg !351
+Processing instruction:   %55 = load i64, ptr %4, align 8, !dbg !352
+entry@95 | Variable: blocksize | Action: R
+Processing instruction:   %56 = load i64, ptr %4, align 8, !dbg !353
+entry@95 | Variable: blocksize | Action: R
+Processing instruction:   %57 = sub nsw i64 %56, 1, !dbg !354
+Processing instruction:   %58 = and i64 %55, %57, !dbg !355
+Processing instruction:   %59 = icmp ne i64 %58, 0, !dbg !355
+Processing instruction:   br i1 %59, label %60, label %80, !dbg !356
+Processing instruction:   %61 = load i64, ptr %4, align 8, !dbg !360
+entry@97 | Variable: blocksize | Action: R
+Processing instruction:   %62 = load i64, ptr %2, align 8, !dbg !371
+entry@79 | Variable: __x | Action: R
+Processing instruction:   %63 = icmp eq i64 %62, 0, !dbg !372
+Processing instruction:   br i1 %63, label %64, label %65, !dbg !371
+Processing instruction:   br label %69, !dbg !371
+Processing instruction:   %66 = load i64, ptr %2, align 8, !dbg !373
+entry@79 | Variable: __x | Action: R
+Processing instruction:   %67 = call i64 @llvm.ctlz.i64(i64 %66, i1 true), !dbg !374
+Processing instruction:   %68 = trunc i64 %67 to i32, !dbg !374
+Processing instruction:   br label %69, !dbg !371
+Processing instruction:   %70 = phi i32 [ 64, %64 ], [ %68, %65 ], !dbg !371
+Processing instruction:   store i32 %70, ptr %5, align 4, !dbg !359
+entry@97 | Variable: leading_zeros | Action: W
+Processing instruction:   %71 = load i32, ptr %5, align 4, !dbg !380
+entry@100 | Variable: leading_zeros | Action: R
+Processing instruction:   %72 = sub nsw i32 64, %71, !dbg !381
+Processing instruction:   %73 = zext i32 %72 to i64, !dbg !382
+Processing instruction:   %74 = shl i64 1, %73, !dbg !382
+Processing instruction:   store i64 %74, ptr %6, align 8, !dbg !379
+entry@100 | Variable: power | Action: W
+Processing instruction:   %75 = load i64, ptr %6, align 8, !dbg !383
+entry@101 | Variable: power | Action: R
+Processing instruction:   %76 = icmp ule i64 %75, 9223372036854775807, !dbg !385
+Processing instruction:   br i1 %76, label %77, label %79, !dbg !386
+Processing instruction:   %78 = load i64, ptr %6, align 8, !dbg !387
+entry@102 | Variable: power | Action: R
+Processing instruction:   store i64 %78, ptr %4, align 8, !dbg !388
+entry@102 | Variable: blocksize | Action: W
+Processing instruction:   br label %79, !dbg !389
+Processing instruction:   br label %80, !dbg !390
+Processing instruction:   %81 = load i64, ptr %4, align 8, !dbg !391
+entry@108 | Variable: blocksize | Action: R
+Processing instruction:   %82 = icmp ult i64 4611686018427387904, %81, !dbg !391
+Processing instruction:   br i1 %82, label %83, label %84, !dbg !391
+Processing instruction:   br label %86, !dbg !391
+Processing instruction:   %85 = load i64, ptr %4, align 8, !dbg !391
+entry@108 | Variable: blocksize | Action: R
+Processing instruction:   br label %86, !dbg !391
+Processing instruction:   %87 = phi i64 [ 4611686018427387904, %83 ], [ %85, %84 ], !dbg !391
+Processing instruction:   ret i64 %87, !dbg !392
+Processing instruction:   store i64 9223372035781033984, ptr %2, align 8, !dbg !301
+entry@506 | Variable: copy_max | Action: W
+Processing instruction:   store i8 0, ptr %3, align 1, !dbg !304
+entry@514 | Variable: some_copied | Action: W
+Processing instruction:   br label %4, !dbg !305
+Processing instruction:   %5 = load i32, ptr @input_desc, align 4, !dbg !306
+entry@515 | Variable: input_desc | Action: R
+Processing instruction:   %6 = load i64, ptr %2, align 8, !dbg !308
+entry@515 | Variable: copy_max | Action: R
+Processing instruction:   %7 = call i64 @rpl_copy_file_range(i32 noundef %5, ptr noundef null, i32 noundef 1, ptr noundef null, i64 noundef %6, i32 noundef 0), !dbg !309
+Processing instruction:   switch i64 %7, label %46 [
+    i64 0, label %8
+    i64 -1, label %12
+  ], !dbg !310
+Processing instruction:   %9 = load i8, ptr %3, align 1, !dbg !311
+entry@518 | Variable: some_copied | Action: R
+Processing instruction:   %10 = trunc i8 %9 to i1, !dbg !311
+Processing instruction:   %11 = zext i1 %10 to i32, !dbg !311
+Processing instruction:   store i32 %11, ptr %1, align 4, !dbg !313
+Processing instruction:   br label %48, !dbg !313
+Processing instruction:   %13 = call ptr @__errno_location() #12, !dbg !314
+Processing instruction:   %14 = load i32, ptr %13, align 4, !dbg !314
+Processing instruction:   %15 = icmp eq i32 %14, 38, !dbg !316
+Processing instruction:   br i1 %15, label %40, label %16, !dbg !317
+Processing instruction:   %17 = call ptr @__errno_location() #12, !dbg !318
+Processing instruction:   %18 = load i32, ptr %17, align 4, !dbg !318
+Processing instruction:   %19 = call zeroext i1 @is_ENOTSUP(i32 noundef %18), !dbg !319
+Processing instruction:   br i1 %19, label %40, label %20, !dbg !320
+Processing instruction:   %21 = call ptr @__errno_location() #12, !dbg !321
+Processing instruction:   %22 = load i32, ptr %21, align 4, !dbg !321
+Processing instruction:   %23 = icmp eq i32 %22, 22, !dbg !322
+Processing instruction:   br i1 %23, label %40, label %24, !dbg !323
+Processing instruction:   %25 = call ptr @__errno_location() #12, !dbg !324
+Processing instruction:   %26 = load i32, ptr %25, align 4, !dbg !324
+Processing instruction:   %27 = icmp eq i32 %26, 9, !dbg !325
+Processing instruction:   br i1 %27, label %40, label %28, !dbg !326
+Processing instruction:   %29 = call ptr @__errno_location() #12, !dbg !327
+Processing instruction:   %30 = load i32, ptr %29, align 4, !dbg !327
+Processing instruction:   %31 = icmp eq i32 %30, 18, !dbg !328
+Processing instruction:   br i1 %31, label %40, label %32, !dbg !329
+Processing instruction:   %33 = call ptr @__errno_location() #12, !dbg !330
+Processing instruction:   %34 = load i32, ptr %33, align 4, !dbg !330
+Processing instruction:   %35 = icmp eq i32 %34, 26, !dbg !331
+Processing instruction:   br i1 %35, label %40, label %36, !dbg !332
+Processing instruction:   %37 = call ptr @__errno_location() #12, !dbg !333
+Processing instruction:   %38 = load i32, ptr %37, align 4, !dbg !333
+Processing instruction:   %39 = icmp eq i32 %38, 1, !dbg !334
+Processing instruction:   br i1 %39, label %40, label %41, !dbg !335
+Processing instruction:   store i32 0, ptr %1, align 4, !dbg !336
+Processing instruction:   br label %48, !dbg !336
+Processing instruction:   %42 = call ptr @__errno_location() #12, !dbg !337
+Processing instruction:   %43 = load i32, ptr %42, align 4, !dbg !337
+Processing instruction:   %44 = load ptr, ptr @infile, align 8, !dbg !337
+entry@523 | Variable: infile | Action: R
+Processing instruction:   %45 = call ptr @quotearg_n_style_colon(i32 noundef 0, i32 noundef 3, ptr noundef %44), !dbg !337
+Processing instruction:   call void (i32, i32, ptr, ...) @error(i32 noundef 0, i32 noundef %43, ptr noundef @.str.28, ptr noundef %45) #13, !dbg !337
+entry@523 | Variable: .str.28 | Action: R
+entry@523 | Variable: .str.28 | Action: W
+Processing instruction:   store i32 -1, ptr %1, align 4, !dbg !338
+Processing instruction:   br label %48, !dbg !338
+Processing instruction:   br label %47, !dbg !339
+Processing instruction:   store i8 1, ptr %3, align 1, !dbg !340
+entry@514 | Variable: some_copied | Action: W
+Processing instruction:   br label %4, !dbg !341, !llvm.loop !342
+Processing instruction:   %49 = load i32, ptr %1, align 4, !dbg !345
+Processing instruction:   ret i32 %49, !dbg !345
+Processing instruction:   br label %7, !dbg !304
+Processing instruction:   %8 = load i32, ptr @input_desc, align 4, !dbg !308
+entry@164 | Variable: input_desc | Action: R
+Processing instruction:   %9 = load ptr, ptr %4, align 8, !dbg !309
+entry@164 | Variable: buf | Action: R
+Processing instruction:   %10 = load i64, ptr %5, align 8, !dbg !310
+entry@164 | Variable: bufsize | Action: R
+Processing instruction:   %11 = call i64 @safe_read(i32 noundef %8, ptr noundef %9, i64 noundef %10), !dbg !311
+Processing instruction:   store i64 %11, ptr %6, align 8, !dbg !307
+entry@164 | Variable: n_read | Action: W
+Processing instruction:   %12 = load i64, ptr %6, align 8, !dbg !312
+entry@165 | Variable: n_read | Action: R
+Processing instruction:   %13 = icmp slt i64 %12, 0, !dbg !314
+Processing instruction:   br i1 %13, label %14, label %19, !dbg !315
+Processing instruction:   %15 = call ptr @__errno_location() #12, !dbg !316
+Processing instruction:   %16 = load i32, ptr %15, align 4, !dbg !316
+Processing instruction:   %17 = load ptr, ptr @infile, align 8, !dbg !316
+entry@167 | Variable: infile | Action: R
+Processing instruction:   %18 = call ptr @quotearg_n_style_colon(i32 noundef 0, i32 noundef 3, ptr noundef %17), !dbg !316
+Processing instruction:   call void (i32, i32, ptr, ...) @error(i32 noundef 0, i32 noundef %16, ptr noundef @.str.28, ptr noundef %18) #13, !dbg !316
+entry@167 | Variable: .str.28 | Action: R
+entry@167 | Variable: .str.28 | Action: W
+Processing instruction:   store i1 false, ptr %3, align 1, !dbg !318
+Processing instruction:   br label %31, !dbg !318
+Processing instruction:   %20 = load i64, ptr %6, align 8, !dbg !319
+entry@173 | Variable: n_read | Action: R
+Processing instruction:   %21 = icmp eq i64 %20, 0, !dbg !321
+Processing instruction:   br i1 %21, label %22, label %23, !dbg !322
+Processing instruction:   store i1 true, ptr %3, align 1, !dbg !323
+Processing instruction:   br label %31, !dbg !323
+Processing instruction:   %24 = load ptr, ptr %4, align 8, !dbg !324
+entry@178 | Variable: buf | Action: R
+Processing instruction:   %25 = load i64, ptr %6, align 8, !dbg !326
+entry@178 | Variable: n_read | Action: R
+Processing instruction:   %26 = call i64 @full_write(i32 noundef 1, ptr noundef %24, i64 noundef %25), !dbg !327
+Processing instruction:   %27 = load i64, ptr %6, align 8, !dbg !328
+entry@178 | Variable: n_read | Action: R
+Processing instruction:   %28 = icmp ne i64 %26, %27, !dbg !329
+Processing instruction:   br i1 %28, label %29, label %30, !dbg !330
+Processing instruction:   call void @write_error(), !dbg !331
+Processing instruction:   br label %30, !dbg !331
+Processing instruction:   br label %7, !dbg !304, !llvm.loop !332
+Processing instruction:   %32 = load i1, ptr %3, align 1, !dbg !334
+Processing instruction:   ret i1 %32, !dbg !334
+Processing instruction:   %39 = load i32, ptr @newlines2, align 4, !dbg !325
+entry@224 | Variable: newlines2 | Action: R
+Processing instruction:   store i32 %39, ptr %23, align 4, !dbg !324
+entry@224 | Variable: newlines | Action: W
+Processing instruction:   store i8 1, ptr %24, align 1, !dbg !327
+entry@229 | Variable: use_fionread | Action: W
+Processing instruction:   %40 = load ptr, ptr %12, align 8, !dbg !330
+entry@237 | Variable: inbuf | Action: R
+Processing instruction:   store ptr %40, ptr %25, align 8, !dbg !329
+entry@237 | Variable: eob | Action: W
+Processing instruction:   %41 = load ptr, ptr %25, align 8, !dbg !333
+entry@240 | Variable: eob | Action: R
+Processing instruction:   %42 = getelementptr inbounds i8, ptr %41, i64 1, !dbg !334
+Processing instruction:   store ptr %42, ptr %26, align 8, !dbg !332
+entry@240 | Variable: bpin | Action: W
+Processing instruction:   %43 = load ptr, ptr %14, align 8, !dbg !337
+entry@243 | Variable: outbuf | Action: R
+Processing instruction:   store ptr %43, ptr %27, align 8, !dbg !336
+entry@243 | Variable: bpout | Action: W
+Processing instruction:   br label %44, !dbg !338
+Processing instruction:   br label %45, !dbg !339
+Processing instruction:   %46 = load ptr, ptr %14, align 8, !dbg !341
+entry@251 | Variable: outbuf | Action: R
+Processing instruction:   %47 = load i64, ptr %15, align 8, !dbg !344
+entry@251 | Variable: outsize | Action: R
+Processing instruction:   %48 = getelementptr inbounds i8, ptr %46, i64 %47, !dbg !345
+Processing instruction:   %49 = load ptr, ptr %27, align 8, !dbg !346
+entry@251 | Variable: bpout | Action: R
+Processing instruction:   %50 = icmp ule ptr %48, %49, !dbg !347
+Processing instruction:   br i1 %50, label %51, label %80, !dbg !348
+Processing instruction:   %52 = load ptr, ptr %14, align 8, !dbg !352
+entry@253 | Variable: outbuf | Action: R
+Processing instruction:   store ptr %52, ptr %28, align 8, !dbg !351
+entry@253 | Variable: wp | Action: W
+Processing instruction:   br label %53, !dbg !355
+Processing instruction:   %54 = load ptr, ptr %28, align 8, !dbg !356
+entry@257 | Variable: wp | Action: R
+Processing instruction:   %55 = load i64, ptr %15, align 8, !dbg !359
+entry@257 | Variable: outsize | Action: R
+Processing instruction:   %56 = call i64 @full_write(i32 noundef 1, ptr noundef %54, i64 noundef %55), !dbg !360
+entry@257 | Variable: bpout | Action: W (via alias)
+entry@257 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   %57 = load i64, ptr %15, align 8, !dbg !361
+entry@257 | Variable: outsize | Action: R
+Processing instruction:   %58 = icmp ne i64 %56, %57, !dbg !362
+Processing instruction:   br i1 %58, label %59, label %60, !dbg !363
+Processing instruction:   call void @write_error(), !dbg !364
+Processing instruction:   br label %60, !dbg !364
+Processing instruction:   %61 = load i64, ptr %15, align 8, !dbg !365
+entry@259 | Variable: outsize | Action: R
+Processing instruction:   %62 = load ptr, ptr %28, align 8, !dbg !366
+entry@259 | Variable: wp | Action: R
+Processing instruction:   %63 = getelementptr inbounds i8, ptr %62, i64 %61, !dbg !366
+Processing instruction:   store ptr %63, ptr %28, align 8, !dbg !366
+entry@259 | Variable: wp | Action: W
+Processing instruction:   %64 = load ptr, ptr %27, align 8, !dbg !367
+entry@260 | Variable: bpout | Action: R
+Processing instruction:   %65 = load ptr, ptr %28, align 8, !dbg !368
+entry@260 | Variable: wp | Action: R
+Processing instruction:   %66 = ptrtoint ptr %64 to i64, !dbg !369
+Processing instruction:   %67 = ptrtoint ptr %65 to i64, !dbg !369
+Processing instruction:   %68 = sub i64 %66, %67, !dbg !369
+Processing instruction:   store i64 %68, ptr %29, align 8, !dbg !370
+entry@260 | Variable: remaining_bytes | Action: W
+Processing instruction:   br label %69, !dbg !371
+Processing instruction:   %70 = load i64, ptr %15, align 8, !dbg !372
+entry@262 | Variable: outsize | Action: R
+Processing instruction:   %71 = load i64, ptr %29, align 8, !dbg !373
+entry@262 | Variable: remaining_bytes | Action: R
+Processing instruction:   %72 = icmp sle i64 %70, %71, !dbg !374
+Processing instruction:   br i1 %72, label %53, label %73, !dbg !371, !llvm.loop !375
+Processing instruction:   %74 = load ptr, ptr %14, align 8, !dbg !378
+entry@267 | Variable: outbuf | Action: R
+Processing instruction:   %75 = load ptr, ptr %28, align 8, !dbg !379
+entry@267 | Variable: wp | Action: R
+Processing instruction:   %76 = load i64, ptr %29, align 8, !dbg !380
+entry@267 | Variable: remaining_bytes | Action: R
+Processing instruction:   call void @llvm.memmove.p0.p0.i64(ptr align 1 %74, ptr align 1 %75, i64 %76, i1 false), !dbg !381
+entry@267 | Variable: bpout | Action: W (via alias)
+entry@267 | Variable: n_to_read | Action: W (via alias)
+entry@267 | Variable: bpout | Action: W (via alias)
+entry@267 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   %77 = load ptr, ptr %14, align 8, !dbg !382
+entry@268 | Variable: outbuf | Action: R
+Processing instruction:   %78 = load i64, ptr %29, align 8, !dbg !383
+entry@268 | Variable: remaining_bytes | Action: R
+Processing instruction:   %79 = getelementptr inbounds i8, ptr %77, i64 %78, !dbg !384
+Processing instruction:   store ptr %79, ptr %27, align 8, !dbg !385
+entry@268 | Variable: bpout | Action: W
+Processing instruction:   br label %80, !dbg !386
+Processing instruction:   %81 = load ptr, ptr %26, align 8, !dbg !387
+entry@273 | Variable: bpin | Action: R
+Processing instruction:   %82 = load ptr, ptr %25, align 8, !dbg !389
+entry@273 | Variable: eob | Action: R
+Processing instruction:   %83 = icmp ugt ptr %81, %82, !dbg !390
+Processing instruction:   br i1 %83, label %84, label %155, !dbg !391
+Processing instruction:   store i8 0, ptr %30, align 1, !dbg !394
+entry@275 | Variable: input_pending | Action: W
+Processing instruction:   store i32 0, ptr %31, align 4, !dbg !396
+entry@277 | Variable: n_to_read | Action: W
+Processing instruction:   %85 = load i8, ptr %24, align 1, !dbg !397
+entry@283 | Variable: use_fionread | Action: R
+Processing instruction:   %86 = trunc i8 %85 to i1, !dbg !397
+Processing instruction:   br i1 %86, label %87, label %120, !dbg !399
+Processing instruction:   %88 = load i32, ptr @input_desc, align 4, !dbg !400
+entry@283 | Variable: input_desc | Action: R
+Processing instruction:   %89 = call i32 (i32, i64, ...) @ioctl(i32 noundef %88, i64 noundef 21531, ptr noundef %31) #12, !dbg !401
+entry@283 | Variable: n_to_read | Action: R
+entry@283 | Variable: n_to_read | Action: W
+Processing instruction:   %90 = icmp slt i32 %89, 0, !dbg !402
+Processing instruction:   br i1 %90, label %91, label %120, !dbg !403
+Processing instruction:   %92 = call ptr @__errno_location() #13, !dbg !404
+Processing instruction:   %93 = load i32, ptr %92, align 4, !dbg !404
+Processing instruction:   %94 = icmp eq i32 %93, 95, !dbg !407
+Processing instruction:   br i1 %94, label %111, label %95, !dbg !408
+Processing instruction:   %96 = call ptr @__errno_location() #13, !dbg !409
+Processing instruction:   %97 = load i32, ptr %96, align 4, !dbg !409
+Processing instruction:   %98 = icmp eq i32 %97, 25, !dbg !410
+Processing instruction:   br i1 %98, label %111, label %99, !dbg !411
+Processing instruction:   %100 = call ptr @__errno_location() #13, !dbg !412
+Processing instruction:   %101 = load i32, ptr %100, align 4, !dbg !412
+Processing instruction:   %102 = icmp eq i32 %101, 22, !dbg !413
+Processing instruction:   br i1 %102, label %111, label %103, !dbg !414
+Processing instruction:   %104 = call ptr @__errno_location() #13, !dbg !415
+Processing instruction:   %105 = load i32, ptr %104, align 4, !dbg !415
+Processing instruction:   %106 = icmp eq i32 %105, 19, !dbg !416
+Processing instruction:   br i1 %106, label %111, label %107, !dbg !417
+Processing instruction:   %108 = call ptr @__errno_location() #13, !dbg !418
+Processing instruction:   %109 = load i32, ptr %108, align 4, !dbg !418
+Processing instruction:   %110 = icmp eq i32 %109, 38, !dbg !419
+Processing instruction:   br i1 %110, label %111, label %112, !dbg !420
+Processing instruction:   store i8 0, ptr %24, align 1, !dbg !421
+entry@292 | Variable: use_fionread | Action: W
+Processing instruction:   br label %119, !dbg !422
+Processing instruction:   %113 = call ptr @__errno_location() #13, !dbg !423
+Processing instruction:   %114 = load i32, ptr %113, align 4, !dbg !423
+Processing instruction:   %115 = call ptr @gettext(ptr noundef @.str.48) #12, !dbg !423
+entry@295 | Variable: .str.48 | Action: R
+entry@295 | Variable: .str.48 | Action: W
+Processing instruction:   %116 = load ptr, ptr @infile, align 8, !dbg !423
+entry@295 | Variable: infile | Action: R
+Processing instruction:   %117 = call ptr @quotearg_style(i32 noundef 4, ptr noundef %116), !dbg !423
+entry@295 | Variable: bpout | Action: W (via alias)
+entry@295 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   call void (i32, i32, ptr, ...) @error(i32 noundef 0, i32 noundef %114, ptr noundef %115, ptr noundef %117) #14, !dbg !423
+entry@295 | Variable: bpout | Action: W (via alias)
+entry@295 | Variable: n_to_read | Action: W (via alias)
+entry@295 | Variable: bpout | Action: W (via alias)
+entry@295 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   %118 = load i32, ptr %23, align 4, !dbg !425
+entry@297 | Variable: newlines | Action: R
+Processing instruction:   store i32 %118, ptr @newlines2, align 4, !dbg !426
+entry@297 | Variable: newlines2 | Action: W
+Processing instruction:   store i1 false, ptr %11, align 1, !dbg !427
+Processing instruction:   br label %373, !dbg !427
+Processing instruction:   br label %120, !dbg !428
+Processing instruction:   %121 = load i32, ptr %31, align 4, !dbg !429
+entry@301 | Variable: n_to_read | Action: R
+Processing instruction:   %122 = icmp ne i32 %121, 0, !dbg !431
+Processing instruction:   br i1 %122, label %123, label %124, !dbg !432
+Processing instruction:   store i8 1, ptr %30, align 1, !dbg !433
+entry@302 | Variable: input_pending | Action: W
+Processing instruction:   br label %124, !dbg !434
+Processing instruction:   %125 = load i8, ptr %30, align 1, !dbg !435
+entry@305 | Variable: input_pending | Action: R
+Processing instruction:   %126 = trunc i8 %125 to i1, !dbg !435
+Processing instruction:   br i1 %126, label %129, label %127, !dbg !437
+Processing instruction:   %128 = load ptr, ptr %14, align 8, !dbg !438
+entry@306 | Variable: outbuf | Action: R
+Processing instruction:   call void @write_pending(ptr noundef %128, ptr noundef %27), !dbg !439
+entry@306 | Variable: bpout | Action: R
+entry@306 | Variable: bpout | Action: W (via alias)
+entry@306 | Variable: n_to_read | Action: W (via alias)
+entry@306 | Variable: bpout | Action: W
+Processing instruction:   br label %129, !dbg !439
+Processing instruction:   %130 = load i32, ptr @input_desc, align 4, !dbg !442
+entry@310 | Variable: input_desc | Action: R
+Processing instruction:   %131 = load ptr, ptr %12, align 8, !dbg !443
+entry@310 | Variable: inbuf | Action: R
+Processing instruction:   %132 = load i64, ptr %13, align 8, !dbg !444
+entry@310 | Variable: insize | Action: R
+Processing instruction:   %133 = call i64 @safe_read(i32 noundef %130, ptr noundef %131, i64 noundef %132), !dbg !445
+entry@310 | Variable: bpout | Action: W (via alias)
+entry@310 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   store i64 %133, ptr %32, align 8, !dbg !441
+entry@310 | Variable: n_read | Action: W
+Processing instruction:   %134 = load i64, ptr %32, align 8, !dbg !446
+entry@311 | Variable: n_read | Action: R
+Processing instruction:   %135 = icmp slt i64 %134, 0, !dbg !448
+Processing instruction:   br i1 %135, label %136, label %143, !dbg !449
+Processing instruction:   %137 = call ptr @__errno_location() #13, !dbg !450
+Processing instruction:   %138 = load i32, ptr %137, align 4, !dbg !450
+Processing instruction:   %139 = load ptr, ptr @infile, align 8, !dbg !450
+entry@313 | Variable: infile | Action: R
+Processing instruction:   %140 = call ptr @quotearg_n_style_colon(i32 noundef 0, i32 noundef 3, ptr noundef %139), !dbg !450
+entry@313 | Variable: bpout | Action: W (via alias)
+entry@313 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   call void (i32, i32, ptr, ...) @error(i32 noundef 0, i32 noundef %138, ptr noundef @.str.28, ptr noundef %140) #14, !dbg !450
+entry@313 | Variable: .str.28 | Action: R
+entry@313 | Variable: .str.28 | Action: W
+entry@313 | Variable: bpout | Action: W (via alias)
+entry@313 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   %141 = load ptr, ptr %14, align 8, !dbg !452
+entry@314 | Variable: outbuf | Action: R
+Processing instruction:   call void @write_pending(ptr noundef %141, ptr noundef %27), !dbg !453
+entry@314 | Variable: bpout | Action: R
+entry@314 | Variable: bpout | Action: W (via alias)
+entry@314 | Variable: n_to_read | Action: W (via alias)
+entry@314 | Variable: bpout | Action: W
+Processing instruction:   %142 = load i32, ptr %23, align 4, !dbg !454
+entry@315 | Variable: newlines | Action: R
+Processing instruction:   store i32 %142, ptr @newlines2, align 4, !dbg !455
+entry@315 | Variable: newlines2 | Action: W
+Processing instruction:   store i1 false, ptr %11, align 1, !dbg !456
+Processing instruction:   br label %373, !dbg !456
+Processing instruction:   %144 = load i64, ptr %32, align 8, !dbg !457
+entry@318 | Variable: n_read | Action: R
+Processing instruction:   %145 = icmp eq i64 %144, 0, !dbg !459
+Processing instruction:   br i1 %145, label %146, label %149, !dbg !460
+Processing instruction:   %147 = load ptr, ptr %14, align 8, !dbg !461
+entry@320 | Variable: outbuf | Action: R
+Processing instruction:   call void @write_pending(ptr noundef %147, ptr noundef %27), !dbg !463
+entry@320 | Variable: bpout | Action: R
+entry@320 | Variable: bpout | Action: W (via alias)
+entry@320 | Variable: n_to_read | Action: W (via alias)
+entry@320 | Variable: bpout | Action: W
+Processing instruction:   %148 = load i32, ptr %23, align 4, !dbg !464
+entry@321 | Variable: newlines | Action: R
+Processing instruction:   store i32 %148, ptr @newlines2, align 4, !dbg !465
+entry@321 | Variable: newlines2 | Action: W
+Processing instruction:   store i1 true, ptr %11, align 1, !dbg !466
+Processing instruction:   br label %373, !dbg !466
+Processing instruction:   %150 = load ptr, ptr %12, align 8, !dbg !467
+entry@328 | Variable: inbuf | Action: R
+Processing instruction:   store ptr %150, ptr %26, align 8, !dbg !468
+entry@328 | Variable: bpin | Action: W
+Processing instruction:   %151 = load ptr, ptr %26, align 8, !dbg !469
+entry@329 | Variable: bpin | Action: R
+Processing instruction:   %152 = load i64, ptr %32, align 8, !dbg !470
+entry@329 | Variable: n_read | Action: R
+Processing instruction:   %153 = getelementptr inbounds i8, ptr %151, i64 %152, !dbg !471
+Processing instruction:   store ptr %153, ptr %25, align 8, !dbg !472
+entry@329 | Variable: eob | Action: W
+Processing instruction:   %154 = load ptr, ptr %25, align 8, !dbg !473
+entry@330 | Variable: eob | Action: R
+Processing instruction:   store i8 10, ptr %154, align 1, !dbg !474
+entry@330 | Variable: bpout | Action: W (via alias)
+entry@330 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   br label %198, !dbg !475
+Processing instruction:   %156 = load i32, ptr %23, align 4, !dbg !476
+entry@339 | Variable: newlines | Action: R
+Processing instruction:   %157 = add nsw i32 %156, 1, !dbg !476
+Processing instruction:   store i32 %157, ptr %23, align 4, !dbg !476
+entry@339 | Variable: newlines | Action: W
+Processing instruction:   %158 = icmp sgt i32 %157, 0, !dbg !479
+Processing instruction:   br i1 %158, label %159, label %181, !dbg !480
+Processing instruction:   %160 = load i32, ptr %23, align 4, !dbg !481
+entry@341 | Variable: newlines | Action: R
+Processing instruction:   %161 = icmp sge i32 %160, 2, !dbg !484
+Processing instruction:   br i1 %161, label %162, label %170, !dbg !485
+Processing instruction:   store i32 2, ptr %23, align 4, !dbg !486
+entry@346 | Variable: newlines | Action: W
+Processing instruction:   %163 = load i8, ptr %21, align 1, !dbg !488
+entry@351 | Variable: squeeze_blank | Action: R
+Processing instruction:   %164 = trunc i8 %163 to i1, !dbg !488
+Processing instruction:   br i1 %164, label %165, label %169, !dbg !490
+Processing instruction:   %166 = load ptr, ptr %26, align 8, !dbg !491
+entry@353 | Variable: bpin | Action: R
+Processing instruction:   %167 = getelementptr inbounds i8, ptr %166, i32 1, !dbg !491
+Processing instruction:   store ptr %167, ptr %26, align 8, !dbg !491
+entry@353 | Variable: bpin | Action: W
+Processing instruction:   %168 = load i8, ptr %166, align 1, !dbg !493
+Processing instruction:   store i8 %168, ptr %22, align 1, !dbg !494
+entry@353 | Variable: ch | Action: W
+Processing instruction:   br label %202, !dbg !495
+Processing instruction:   br label %170, !dbg !496
+Processing instruction:   %171 = load i8, ptr %18, align 1, !dbg !497
+entry@360 | Variable: number | Action: R
+Processing instruction:   %172 = trunc i8 %171 to i1, !dbg !497
+Processing instruction:   br i1 %172, label %173, label %180, !dbg !499
+Processing instruction:   %174 = load i8, ptr %19, align 1, !dbg !500
+entry@360 | Variable: number_nonblank | Action: R
+Processing instruction:   %175 = trunc i8 %174 to i1, !dbg !500
+Processing instruction:   br i1 %175, label %180, label %176, !dbg !501
+Processing instruction:   call void @next_line_num(), !dbg !502
+Processing instruction:   %177 = load ptr, ptr %27, align 8, !dbg !504
+entry@363 | Variable: bpout | Action: R
+Processing instruction:   %178 = load ptr, ptr @line_num_print, align 8, !dbg !505
+entry@363 | Variable: line_num_print | Action: R
+Processing instruction:   %179 = call ptr @stpcpy(ptr noundef %177, ptr noundef %178) #12, !dbg !506
+entry@363 | Variable: bpout | Action: W (via alias)
+entry@363 | Variable: n_to_read | Action: W (via alias)
+entry@363 | Variable: bpout | Action: W (via alias)
+entry@363 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   store ptr %179, ptr %27, align 8, !dbg !507
+entry@363 | Variable: bpout | Action: W
+Processing instruction:   br label %180, !dbg !508
+Processing instruction:   br label %181, !dbg !509
+Processing instruction:   %182 = load i8, ptr %20, align 1, !dbg !510
+entry@368 | Variable: show_ends | Action: R
+Processing instruction:   %183 = trunc i8 %182 to i1, !dbg !510
+Processing instruction:   br i1 %183, label %184, label %195, !dbg !512
+Processing instruction:   %185 = load i8, ptr @pending_cr, align 1, !dbg !513
+entry@370 | Variable: pending_cr | Action: R
+Processing instruction:   %186 = trunc i8 %185 to i1, !dbg !513
+Processing instruction:   br i1 %186, label %187, label %192, !dbg !516
+Processing instruction:   %188 = load ptr, ptr %27, align 8, !dbg !517
+entry@372 | Variable: bpout | Action: R
+Processing instruction:   %189 = getelementptr inbounds i8, ptr %188, i32 1, !dbg !517
+Processing instruction:   store ptr %189, ptr %27, align 8, !dbg !517
+entry@372 | Variable: bpout | Action: W
+Processing instruction:   store i8 94, ptr %188, align 1, !dbg !519
+entry@372 | Variable: bpout | Action: W (via alias)
+entry@372 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   %190 = load ptr, ptr %27, align 8, !dbg !520
+entry@373 | Variable: bpout | Action: R
+Processing instruction:   %191 = getelementptr inbounds i8, ptr %190, i32 1, !dbg !520
+Processing instruction:   store ptr %191, ptr %27, align 8, !dbg !520
+entry@373 | Variable: bpout | Action: W
+Processing instruction:   store i8 77, ptr %190, align 1, !dbg !521
+entry@373 | Variable: bpout | Action: W (via alias)
+entry@373 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   store i8 0, ptr @pending_cr, align 1, !dbg !522
+entry@374 | Variable: pending_cr | Action: W
+Processing instruction:   br label %192, !dbg !523
+Processing instruction:   %193 = load ptr, ptr %27, align 8, !dbg !524
+entry@376 | Variable: bpout | Action: R
+Processing instruction:   %194 = getelementptr inbounds i8, ptr %193, i32 1, !dbg !524
+Processing instruction:   store ptr %194, ptr %27, align 8, !dbg !524
+entry@376 | Variable: bpout | Action: W
+Processing instruction:   store i8 36, ptr %193, align 1, !dbg !525
+entry@376 | Variable: bpout | Action: W (via alias)
+entry@376 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   br label %195, !dbg !526
+Processing instruction:   %196 = load ptr, ptr %27, align 8, !dbg !527
+entry@381 | Variable: bpout | Action: R
+Processing instruction:   %197 = getelementptr inbounds i8, ptr %196, i32 1, !dbg !527
+Processing instruction:   store ptr %197, ptr %27, align 8, !dbg !527
+entry@381 | Variable: bpout | Action: W
+Processing instruction:   store i8 10, ptr %196, align 1, !dbg !528
+entry@381 | Variable: bpout | Action: W (via alias)
+entry@381 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   %199 = load ptr, ptr %26, align 8, !dbg !529
+entry@383 | Variable: bpin | Action: R
+Processing instruction:   %200 = getelementptr inbounds i8, ptr %199, i32 1, !dbg !529
+Processing instruction:   store ptr %200, ptr %26, align 8, !dbg !529
+entry@383 | Variable: bpin | Action: W
+Processing instruction:   %201 = load i8, ptr %199, align 1, !dbg !530
+Processing instruction:   store i8 %201, ptr %22, align 1, !dbg !531
+entry@383 | Variable: ch | Action: W
+Processing instruction:   br label %202, !dbg !532
+Processing instruction:   %203 = load i8, ptr %22, align 1, !dbg !533
+entry@385 | Variable: ch | Action: R
+Processing instruction:   %204 = zext i8 %203 to i32, !dbg !533
+Processing instruction:   %205 = icmp eq i32 %204, 10, !dbg !534
+Processing instruction:   br i1 %205, label %45, label %206, !dbg !532, !llvm.loop !535
+Processing instruction:   %207 = load i8, ptr @pending_cr, align 1, !dbg !537
+entry@389 | Variable: pending_cr | Action: R
+Processing instruction:   %208 = trunc i8 %207 to i1, !dbg !537
+Processing instruction:   br i1 %208, label %209, label %212, !dbg !539
+Processing instruction:   %210 = load ptr, ptr %27, align 8, !dbg !540
+entry@391 | Variable: bpout | Action: R
+Processing instruction:   %211 = getelementptr inbounds i8, ptr %210, i32 1, !dbg !540
+Processing instruction:   store ptr %211, ptr %27, align 8, !dbg !540
+entry@391 | Variable: bpout | Action: W
+Processing instruction:   store i8 13, ptr %210, align 1, !dbg !542
+entry@391 | Variable: bpout | Action: W (via alias)
+entry@391 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   store i8 0, ptr @pending_cr, align 1, !dbg !543
+entry@392 | Variable: pending_cr | Action: W
+Processing instruction:   br label %212, !dbg !544
+Processing instruction:   %213 = load i32, ptr %23, align 4, !dbg !545
+entry@397 | Variable: newlines | Action: R
+Processing instruction:   %214 = icmp sge i32 %213, 0, !dbg !547
+Processing instruction:   br i1 %214, label %215, label %222, !dbg !548
+Processing instruction:   %216 = load i8, ptr %18, align 1, !dbg !549
+entry@397 | Variable: number | Action: R
+Processing instruction:   %217 = trunc i8 %216 to i1, !dbg !549
+Processing instruction:   br i1 %217, label %218, label %222, !dbg !550
+Processing instruction:   call void @next_line_num(), !dbg !551
+Processing instruction:   %219 = load ptr, ptr %27, align 8, !dbg !553
+entry@400 | Variable: bpout | Action: R
+Processing instruction:   %220 = load ptr, ptr @line_num_print, align 8, !dbg !554
+entry@400 | Variable: line_num_print | Action: R
+Processing instruction:   %221 = call ptr @stpcpy(ptr noundef %219, ptr noundef %220) #12, !dbg !555
+entry@400 | Variable: bpout | Action: W (via alias)
+entry@400 | Variable: n_to_read | Action: W (via alias)
+entry@400 | Variable: bpout | Action: W (via alias)
+entry@400 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   store ptr %221, ptr %27, align 8, !dbg !556
+entry@400 | Variable: bpout | Action: W
+Processing instruction:   br label %222, !dbg !557
+Processing instruction:   %223 = load i8, ptr %16, align 1, !dbg !558
+entry@409 | Variable: show_nonprinting | Action: R
+Processing instruction:   %224 = trunc i8 %223 to i1, !dbg !558
+Processing instruction:   br i1 %224, label %225, label %316, !dbg !560
+Processing instruction:   br label %226, !dbg !561
+Processing instruction:   %227 = load i8, ptr %22, align 1, !dbg !563
+entry@413 | Variable: ch | Action: R
+Processing instruction:   %228 = zext i8 %227 to i32, !dbg !563
+Processing instruction:   %229 = icmp sge i32 %228, 32, !dbg !566
+Processing instruction:   br i1 %229, label %230, label %285, !dbg !567
+Processing instruction:   %231 = load i8, ptr %22, align 1, !dbg !568
+entry@415 | Variable: ch | Action: R
+Processing instruction:   %232 = zext i8 %231 to i32, !dbg !568
+Processing instruction:   %233 = icmp slt i32 %232, 127, !dbg !571
+Processing instruction:   br i1 %233, label %234, label %238, !dbg !572
+Processing instruction:   %235 = load i8, ptr %22, align 1, !dbg !573
+entry@416 | Variable: ch | Action: R
+Processing instruction:   %236 = load ptr, ptr %27, align 8, !dbg !574
+entry@416 | Variable: bpout | Action: R
+Processing instruction:   %237 = getelementptr inbounds i8, ptr %236, i32 1, !dbg !574
+Processing instruction:   store ptr %237, ptr %27, align 8, !dbg !574
+entry@416 | Variable: bpout | Action: W
+Processing instruction:   store i8 %235, ptr %236, align 1, !dbg !575
+entry@416 | Variable: bpout | Action: W (via alias)
+entry@416 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   br label %284, !dbg !576
+Processing instruction:   %239 = load i8, ptr %22, align 1, !dbg !577
+entry@417 | Variable: ch | Action: R
+Processing instruction:   %240 = zext i8 %239 to i32, !dbg !577
+Processing instruction:   %241 = icmp eq i32 %240, 127, !dbg !579
+Processing instruction:   br i1 %241, label %242, label %247, !dbg !580
+Processing instruction:   %243 = load ptr, ptr %27, align 8, !dbg !581
+entry@419 | Variable: bpout | Action: R
+Processing instruction:   %244 = getelementptr inbounds i8, ptr %243, i32 1, !dbg !581
+Processing instruction:   store ptr %244, ptr %27, align 8, !dbg !581
+entry@419 | Variable: bpout | Action: W
+Processing instruction:   store i8 94, ptr %243, align 1, !dbg !583
+entry@419 | Variable: bpout | Action: W (via alias)
+entry@419 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   %245 = load ptr, ptr %27, align 8, !dbg !584
+entry@420 | Variable: bpout | Action: R
+Processing instruction:   %246 = getelementptr inbounds i8, ptr %245, i32 1, !dbg !584
+Processing instruction:   store ptr %246, ptr %27, align 8, !dbg !584
+entry@420 | Variable: bpout | Action: W
+Processing instruction:   store i8 63, ptr %245, align 1, !dbg !585
+entry@420 | Variable: bpout | Action: W (via alias)
+entry@420 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   br label %283, !dbg !586
+Processing instruction:   %248 = load ptr, ptr %27, align 8, !dbg !587
+entry@424 | Variable: bpout | Action: R
+Processing instruction:   %249 = getelementptr inbounds i8, ptr %248, i32 1, !dbg !587
+Processing instruction:   store ptr %249, ptr %27, align 8, !dbg !587
+entry@424 | Variable: bpout | Action: W
+Processing instruction:   store i8 77, ptr %248, align 1, !dbg !589
+entry@424 | Variable: bpout | Action: W (via alias)
+entry@424 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   %250 = load ptr, ptr %27, align 8, !dbg !590
+entry@425 | Variable: bpout | Action: R
+Processing instruction:   %251 = getelementptr inbounds i8, ptr %250, i32 1, !dbg !590
+Processing instruction:   store ptr %251, ptr %27, align 8, !dbg !590
+entry@425 | Variable: bpout | Action: W
+Processing instruction:   store i8 45, ptr %250, align 1, !dbg !591
+entry@425 | Variable: bpout | Action: W (via alias)
+entry@425 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   %252 = load i8, ptr %22, align 1, !dbg !592
+entry@426 | Variable: ch | Action: R
+Processing instruction:   %253 = zext i8 %252 to i32, !dbg !592
+Processing instruction:   %254 = icmp sge i32 %253, 160, !dbg !594
+Processing instruction:   br i1 %254, label %255, label %272, !dbg !595
+Processing instruction:   %256 = load i8, ptr %22, align 1, !dbg !596
+entry@428 | Variable: ch | Action: R
+Processing instruction:   %257 = zext i8 %256 to i32, !dbg !596
+Processing instruction:   %258 = icmp slt i32 %257, 255, !dbg !599
+Processing instruction:   br i1 %258, label %259, label %266, !dbg !600
+Processing instruction:   %260 = load i8, ptr %22, align 1, !dbg !601
+entry@429 | Variable: ch | Action: R
+Processing instruction:   %261 = zext i8 %260 to i32, !dbg !601
+Processing instruction:   %262 = sub nsw i32 %261, 128, !dbg !602
+Processing instruction:   %263 = trunc i32 %262 to i8, !dbg !601
+Processing instruction:   %264 = load ptr, ptr %27, align 8, !dbg !603
+entry@429 | Variable: bpout | Action: R
+Processing instruction:   %265 = getelementptr inbounds i8, ptr %264, i32 1, !dbg !603
+Processing instruction:   store ptr %265, ptr %27, align 8, !dbg !603
+entry@429 | Variable: bpout | Action: W
+Processing instruction:   store i8 %263, ptr %264, align 1, !dbg !604
+entry@429 | Variable: bpout | Action: W (via alias)
+entry@429 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   br label %271, !dbg !605
+Processing instruction:   %267 = load ptr, ptr %27, align 8, !dbg !606
+entry@432 | Variable: bpout | Action: R
+Processing instruction:   %268 = getelementptr inbounds i8, ptr %267, i32 1, !dbg !606
+Processing instruction:   store ptr %268, ptr %27, align 8, !dbg !606
+entry@432 | Variable: bpout | Action: W
+Processing instruction:   store i8 94, ptr %267, align 1, !dbg !608
+entry@432 | Variable: bpout | Action: W (via alias)
+entry@432 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   %269 = load ptr, ptr %27, align 8, !dbg !609
+entry@433 | Variable: bpout | Action: R
+Processing instruction:   %270 = getelementptr inbounds i8, ptr %269, i32 1, !dbg !609
+Processing instruction:   store ptr %270, ptr %27, align 8, !dbg !609
+entry@433 | Variable: bpout | Action: W
+Processing instruction:   store i8 63, ptr %269, align 1, !dbg !610
+entry@433 | Variable: bpout | Action: W (via alias)
+entry@433 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   br label %282, !dbg !611
+Processing instruction:   %273 = load ptr, ptr %27, align 8, !dbg !612
+entry@438 | Variable: bpout | Action: R
+Processing instruction:   %274 = getelementptr inbounds i8, ptr %273, i32 1, !dbg !612
+Processing instruction:   store ptr %274, ptr %27, align 8, !dbg !612
+entry@438 | Variable: bpout | Action: W
+Processing instruction:   store i8 94, ptr %273, align 1, !dbg !614
+entry@438 | Variable: bpout | Action: W (via alias)
+entry@438 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   %275 = load i8, ptr %22, align 1, !dbg !615
+entry@439 | Variable: ch | Action: R
+Processing instruction:   %276 = zext i8 %275 to i32, !dbg !615
+Processing instruction:   %277 = sub nsw i32 %276, 128, !dbg !616
+Processing instruction:   %278 = add nsw i32 %277, 64, !dbg !617
+Processing instruction:   %279 = trunc i32 %278 to i8, !dbg !615
+Processing instruction:   %280 = load ptr, ptr %27, align 8, !dbg !618
+entry@439 | Variable: bpout | Action: R
+Processing instruction:   %281 = getelementptr inbounds i8, ptr %280, i32 1, !dbg !618
+Processing instruction:   store ptr %281, ptr %27, align 8, !dbg !618
+entry@439 | Variable: bpout | Action: W
+Processing instruction:   store i8 %279, ptr %280, align 1, !dbg !619
+entry@439 | Variable: bpout | Action: W (via alias)
+entry@439 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   br label %311, !dbg !620
+Processing instruction:   %286 = load i8, ptr %22, align 1, !dbg !621
+entry@443 | Variable: ch | Action: R
+Processing instruction:   %287 = zext i8 %286 to i32, !dbg !621
+Processing instruction:   %288 = icmp eq i32 %287, 9, !dbg !623
+Processing instruction:   br i1 %288, label %289, label %295, !dbg !624
+Processing instruction:   %290 = load i8, ptr %17, align 1, !dbg !625
+entry@443 | Variable: show_tabs | Action: R
+Processing instruction:   %291 = trunc i8 %290 to i1, !dbg !625
+Processing instruction:   br i1 %291, label %295, label %292, !dbg !626
+Processing instruction:   %293 = load ptr, ptr %27, align 8, !dbg !627
+entry@444 | Variable: bpout | Action: R
+Processing instruction:   %294 = getelementptr inbounds i8, ptr %293, i32 1, !dbg !627
+Processing instruction:   store ptr %294, ptr %27, align 8, !dbg !627
+entry@444 | Variable: bpout | Action: W
+Processing instruction:   store i8 9, ptr %293, align 1, !dbg !628
+entry@444 | Variable: bpout | Action: W (via alias)
+entry@444 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   br label %310, !dbg !629
+Processing instruction:   %296 = load i8, ptr %22, align 1, !dbg !630
+entry@445 | Variable: ch | Action: R
+Processing instruction:   %297 = zext i8 %296 to i32, !dbg !630
+Processing instruction:   %298 = icmp eq i32 %297, 10, !dbg !632
+Processing instruction:   br i1 %298, label %299, label %300, !dbg !633
+Processing instruction:   store i32 -1, ptr %23, align 4, !dbg !634
+entry@447 | Variable: newlines | Action: W
+Processing instruction:   br label %315, !dbg !636
+Processing instruction:   %301 = load ptr, ptr %27, align 8, !dbg !637
+entry@452 | Variable: bpout | Action: R
+Processing instruction:   %302 = getelementptr inbounds i8, ptr %301, i32 1, !dbg !637
+Processing instruction:   store ptr %302, ptr %27, align 8, !dbg !637
+entry@452 | Variable: bpout | Action: W
+Processing instruction:   store i8 94, ptr %301, align 1, !dbg !639
+entry@452 | Variable: bpout | Action: W (via alias)
+entry@452 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   %303 = load i8, ptr %22, align 1, !dbg !640
+entry@453 | Variable: ch | Action: R
+Processing instruction:   %304 = zext i8 %303 to i32, !dbg !640
+Processing instruction:   %305 = add nsw i32 %304, 64, !dbg !641
+Processing instruction:   %306 = trunc i32 %305 to i8, !dbg !640
+Processing instruction:   %307 = load ptr, ptr %27, align 8, !dbg !642
+entry@453 | Variable: bpout | Action: R
+Processing instruction:   %308 = getelementptr inbounds i8, ptr %307, i32 1, !dbg !642
+Processing instruction:   store ptr %308, ptr %27, align 8, !dbg !642
+entry@453 | Variable: bpout | Action: W
+Processing instruction:   store i8 %306, ptr %307, align 1, !dbg !643
+entry@453 | Variable: bpout | Action: W (via alias)
+entry@453 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   %312 = load ptr, ptr %26, align 8, !dbg !644
+entry@456 | Variable: bpin | Action: R
+Processing instruction:   %313 = getelementptr inbounds i8, ptr %312, i32 1, !dbg !644
+Processing instruction:   store ptr %313, ptr %26, align 8, !dbg !644
+entry@456 | Variable: bpin | Action: W
+Processing instruction:   %314 = load i8, ptr %312, align 1, !dbg !645
+Processing instruction:   store i8 %314, ptr %22, align 1, !dbg !646
+entry@456 | Variable: ch | Action: W
+Processing instruction:   br label %226, !dbg !561, !llvm.loop !647
+Processing instruction:   br label %372, !dbg !649
+Processing instruction:   br label %317, !dbg !650
+Processing instruction:   %318 = load i8, ptr %22, align 1, !dbg !652
+entry@464 | Variable: ch | Action: R
+Processing instruction:   %319 = zext i8 %318 to i32, !dbg !652
+Processing instruction:   %320 = icmp eq i32 %319, 9, !dbg !655
+Processing instruction:   br i1 %320, label %321, label %333, !dbg !656
+Processing instruction:   %322 = load i8, ptr %17, align 1, !dbg !657
+entry@464 | Variable: show_tabs | Action: R
+Processing instruction:   %323 = trunc i8 %322 to i1, !dbg !657
+Processing instruction:   br i1 %323, label %324, label %333, !dbg !658
+Processing instruction:   %325 = load ptr, ptr %27, align 8, !dbg !659
+entry@466 | Variable: bpout | Action: R
+Processing instruction:   %326 = getelementptr inbounds i8, ptr %325, i32 1, !dbg !659
+Processing instruction:   store ptr %326, ptr %27, align 8, !dbg !659
+entry@466 | Variable: bpout | Action: W
+Processing instruction:   store i8 94, ptr %325, align 1, !dbg !661
+entry@466 | Variable: bpout | Action: W (via alias)
+entry@466 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   %327 = load i8, ptr %22, align 1, !dbg !662
+entry@467 | Variable: ch | Action: R
+Processing instruction:   %328 = zext i8 %327 to i32, !dbg !662
+Processing instruction:   %329 = add nsw i32 %328, 64, !dbg !663
+Processing instruction:   %330 = trunc i32 %329 to i8, !dbg !662
+Processing instruction:   %331 = load ptr, ptr %27, align 8, !dbg !664
+entry@467 | Variable: bpout | Action: R
+Processing instruction:   %332 = getelementptr inbounds i8, ptr %331, i32 1, !dbg !664
+Processing instruction:   store ptr %332, ptr %27, align 8, !dbg !664
+entry@467 | Variable: bpout | Action: W
+Processing instruction:   store i8 %330, ptr %331, align 1, !dbg !665
+entry@467 | Variable: bpout | Action: W (via alias)
+entry@467 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   br label %367, !dbg !666
+Processing instruction:   %334 = load i8, ptr %22, align 1, !dbg !667
+entry@469 | Variable: ch | Action: R
+Processing instruction:   %335 = zext i8 %334 to i32, !dbg !667
+Processing instruction:   %336 = icmp ne i32 %335, 10, !dbg !669
+Processing instruction:   br i1 %336, label %337, label %365, !dbg !670
+Processing instruction:   %338 = load i8, ptr %22, align 1, !dbg !671
+entry@471 | Variable: ch | Action: R
+Processing instruction:   %339 = zext i8 %338 to i32, !dbg !671
+Processing instruction:   %340 = icmp eq i32 %339, 13, !dbg !674
+Processing instruction:   br i1 %340, label %341, label %360, !dbg !675
+Processing instruction:   %342 = load ptr, ptr %26, align 8, !dbg !676
+entry@471 | Variable: bpin | Action: R
+Processing instruction:   %343 = load i8, ptr %342, align 1, !dbg !677
+Processing instruction:   %344 = sext i8 %343 to i32, !dbg !677
+Processing instruction:   %345 = icmp eq i32 %344, 10, !dbg !678
+Processing instruction:   br i1 %345, label %346, label %360, !dbg !679
+Processing instruction:   %347 = load i8, ptr %20, align 1, !dbg !680
+entry@471 | Variable: show_ends | Action: R
+Processing instruction:   %348 = trunc i8 %347 to i1, !dbg !680
+Processing instruction:   br i1 %348, label %349, label %360, !dbg !681
+Processing instruction:   %350 = load ptr, ptr %26, align 8, !dbg !682
+entry@473 | Variable: bpin | Action: R
+Processing instruction:   %351 = load ptr, ptr %25, align 8, !dbg !685
+entry@473 | Variable: eob | Action: R
+Processing instruction:   %352 = icmp eq ptr %350, %351, !dbg !686
+Processing instruction:   br i1 %352, label %353, label %354, !dbg !687
+Processing instruction:   store i8 1, ptr @pending_cr, align 1, !dbg !688
+entry@474 | Variable: pending_cr | Action: W
+Processing instruction:   br label %359, !dbg !689
+Processing instruction:   %355 = load ptr, ptr %27, align 8, !dbg !690
+entry@477 | Variable: bpout | Action: R
+Processing instruction:   %356 = getelementptr inbounds i8, ptr %355, i32 1, !dbg !690
+Processing instruction:   store ptr %356, ptr %27, align 8, !dbg !690
+entry@477 | Variable: bpout | Action: W
+Processing instruction:   store i8 94, ptr %355, align 1, !dbg !692
+entry@477 | Variable: bpout | Action: W (via alias)
+entry@477 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   %357 = load ptr, ptr %27, align 8, !dbg !693
+entry@478 | Variable: bpout | Action: R
+Processing instruction:   %358 = getelementptr inbounds i8, ptr %357, i32 1, !dbg !693
+Processing instruction:   store ptr %358, ptr %27, align 8, !dbg !693
+entry@478 | Variable: bpout | Action: W
+Processing instruction:   store i8 77, ptr %357, align 1, !dbg !694
+entry@478 | Variable: bpout | Action: W (via alias)
+entry@478 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   br label %364, !dbg !695
+Processing instruction:   %361 = load i8, ptr %22, align 1, !dbg !696
+entry@482 | Variable: ch | Action: R
+Processing instruction:   %362 = load ptr, ptr %27, align 8, !dbg !697
+entry@482 | Variable: bpout | Action: R
+Processing instruction:   %363 = getelementptr inbounds i8, ptr %362, i32 1, !dbg !697
+Processing instruction:   store ptr %363, ptr %27, align 8, !dbg !697
+entry@482 | Variable: bpout | Action: W
+Processing instruction:   store i8 %361, ptr %362, align 1, !dbg !698
+entry@482 | Variable: bpout | Action: W (via alias)
+entry@482 | Variable: n_to_read | Action: W (via alias)
+Processing instruction:   br label %366, !dbg !699
+Processing instruction:   store i32 -1, ptr %23, align 4, !dbg !700
+entry@486 | Variable: newlines | Action: W
+Processing instruction:   br label %371, !dbg !702
+Processing instruction:   %368 = load ptr, ptr %26, align 8, !dbg !703
+entry@490 | Variable: bpin | Action: R
+Processing instruction:   %369 = getelementptr inbounds i8, ptr %368, i32 1, !dbg !703
+Processing instruction:   store ptr %369, ptr %26, align 8, !dbg !703
+entry@490 | Variable: bpin | Action: W
+Processing instruction:   %370 = load i8, ptr %368, align 1, !dbg !704
+Processing instruction:   store i8 %370, ptr %22, align 1, !dbg !705
+entry@490 | Variable: ch | Action: W
+Processing instruction:   br label %317, !dbg !650, !llvm.loop !706
+Processing instruction:   br label %44, !dbg !338, !llvm.loop !708
+Processing instruction:   %374 = load i1, ptr %11, align 1, !dbg !710
+Processing instruction:   ret i1 %374, !dbg !710
+Processing instruction:   %2 = call ptr @__errno_location() #12, !dbg !297
+Processing instruction:   %3 = load i32, ptr %2, align 4, !dbg !297
+Processing instruction:   store i32 %3, ptr %1, align 4, !dbg !296
+entry@743 | Variable: saved_errno | Action: W
+Processing instruction:   %4 = load ptr, ptr @stdout, align 8, !dbg !298
+entry@744 | Variable: stdout | Action: R
+Processing instruction:   %5 = call i32 @fflush_unlocked(ptr noundef %4), !dbg !298
+Processing instruction:   %6 = load ptr, ptr @stdout, align 8, !dbg !299
+entry@745 | Variable: stdout | Action: R
+Processing instruction:   %7 = call i32 @fpurge(ptr noundef %6), !dbg !300
+Processing instruction:   %8 = load ptr, ptr @stdout, align 8, !dbg !301
+entry@746 | Variable: stdout | Action: R
+Processing instruction:   call void @clearerr_unlocked(ptr noundef %8) #13, !dbg !301
+Processing instruction:   %9 = load i32, ptr %1, align 4, !dbg !302
+entry@747 | Variable: saved_errno | Action: R
+Processing instruction:   %10 = call ptr @gettext(ptr noundef @.str.49) #13, !dbg !302
+entry@747 | Variable: .str.49 | Action: R
+entry@747 | Variable: .str.49 | Action: W
+Processing instruction:   call void (i32, i32, ptr, ...) @error(i32 noundef 1, i32 noundef %9, ptr noundef %10) #14, !dbg !302
+Processing instruction:   unreachable, !dbg !302
+Processing instruction:   %3 = load i32, ptr %2, align 4, !dbg !297
+entry@776 | Variable: err | Action: R
+Processing instruction:   %4 = icmp eq i32 %3, 95, !dbg !298
+Processing instruction:   br i1 %4, label %6, label %5, !dbg !299
+Processing instruction:   br label %6, !dbg !299
+Processing instruction:   ret i1 %7, !dbg !300
+Processing instruction:   %6 = load ptr, ptr %4, align 8, !dbg !306
+entry@190 | Variable: bpout | Action: R
+Processing instruction:   %7 = load ptr, ptr %6, align 8, !dbg !307
+Processing instruction:   %8 = load ptr, ptr %3, align 8, !dbg !308
+entry@190 | Variable: outbuf | Action: R
+Processing instruction:   %9 = ptrtoint ptr %7 to i64, !dbg !309
+Processing instruction:   %10 = ptrtoint ptr %8 to i64, !dbg !309
+Processing instruction:   %11 = sub i64 %9, %10, !dbg !309
+Processing instruction:   store i64 %11, ptr %5, align 8, !dbg !305
+entry@190 | Variable: n_write | Action: W
+Processing instruction:   %12 = load i64, ptr %5, align 8, !dbg !310
+entry@191 | Variable: n_write | Action: R
+Processing instruction:   %13 = icmp slt i64 0, %12, !dbg !312
+Processing instruction:   br i1 %13, label %14, label %24, !dbg !313
+Processing instruction:   %15 = load ptr, ptr %3, align 8, !dbg !314
+entry@193 | Variable: outbuf | Action: R
+Processing instruction:   %16 = load i64, ptr %5, align 8, !dbg !317
+entry@193 | Variable: n_write | Action: R
+Processing instruction:   %17 = call i64 @full_write(i32 noundef 1, ptr noundef %15, i64 noundef %16), !dbg !318
+Processing instruction:   %18 = load i64, ptr %5, align 8, !dbg !319
+entry@193 | Variable: n_write | Action: R
+Processing instruction:   %19 = icmp ne i64 %17, %18, !dbg !320
+Processing instruction:   br i1 %19, label %20, label %21, !dbg !321
+Processing instruction:   call void @write_error(), !dbg !322
+Processing instruction:   br label %21, !dbg !322
+Processing instruction:   %22 = load ptr, ptr %3, align 8, !dbg !323
+entry@195 | Variable: outbuf | Action: R
+Processing instruction:   %23 = load ptr, ptr %4, align 8, !dbg !324
+entry@195 | Variable: bpout | Action: R
+Processing instruction:   store ptr %22, ptr %23, align 8, !dbg !325
+Processing instruction:   br label %24, !dbg !326
+Processing instruction:   ret void, !dbg !327
+Processing instruction:   %2 = load ptr, ptr @line_num_end, align 8, !dbg !297
+entry@134 | Variable: line_num_end | Action: R
+Processing instruction:   store ptr %2, ptr %1, align 8, !dbg !296
+entry@134 | Variable: endp | Action: W
+Processing instruction:   br label %3, !dbg !298
+Processing instruction:   %4 = load ptr, ptr %1, align 8, !dbg !299
+entry@137 | Variable: endp | Action: R
+Processing instruction:   %5 = load i8, ptr %4, align 1, !dbg !302
+Processing instruction:   %6 = add i8 %5, 1, !dbg !302
+Processing instruction:   store i8 %6, ptr %4, align 1, !dbg !302
+Processing instruction:   %7 = sext i8 %5 to i32, !dbg !303
+Processing instruction:   %8 = icmp slt i32 %7, 57, !dbg !304
+Processing instruction:   br i1 %8, label %9, label %10, !dbg !305
+Processing instruction:   br label %31, !dbg !306
+Processing instruction:   %11 = load ptr, ptr %1, align 8, !dbg !307
+entry@139 | Variable: endp | Action: R
+Processing instruction:   %12 = getelementptr inbounds i8, ptr %11, i32 -1, !dbg !307
+Processing instruction:   store ptr %12, ptr %1, align 8, !dbg !307
+entry@139 | Variable: endp | Action: W
+Processing instruction:   store i8 48, ptr %11, align 1, !dbg !308
+Processing instruction:   br label %13, !dbg !309
+Processing instruction:   %14 = load ptr, ptr %1, align 8, !dbg !310
+entry@141 | Variable: endp | Action: R
+Processing instruction:   %15 = load ptr, ptr @line_num_start, align 8, !dbg !311
+entry@141 | Variable: line_num_start | Action: R
+Processing instruction:   %16 = icmp uge ptr %14, %15, !dbg !312
+Processing instruction:   br i1 %16, label %3, label %17, !dbg !309, !llvm.loop !313
+Processing instruction:   %18 = load ptr, ptr @line_num_start, align 8, !dbg !316
+entry@143 | Variable: line_num_start | Action: R
+Processing instruction:   %19 = icmp ugt ptr %18, @line_buf, !dbg !318
+Processing instruction:   br i1 %19, label %20, label %23, !dbg !319
+Processing instruction:   %21 = load ptr, ptr @line_num_start, align 8, !dbg !320
+entry@144 | Variable: line_num_start | Action: R
+Processing instruction:   %22 = getelementptr inbounds i8, ptr %21, i32 -1, !dbg !320
+Processing instruction:   store ptr %22, ptr @line_num_start, align 8, !dbg !320
+entry@144 | Variable: line_num_start | Action: W
+Processing instruction:   store i8 49, ptr %22, align 1, !dbg !321
+Processing instruction:   br label %24, !dbg !322
+Processing instruction:   store i8 62, ptr @line_buf, align 16, !dbg !323
+entry@146 | Variable: line_buf | Action: W
+Processing instruction:   %25 = load ptr, ptr @line_num_start, align 8, !dbg !324
+entry@147 | Variable: line_num_start | Action: R
+Processing instruction:   %26 = load ptr, ptr @line_num_print, align 8, !dbg !326
+entry@147 | Variable: line_num_print | Action: R
+Processing instruction:   %27 = icmp ult ptr %25, %26, !dbg !327
+Processing instruction:   br i1 %27, label %28, label %31, !dbg !328
+Processing instruction:   %29 = load ptr, ptr @line_num_print, align 8, !dbg !329
+entry@148 | Variable: line_num_print | Action: R
+Processing instruction:   %30 = getelementptr inbounds i8, ptr %29, i32 -1, !dbg !329
+Processing instruction:   store ptr %30, ptr @line_num_print, align 8, !dbg !329
+entry@148 | Variable: line_num_print | Action: W
+Processing instruction:   br label %31, !dbg !330
+Processing instruction:   ret void, !dbg !331

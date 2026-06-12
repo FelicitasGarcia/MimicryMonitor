@@ -21,7 +21,7 @@ PUA_PATH="$INPUTS_DIR/programPUA.c"
 OP_PATH="$INPUTS_DIR/programOP.c"
 SIGMA_PATH="$INPUTS_DIR/sigma.txt"
 
-IANALYZE=""
+IANALYZE=()
 IANALYZEBOOL=0
 IINSTRUMENT=()
 IINSTRUMENTBOOL=0
@@ -41,7 +41,7 @@ print_usage() {
   echo "  -sigma PATH               Path to sigma pairing (default: inputs/sigma.txt)"
   echo ""
   echo "Include paths:"
-  echo "  -Ianalyze PATH            Include dir for analyze step"
+  echo "  -Ianalyze D1 [D2 ...]     Include dirs for analyze step"
   echo "  -Iinstrument F1 [F2 ...]  Extra files to link at instrumentation"
   echo ""
   echo "Instrumentation options:"
@@ -59,9 +59,13 @@ while [[ $# -gt 0 ]]; do
     -pua)    PUA_PATH="$2"; shift 2 ;;
     -op)     OP_PATH="$2"; shift 2 ;;
     -sigma)  SIGMA_PATH="$2"; shift 2 ;;
-    -Ianalyze)
+      -Ianalyze)
       IANALYZEBOOL=1
-      IANALYZE="$2"; shift 2
+      shift
+      while [[ $# -gt 0 && ! "$1" =~ ^- ]]; do
+        IANALYZE+=("$1")
+        shift
+      done
       ;;
     -Iinstrument)
       IINSTRUMENTBOOL=1
@@ -109,7 +113,7 @@ echo -e "${CYAN}=====================================${RESET}"
 echo -e "${BLUE}Step 1:${RESET} Analyzing programs"
 cd "$SCRIPTS_DIR"
 ANALYZE_FLAGS=(-pua "$PUA_PATH" -op "$OP_PATH" -sigma "$SIGMA_PATH")
-[[ "$IANALYZEBOOL" == "1" ]] && ANALYZE_FLAGS+=(-I "$IANALYZE")
+[[ "$IANALYZEBOOL" == "1" ]] && ANALYZE_FLAGS+=(-I "${IANALYZE[@]}")
 [[ "$RENDER" == "0" ]]       && ANALYZE_FLAGS+=(-no-render)
 ./analyze.sh "${ANALYZE_FLAGS[@]}"
 
