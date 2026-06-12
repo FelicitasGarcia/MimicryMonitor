@@ -126,15 +126,9 @@ echo -e "${YELLOW}Binary:    ${RESET}$EXECUTABLE_NAME"
 echo -e "${YELLOW}Compiler:  ${RESET}$CC"
 echo -e "${YELLOW}Log:       ${RESET}${LOGFILE:-stderr}"
 
-# --- Policy: flag o prompt interactivo ---
+# --- Policy: default to none if not specified ---
 if [[ -z "$POLICY" ]]; then
-  echo -e "${YELLOW}Abort policy — IV, V, or none? (i/v/n): ${RESET}"
-  read -r policy_input
-  case "$policy_input" in
-    i|I) POLICY="stop-iv" ;;
-    v|V) POLICY="stop-v"  ;;
-    *)   POLICY="n"        ;;
-  esac
+  POLICY="n"
 fi
 echo -e "${YELLOW}Policy:    ${RESET}$POLICY"
 echo -e "${CYAN}==================================================${RESET}"
@@ -190,23 +184,3 @@ fi
 $CC "${CFLAGS[@]}" "$OUTPUT_FILE" "${MONITOR_RUNTIME[@]}" "${EXTRA_OBJECTS[@]}" "${OBJECTS[@]}" -o "$EXECUTABLE_NAME"
 
 echo -e "${GREEN}Build complete: ${RESET}$EXECUTABLE_NAME"
-
-# --- Optional: run ---
-if [[ -t 0 ]]; then
-  echo -e "${YELLOW}Run now? (y/n): ${RESET}"
-  read -r RUN_NOW
-  if [[ "$RUN_NOW" == "y" || "$RUN_NOW" == "Y" ]]; then
-    echo -e "${YELLOW}Parameters: ${RESET}"
-    read -r params
-    echo -e "${BLUE}Running...${RESET}"
-    read -r -a params_array <<< "$params"
-    set +e
-    ./$EXECUTABLE_NAME "${params_array[@]}"
-    run_status=$?
-    set -e
-    if [[ $run_status -ne 0 ]]; then
-      echo -e "${YELLOW}Instrumented program exited with status ${run_status}.${RESET}"
-    fi
-    echo -e "${BLUE}Finished running, instrumented program available at llvm/feli/outputs/instrumentedPUA${RESET}"
-  fi
-fi

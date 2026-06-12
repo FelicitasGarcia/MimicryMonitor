@@ -20,6 +20,12 @@ public class Main {
             System.out.println("Using default paths");
         }
 
+        for (String arg : args) {
+            if (arg.equals("--no-render")) {
+                Automata.renderEnabled = false;
+            }
+        }
+
         // Pre existing Files
         String dotFilePathOP = inputFilePath + "/cfgs/mainOP.dot"; // LLVM OUTPUT
         String dotFilePathPUA = inputFilePath + "/cfgs/mainPUA.dot"; // LLVM OUTPUT

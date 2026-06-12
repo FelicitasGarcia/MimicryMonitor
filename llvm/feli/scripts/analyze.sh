@@ -22,6 +22,7 @@ OP_PATH="$INPUTS_DIR/programOP.c"
 SIGMA_PATH="$INPUTS_DIR/sigma.txt"
 IBOOL=0
 ILIB=""
+RENDER=1
 
 # Detect the platform and set the correct extension
 if [[ "$(uname)" == "Darwin" ]]; then
@@ -49,6 +50,7 @@ while [[ $# -gt 0 ]]; do
     -op) OP_PATH="$2"; shift 2 ;;
     -sigma) SIGMA_PATH="$2"; shift 2 ;;
     -h) print_usage ;;
+    -no-render) RENDER=0; shift ;;
     -I) IBOOL=1;
            ILIB="$2";
            shift 2;;
@@ -109,8 +111,12 @@ process_cfg() {
     if [ -n "$TEMP_DOT" ]; then
         echo -e "${GREEN}Found CFG at: $TEMP_DOT${RESET}"
         cp "$TEMP_DOT" "$CFG_OUTPUT_DIR/$output_name.dot"
-        dot -Tpng "$CFG_OUTPUT_DIR/$output_name.dot" -o "$CFG_OUTPUT_DIR/$output_name.png"
-        echo -e "${GREEN}Saved CFG to $CFG_OUTPUT_DIR/$output_name.dot and $output_name.png${RESET}"
+        if [[ "$RENDER" == "1" ]]; then
+            dot -Tpng "$CFG_OUTPUT_DIR/$output_name.dot" -o "$CFG_OUTPUT_DIR/$output_name.png"
+            echo -e "${GREEN}Saved CFG to $CFG_OUTPUT_DIR/$output_name.dot and $output_name.png${RESET}"
+        else
+            echo -e "${GREEN}Saved CFG to $CFG_OUTPUT_DIR/$output_name.dot (render skipped)${RESET}"
+        fi
 
         # Delete from current directory
         rm "$TEMP_DOT"

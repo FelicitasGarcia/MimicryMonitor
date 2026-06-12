@@ -30,6 +30,7 @@ IINSTRUMENTBOOL=0
 AFLFUZZ=0
 LOGFILE=""
 POLICY=""
+RENDER=1
 
 print_usage() {
   echo "Usage: $0 [options]"
@@ -47,6 +48,7 @@ print_usage() {
   echo "  -afl                      Compile with AFL++ for fuzzing"
   echo "  -log [PATH]               Enable monitor logging (default: /tmp/mm_monitor.log)"
   echo "  -policy POLICY            Monitor policy: stop-v, stop-iv, or n"
+  echo "  -no-render                Skip PNG rendering of all intermediate graphs"
   echo ""
   echo "  -h                        Show this help"
   exit 0
@@ -69,7 +71,8 @@ while [[ $# -gt 0 ]]; do
         shift
       done
       ;;
-    -afl)    AFLFUZZ=1; shift ;;
+    -afl)       AFLFUZZ=1; shift ;;
+    -no-render) RENDER=0; shift ;;
     -log)
       shift
       if [[ $# -gt 0 && ! $1 =~ ^- ]]; then
@@ -98,7 +101,8 @@ echo -e "${CYAN}===== MIMICRY ANALYSIS PIPELINE =====${RESET}"
 echo -e "${YELLOW}PUA:     ${RESET}$PUA_PATH"
 echo -e "${YELLOW}OP:      ${RESET}$OP_PATH"
 echo -e "${YELLOW}Sigma:   ${RESET}$SIGMA_PATH"
-[[ "$AFLFUZZ" == "1" ]] && echo -e "${YELLOW}Mode:    ${RESET}AFL++ fuzzing"
+[[ "$AFLFUZZ" == "1" ]]  && echo -e "${YELLOW}Mode:    ${RESET}AFL++ fuzzing"
+[[ "$RENDER" == "0" ]]   && echo -e "${YELLOW}Render:  ${RESET}disabled"
 echo -e "${CYAN}=====================================${RESET}"
 
 # --- Step 1: Analyze ---
@@ -106,14 +110,17 @@ echo -e "${BLUE}Step 1:${RESET} Analyzing programs"
 cd "$SCRIPTS_DIR"
 ANALYZE_FLAGS=(-pua "$PUA_PATH" -op "$OP_PATH" -sigma "$SIGMA_PATH")
 [[ "$IANALYZEBOOL" == "1" ]] && ANALYZE_FLAGS+=(-I "$IANALYZE")
+[[ "$RENDER" == "0" ]]       && ANALYZE_FLAGS+=(-no-render)
 ./analyze.sh "${ANALYZE_FLAGS[@]}"
 
 # --- Step 2: Monitor construction ---
 echo -e "${BLUE}Step 2:${RESET} Constructing Mimicry Monitor"
 cd "$MIMICRY_DIR"
+JAVA_ARGS="$OP_PATH $PUA_PATH $SIGMA_PATH"
+[[ "$RENDER" == "0" ]] && JAVA_ARGS="$JAVA_ARGS --no-render"
 mvn exec:java \
   -Dexec.mainClass="org.example.Main" \
-  -Dexec.args="$OP_PATH $PUA_PATH $SIGMA_PATH"
+  -Dexec.args="$JAVA_ARGS"
 
 # --- Step 3: Instrument ---
 echo -e "${BLUE}Step 3:${RESET} Instrumenting PUA"

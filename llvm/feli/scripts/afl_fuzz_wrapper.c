@@ -4,7 +4,10 @@
 
 int main(int argc, char **argv)
 {
-    const char *target = "llvm/feli/outputs/instrumentedPUA";
+#ifndef TARGET_BINARY
+#define TARGET_BINARY "llvm/feli/outputs/instrumentedPUA"
+#endif
+    const char *target = TARGET_BINARY;
     if (argc < 2)
     {
         execl(target, target, (char *)NULL);

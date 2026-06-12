@@ -9,6 +9,7 @@ public class Automata {
     protected Map<String, Edge> alphabet = new HashMap<>();
     protected static boolean ivPresent = false;
     protected static boolean vPresent = false;
+    public static boolean renderEnabled = true;
 
     // Empty Constructor
     public Automata() { }
@@ -84,7 +85,7 @@ public class Automata {
     // Renderer
     protected void generateRender(String graphName, String destination) throws IOException {
         DOTExporter dotExporter = new DOTExporter(graphName, this.nodes, this.edges, destination);
-        dotExporter.render();
+        if (renderEnabled) dotExporter.render();
     }
 
     // Compactation Methods

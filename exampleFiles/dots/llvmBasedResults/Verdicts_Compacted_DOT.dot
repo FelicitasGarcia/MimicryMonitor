@@ -6,17 +6,17 @@ digraph Verdicts_Compacted {
 edge [curvature=0.3];  node [fontname="Helvetica", fontsize=10];
   edge [fontname="Helvetica", fontsize=9];
 
-  245 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   -2 [label="V", style=filled, fillcolor="darkolivegreen3", shape=diamond, margin="0.15,0.15"];
   -1 [label="IV", style=filled, fillcolor="lightcoral", shape=diamond, margin="0.15,0.15"];
-  150 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
-  95 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
-  219 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
-  13 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
-  0 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
-  286 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  245 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   64 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   30 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  219 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  13 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  150 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  95 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  0 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  286 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
 
   0 -> 13 [label="Entry", id=16, arrowhead=normal, penwidth=1.2];
   13 -> 30 [label="if (argc \< 2)\\l?", id=16, arrowhead=normal, penwidth=1.2];
@@ -27,7 +27,7 @@ edge [curvature=0.3];  node [fontname="Helvetica", fontsize=10];
   150 -> 219 [label="if (n \< 0)\\l?", id=23, arrowhead=normal, penwidth=1.2];
   219 -> 245 [label="if (n \< 0)\\l: else", id=23, arrowhead=dot, penwidth=1.2];
   219 -> -2 [label="if (n \< 0)\\l: then", id=23, arrowhead=vee, penwidth=1.2];
+  245 -> 286 [label="if (n == 0)\\l?", id=25, arrowhead=normal, penwidth=1.2];
   286 -> -2 [label="if (n == 0)\\l: else", id=25, arrowhead=dot, penwidth=1.2];
   286 -> -1 [label="if (n == 0)\\l: then", id=25, arrowhead=vee, penwidth=1.2];
-  245 -> 286 [label="if (n == 0)\\l?", id=25, arrowhead=normal, penwidth=1.2];
 }

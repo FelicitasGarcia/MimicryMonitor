@@ -6,27 +6,27 @@ digraph Verdicts_Labeled {
 edge [curvature=0.3];  node [fontname="Helvetica", fontsize=10];
   edge [fontname="Helvetica", fontsize=9];
 
-  13 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
-  30 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
-  150 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  90 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  95 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   219 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
-  286 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   317 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   354 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
-  404 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   387 [label="IVP, IV", style=filled, fillcolor="lightcoral", shape=diamond, margin="0.15,0.15"];
+  404 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  150 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  286 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   399 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  245 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   127 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
-  64 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   123 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
-  90 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  13 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  64 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  252 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   301 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   0 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
+  30 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   50 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
-  95 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   170 [label="V", style=filled, fillcolor="darkolivegreen3", shape=diamond, margin="0.15,0.15"];
-  245 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
-  252 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
   320 [label="NV", style=filled, fillcolor="lightcyan2", shape=ellipse, margin="0.15,0.15"];
 
   90 -> 123 [label="OP0", id=13, arrowhead=normal, penwidth=1.2];
