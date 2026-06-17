@@ -79,14 +79,20 @@ echo -e "${CYAN}=================================================${RESET}"
 
 echo -e "${BLUE}Step 1:${RESET} Generating LLVM IR files..."
 
-# Prefer the clang built alongside opt (LLVM 19) to avoid version mismatches
-if [ -x "$BUILD_DIR/bin/clang" ]; then
+# Use clang-16 to match Apple Clang 16 debug info format (llvm.dbg.declare intrinsics
+# instead of #dbg_declare directives), avoiding LLVM 19 dot-cfg metadata ID mismatches.
+if command -v clang-16 >/dev/null 2>&1; then
+    echo -e "${GREEN}Using clang-16 for LLVM IR generation${RESET}"
+    CLANG="clang-16"
+elif [ -x "$BUILD_DIR/bin/clang" ]; then
+    echo -e "${GREEN}Using clang from build directory: $BUILD_DIR/bin/clang${RESET}"
     CLANG="$BUILD_DIR/bin/clang"
 elif command -v clang-19 >/dev/null 2>&1; then
+    echo -e "${GREEN}Using clang-19 for LLVM IR generation${RESET}"
     CLANG="clang-19"
 else
     CLANG="clang"
-    echo -e "${YELLOW}Warning: using system clang ($(clang --version | head -1)). For best results, install clang-19 or rebuild LLVM with -DLLVM_ENABLE_PROJECTS=clang${RESET}"
+    echo -e "${YELLOW}Warning: using system clang ($(clang --version | head -1)).${RESET}"
 fi
 
 if [ "$IBOOL" = "1" ]; then
