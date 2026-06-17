@@ -1,0 +1,43 @@
+Test Results for Program: catPUA
+========================================
+
+cat-E.sh                       OK
+----------------------------------------
+  Test Case 1:              V (Final)
+  Test Case 2:              V (Final)
+  Test Case 3:              V (Final)
+
+
+cat-buf.sh                     FAIL
+----------------------------------------
+  Test Case 1:              V (Final)
+  Test Case 2:              V (Final)
+  Test Case 3:              V (Final)
+  Test Case 4:              V (Final)
+  Test Case 5:              V (Final)
+  Test Case 6:              V (Final)
+
+
+cat-proc.sh                    SKIP
+----------------------------------------
+  Monitor Status:           No monitor output available
+
+
+cat-self.sh                    OK
+----------------------------------------
+  Test Case 1:              IV (Final)
+  Test Case 2:              IV (Final)
+  Test Case 3:              V (Final)
+  Test Case 4:              V (Final)
+  Test Case 5:              V (Final)
+  Test Case 6:              V (Final)
+  Test Case 7:              V (Final)
+  Test Case 8:              V (Final)
+  Test Case 9:              V (Final)
+  Test Case 10:             IV (Final)
+  Test Case 11:             IV (Final)
+  Test Case 12:             IV (Final)
+  Test Case 13:             IV (Final)
+  Test Case 14:             IV (Final)
+  Test Case 15:             IV (Final)
+

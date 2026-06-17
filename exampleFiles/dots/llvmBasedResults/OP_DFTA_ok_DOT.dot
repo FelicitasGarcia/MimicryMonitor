@@ -1,0 +1,26 @@
+digraph DFTA {
+  rankdir=TB; // Top to bottom layout
+  rank=min;
+  nodesep=0.5; // Increase node separation
+  ranksep=0.8; // Increase rank separation
+edge [curvature=0.3];  node [fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9];
+
+  0 [label="valid", style=filled, fillcolor="darkolivegreen3", shape=diamond, margin="0.15,0.15"];
+  1 [label="invalid", style=filled, fillcolor="coral2", shape=diamond, margin="0.15,0.15"];
+
+  0 -> 0 [label="ok &= 0 \< copy_cat_status;\\l", id=743, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="return ok ? EXIT_SUCCESS : EXI...", id=812, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="ok &= simple_cat (inbuf, insiz...", id=749, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="ok = false;\\l", id=688, arrowhead=normal, penwidth=1.2];
+  1 -> 0 [label="ok = false;\\l", id=688, arrowhead=normal, penwidth=1.2];
+  0 -> 1 [label="18: ok ! OP", id=721, arrowhead=normal, penwidth=1.2];
+  1 -> 1 [label="18: ok ! OP", id=721, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="ok &= cat (inbuf, insize, outb...", id=785, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="ok = false;\\l", id=696, arrowhead=normal, penwidth=1.2];
+  1 -> 0 [label="ok = false;\\l", id=696, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="bool ok = true;\\l", id=666, arrowhead=normal, penwidth=1.2];
+  1 -> 0 [label="bool ok = true;\\l", id=666, arrowhead=normal, penwidth=1.2];
+  0 -> 0 [label="ok = false;\\l", id=798, arrowhead=normal, penwidth=1.2];
+  1 -> 0 [label="ok = false;\\l", id=798, arrowhead=normal, penwidth=1.2];
+}

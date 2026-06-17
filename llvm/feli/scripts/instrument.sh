@@ -153,6 +153,11 @@ fi
 
 echo -e "${GREEN}Instrumentation completed.${RESET}"
 
+# Apple clang (pre-19 upstream) doesn't support captures(none) in LLVM IR; strip it
+if clang --version 2>&1 | grep -q "Apple clang"; then
+  sed -i '' 's/ captures(none)//g' "$OUTPUT_FILE"
+fi
+
 # --- Step 2: Compile ---
 echo -e "${BLUE}Step 2:${RESET} Compiling instrumented code..."
 
