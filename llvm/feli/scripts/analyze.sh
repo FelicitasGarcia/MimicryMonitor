@@ -23,6 +23,7 @@ SIGMA_PATH="$INPUTS_DIR/sigma.txt"
 IBOOL=0
 ILIBS=()
 RENDER=1
+SKIP_IR=0
 
 # Detect the platform and set the correct extension
 if [[ "$(uname)" == "Darwin" ]]; then
@@ -51,6 +52,7 @@ while [[ $# -gt 0 ]]; do
     -sigma) SIGMA_PATH="$2"; shift 2 ;;
     -h) print_usage ;;
     -no-render) RENDER=0; shift ;;
+    -skip-ir)  SKIP_IR=1; shift ;;
     -I)
       IBOOL=1
       shift
@@ -79,32 +81,40 @@ echo -e "${CYAN}=================================================${RESET}"
 
 echo -e "${BLUE}Step 1:${RESET} Generating LLVM IR files..."
 
-# Use clang-16 to match Apple Clang 16 debug info format (llvm.dbg.declare intrinsics
-# instead of #dbg_declare directives), avoiding LLVM 19 dot-cfg metadata ID mismatches.
-if command -v clang-16 >/dev/null 2>&1; then
-    echo -e "${GREEN}Using clang-16 for LLVM IR generation${RESET}"
-    CLANG="clang-16"
-elif [ -x "$BUILD_DIR/bin/clang" ]; then
-    echo -e "${GREEN}Using clang from build directory: $BUILD_DIR/bin/clang${RESET}"
-    CLANG="$BUILD_DIR/bin/clang"
-elif command -v clang-19 >/dev/null 2>&1; then
-    echo -e "${GREEN}Using clang-19 for LLVM IR generation${RESET}"
-    CLANG="clang-19"
+if [ "$SKIP_IR" = "1" ]; then
+    echo -e "${YELLOW}Skipping IR generation — using existing .ll files in $TEMPS_DIR${RESET}"
+    if [ ! -f "$TEMPS_DIR/programPUA.ll" ] || [ ! -f "$TEMPS_DIR/programOP.ll" ]; then
+        echo -e "${RED}Error: .ll files not found in $TEMPS_DIR. Cannot skip IR generation.${RESET}"
+        exit 1
+    fi
 else
-    CLANG="clang"
-    echo -e "${YELLOW}Warning: using system clang ($(clang --version | head -1)).${RESET}"
-fi
+    # Use clang-16 to match Apple Clang 16 debug info format (llvm.dbg.declare intrinsics
+    # instead of #dbg_declare directives), avoiding LLVM 19 dot-cfg metadata ID mismatches.
+    if command -v clang-16 >/dev/null 2>&1; then
+        echo -e "${GREEN}Using clang-16 for LLVM IR generation${RESET}"
+        CLANG="clang-16"
+    elif [ -x "$BUILD_DIR/bin/clang" ]; then
+        echo -e "${GREEN}Using clang from build directory: $BUILD_DIR/bin/clang${RESET}"
+        CLANG="$BUILD_DIR/bin/clang"
+    elif command -v clang-19 >/dev/null 2>&1; then
+        echo -e "${GREEN}Using clang-19 for LLVM IR generation${RESET}"
+        CLANG="clang-19"
+    else
+        CLANG="clang"
+        echo -e "${YELLOW}Warning: using system clang ($(clang --version | head -1)).${RESET}"
+    fi
 
-if [ "$IBOOL" = "1" ]; then
-    IFLAGS=()
-    for d in "${ILIBS[@]}"; do IFLAGS+=("-I$d"); done
-    echo -e "${YELLOW}Including lib directories in the LL compilation: ${ILIBS[*]}${RESET}"
-    "$CLANG" -S "${IFLAGS[@]}" -Xclang -disable-O0-optnone -g -emit-llvm "$PUA_PATH" -o "$TEMPS_DIR/programPUA.ll"
-    "$CLANG" -S "${IFLAGS[@]}" -Xclang -disable-O0-optnone -g -emit-llvm "$OP_PATH" -o "$TEMPS_DIR/programOP.ll"
-else
-    echo -e "${YELLOW}Not including lib directory in the LL compilation${RESET}"
-    "$CLANG" -S -Xclang -disable-O0-optnone -g -emit-llvm "$PUA_PATH" -o "$TEMPS_DIR/programPUA.ll"
-    "$CLANG" -S -Xclang -disable-O0-optnone -g -emit-llvm "$OP_PATH" -o "$TEMPS_DIR/programOP.ll"
+    if [ "$IBOOL" = "1" ]; then
+        IFLAGS=()
+        for d in "${ILIBS[@]}"; do IFLAGS+=("-I$d"); done
+        echo -e "${YELLOW}Including lib directories in the LL compilation: ${ILIBS[*]}${RESET}"
+        "$CLANG" -S "${IFLAGS[@]}" -Xclang -disable-O0-optnone -g -emit-llvm "$PUA_PATH" -o "$TEMPS_DIR/programPUA.ll"
+        "$CLANG" -S "${IFLAGS[@]}" -Xclang -disable-O0-optnone -g -emit-llvm "$OP_PATH" -o "$TEMPS_DIR/programOP.ll"
+    else
+        echo -e "${YELLOW}Not including lib directory in the LL compilation${RESET}"
+        "$CLANG" -S -Xclang -disable-O0-optnone -g -emit-llvm "$PUA_PATH" -o "$TEMPS_DIR/programPUA.ll"
+        "$CLANG" -S -Xclang -disable-O0-optnone -g -emit-llvm "$OP_PATH" -o "$TEMPS_DIR/programOP.ll"
+    fi
 fi
 
 echo -e "${BLUE}Step 2:${RESET} Generating alias analysis information..."
