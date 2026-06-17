@@ -168,6 +168,9 @@ public class Automata {
             Node target = edge.getEdgeTarget();
             Node compactSource = nodeMap.get(source.getNodeId());
             Node compactTarget = nodeMap.get(target.getNodeId());
+            // V and IV are sink states — skip edges originating from them
+            if (compactSource == null || compactTarget == null) continue;
+            if (compactSource.getVerdict().equals("V") || compactSource.getVerdict().equals("IV")) continue;
             if (compactSource != compactTarget) {
                 edges.add(new Edge(compactSource, compactTarget, edge));
                 compactSource.addChild(compactTarget);

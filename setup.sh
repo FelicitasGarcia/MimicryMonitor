@@ -118,6 +118,17 @@ if ! command -v "$CXX_COMPILER" >/dev/null 2>&1; then
   print_error "C++ compiler not found: $CXX_COMPILER"
 fi
 
+# Ensure clang-19 is available for analyze.sh (must match LLVM opt version)
+if [[ "$(uname)" != "Darwin" ]]; then
+  if ! command -v clang-19 >/dev/null 2>&1; then
+    echo -e "${BLUE}Installing clang-19 to match LLVM opt version...${RESET}"
+    sudo apt-get install -y clang-19
+    print_success "clang-19 installed."
+  else
+    print_info "clang-19 already installed: $(clang-19 --version | head -1)"
+  fi
+fi
+
 # Step 2: Copy custom pass files to LLVM
 echo -e "${BLUE}STEP 1: INTEGRATING CUSTOM PASSES${RESET}"
 

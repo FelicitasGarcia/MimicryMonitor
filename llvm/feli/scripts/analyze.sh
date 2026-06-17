@@ -79,16 +79,26 @@ echo -e "${CYAN}=================================================${RESET}"
 
 echo -e "${BLUE}Step 1:${RESET} Generating LLVM IR files..."
 
+# Prefer the clang built alongside opt (LLVM 19) to avoid version mismatches
+if [ -x "$BUILD_DIR/bin/clang" ]; then
+    CLANG="$BUILD_DIR/bin/clang"
+elif command -v clang-19 >/dev/null 2>&1; then
+    CLANG="clang-19"
+else
+    CLANG="clang"
+    echo -e "${YELLOW}Warning: using system clang ($(clang --version | head -1)). For best results, install clang-19 or rebuild LLVM with -DLLVM_ENABLE_PROJECTS=clang${RESET}"
+fi
+
 if [ "$IBOOL" = "1" ]; then
     IFLAGS=()
     for d in "${ILIBS[@]}"; do IFLAGS+=("-I$d"); done
     echo -e "${YELLOW}Including lib directories in the LL compilation: ${ILIBS[*]}${RESET}"
-    clang -S "${IFLAGS[@]}" -Xclang -disable-O0-optnone -g -emit-llvm "$PUA_PATH" -o "$TEMPS_DIR/programPUA.ll"
-    clang -S "${IFLAGS[@]}" -Xclang -disable-O0-optnone -g -emit-llvm "$OP_PATH" -o "$TEMPS_DIR/programOP.ll"
+    "$CLANG" -S "${IFLAGS[@]}" -Xclang -disable-O0-optnone -g -emit-llvm "$PUA_PATH" -o "$TEMPS_DIR/programPUA.ll"
+    "$CLANG" -S "${IFLAGS[@]}" -Xclang -disable-O0-optnone -g -emit-llvm "$OP_PATH" -o "$TEMPS_DIR/programOP.ll"
 else
     echo -e "${YELLOW}Not including lib directory in the LL compilation${RESET}"
-    clang -S -Xclang -disable-O0-optnone -g -emit-llvm "$PUA_PATH" -o "$TEMPS_DIR/programPUA.ll"
-    clang -S -Xclang -disable-O0-optnone -g -emit-llvm "$OP_PATH" -o "$TEMPS_DIR/programOP.ll"
+    "$CLANG" -S -Xclang -disable-O0-optnone -g -emit-llvm "$PUA_PATH" -o "$TEMPS_DIR/programPUA.ll"
+    "$CLANG" -S -Xclang -disable-O0-optnone -g -emit-llvm "$OP_PATH" -o "$TEMPS_DIR/programOP.ll"
 fi
 
 echo -e "${BLUE}Step 2:${RESET} Generating alias analysis information..."

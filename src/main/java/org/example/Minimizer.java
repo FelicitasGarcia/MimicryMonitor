@@ -91,7 +91,9 @@ class Minimizer extends VerdictAutomata {
         Set<Edge> copyEdges = new HashSet<>(edges);
         compactFinalStates(copyNodes, copyEdges);
 
-        System.out.println("Minimized");
+        System.out.println("Minimized: nodes=" + nodes.size() + " edges=" + edges.size());
+        for (Node n : nodes) System.out.println("  node: id=" + n.getNodeId() + " label=" + n.getNodeLabel() + " verdict=" + n.getVerdict());
+        for (Edge e : edges) System.out.println("  edge: " + e.getEdgeSource().getNodeId() + "->" + e.getEdgeTarget().getNodeId() + " label='" + e.getEdgeLabel() + "'");
         generateRender("Minimized_Monitor", "llvmBasedResults/Minimized_Monitor");
     }
 

@@ -243,9 +243,18 @@ public class LLVMProcessing extends Automata {
                     // and a new source code Instruction
                     // Same original lines are obv in the same bb and adjacent NOT SO OBVIOUS
                     if (!location.equals(prevLocation)/* && !visitedLocations.contains(locationInt) */) {
-                        Node node = new Node(nodeId++, location, block.basicBlockLabel + "@" + location, instruction);
-                        nodeMap.computeIfAbsent(block.basicBlockLabel,
-                                k -> new HashMap<>()).put(location, node);
+                        Map<String, Node> blockMap = nodeMap.computeIfAbsent(block.basicBlockLabel, k -> new HashMap<>());
+                        Node existingNode = blockMap.get(location);
+                        Node node;
+                        if (existingNode != null) {
+                            // Location already seen non-consecutively — reuse the existing node
+                            // instead of replacing it (which would orphan it in edges)
+                            existingNode.instructions.add(instruction);
+                            node = existingNode;
+                        } else {
+                            node = new Node(nodeId++, location, block.basicBlockLabel + "@" + location, instruction);
+                            blockMap.put(location, node);
+                        }
 
                         // Add edges in between same block instructions
                         if (prevNode != null) {
@@ -445,24 +454,23 @@ public class LLVMProcessing extends Automata {
     private String getLocationFromDbg(String instruction) throws IOException {
         if (instruction != null) {
             int debugTag = getDebugTag(instruction);
-            BufferedReader reader = new BufferedReader(new FileReader(dbgFilePath));
-            String line;
-
             if (debugTag == -1) {
                 return null;
             }
 
-            while ((line = reader.readLine()) != null) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(dbgFilePath))) {
+                String line;
                 String matcher = "!" + debugTag + " = !DILocation(line:";
-                if (line.contains(matcher)) {
-                    String[] parts = line.split("line:|,");
-                    String lineNumber = parts[1].trim();
-                    int lineInt = Integer.parseInt(lineNumber);
-                    // If it is an empty line, return -1
-                    if (lineInt == 0 || locationsMap.get(lineInt).equals("")) {
-                        return null;
+                while ((line = reader.readLine()) != null) {
+                    if (line.contains(matcher)) {
+                        String[] parts = line.split("line:|,");
+                        String lineNumber = parts[1].trim();
+                        int lineInt = Integer.parseInt(lineNumber);
+                        if (lineInt == 0 || locationsMap.get(lineInt).equals("")) {
+                            return null;
+                        }
+                        return lineNumber;
                     }
-                    return lineNumber;
                 }
             }
         }
