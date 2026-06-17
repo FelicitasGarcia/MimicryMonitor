@@ -29,3 +29,22 @@ llvm/feli/passes/monitorAction.ll
 
 # Test result files
 llvm/feli/outputs/results_*
+
+# Generated output files — folders kept via .gitkeep
+exampleFiles/dots/llvm/*
+!exampleFiles/dots/llvm/.gitkeep
+exampleFiles/dots/llvmBasedResults/*
+!exampleFiles/dots/llvmBasedResults/.gitkeep
+exampleFiles/renders/llvm/*
+!exampleFiles/renders/llvm/.gitkeep
+exampleFiles/renders/llvmBasedResults/*
+!exampleFiles/renders/llvmBasedResults/.gitkeep
+
+llvm/feli/cfgs/*
+!llvm/feli/cfgs/.gitkeep
+
+llvm/feli/outputs/*
+!llvm/feli/outputs/.gitkeep
+
+llvm/feli/temps/*
+!llvm/feli/temps/.gitkeep
