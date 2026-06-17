@@ -17,3 +17,15 @@ llvm/feli/temps/mm_afl_reporter.o
 
 # Core dumps
 core
+
+# macOS metadata
+**/.DS_Store
+
+# Generated LLVM IR in temps (rebuilt on every instrumentation run)
+llvm/feli/temps/*.ll
+
+# Generated monitor action IR from pass
+llvm/feli/passes/monitorAction.ll
+
+# Test result files
+llvm/feli/outputs/results_*
