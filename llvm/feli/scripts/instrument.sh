@@ -23,10 +23,15 @@ AFLFUZZ=0
 LOGFILE=""
 POLICY=""
 ILIBS=()
+PUA_PATH=""   # if set, generate IR locally before instrumenting
+ICBOOL=0
+ICDIRS=()
 
 print_usage() {
   echo "Usage: $0 [options]"
   echo "Options:"
+  echo "  -pua PATH          Path to PUA .c source — IR is generated locally (arch-agnostic)"
+  echo "  -Ic DIR [DIR]      Include dirs for .c → IR compilation (used with -pua)"
   echo "  -afl               Enable and register AFL reporter"
   echo "  -log [PATH]        Enable and register log reporter (default: /tmp/mm_monitor.log)"
   echo "  -policy POLICY     Monitor policy: stop-v, stop-iv, or n (default: interactive prompt)"
@@ -37,6 +42,10 @@ print_usage() {
 
 while [[ $# -gt 0 ]]; do
   case $1 in
+    -pua) PUA_PATH="$2"; shift 2 ;;
+    -Ic)
+      ICBOOL=1; shift
+      while [[ $# -gt 0 && ! $1 =~ ^- ]]; do ICDIRS+=("$1"); shift; done ;;
     -I)
       IBOOL=1
       shift
@@ -132,6 +141,25 @@ if [[ -z "$POLICY" ]]; then
 fi
 echo -e "${YELLOW}Policy:    ${RESET}$POLICY"
 echo -e "${CYAN}==================================================${RESET}"
+
+# --- Step 0: Generate IR from source (when -pua is given) ---
+if [[ -n "$PUA_PATH" ]]; then
+  echo -e "${BLUE}Step 0:${RESET} Generating LLVM IR from source (host target)..."
+  if command -v clang-16 >/dev/null 2>&1; then
+    CLANG_IR="clang-16"
+  elif [ -x "$BUILD_DIR/bin/clang" ]; then
+    CLANG_IR="$BUILD_DIR/bin/clang"
+  elif command -v clang-19 >/dev/null 2>&1; then
+    CLANG_IR="clang-19"
+  else
+    CLANG_IR="clang"
+  fi
+  echo -e "${YELLOW}Clang for IR: ${RESET}$CLANG_IR"
+  ICFLAGS=()
+  for d in "${ICDIRS[@]}"; do ICFLAGS+=("-I$d"); done
+  "$CLANG_IR" -S "${ICFLAGS[@]}" -Xclang -disable-O0-optnone -g -emit-llvm "$PUA_PATH" -o "$INPUT_FILE"
+  echo -e "${GREEN}IR generated: $INPUT_FILE${RESET}"
+fi
 
 # --- Step 1: Instrumentation pass ---
 echo -e "${BLUE}Step 1:${RESET} Running mimicry-instrument pass..."

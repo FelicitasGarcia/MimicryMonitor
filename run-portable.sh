@@ -132,7 +132,7 @@ if [[ "$MODE" == "export" ]]; then
   echo -e "${BLUE}Step 2:${RESET} Saving artifacts to canonical_ll/ for Linux..."
   mkdir -p "$CANONICAL_DIR"
 
-  # .ll files (needed for instrumentation pass on Linux)
+  # LLVM IR (generated on Mac — used by Java and kept for reference)
   cp "$TEMPS_DIR/programPUA.ll"           "$CANONICAL_DIR/programPUA.ll"
   cp "$TEMPS_DIR/programOP.ll"            "$CANONICAL_DIR/programOP.ll"
 
@@ -198,7 +198,9 @@ elif [[ "$MODE" == "run" ]]; then
 
   echo -e "${BLUE}Step 3:${RESET} Instrumenting PUA..."
   cd "$SCRIPTS_DIR"
-  ./instrument.sh "${INSTRUMENT_FLAGS[@]}"
+  INSTRUMENT_RUN_FLAGS=("${INSTRUMENT_FLAGS[@]}" -pua "$PUA_PATH")
+  [[ "$IANALYZEBOOL" == "1" ]] && INSTRUMENT_RUN_FLAGS+=(-Ic "${IANALYZE[@]}")
+  ./instrument.sh "${INSTRUMENT_RUN_FLAGS[@]}"
 
   echo -e "${CYAN}===== PIPELINE COMPLETE =====${RESET}"
   echo -e "${YELLOW}Results: ${RESET}$OUTPUTS_DIR"
