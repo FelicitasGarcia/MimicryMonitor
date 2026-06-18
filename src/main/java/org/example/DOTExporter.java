@@ -189,6 +189,14 @@ public class DOTExporter {
             ));
         }
 
+        // Force the initial node (golden diamond) to the top rank
+        for (Node node : nodes) {
+            if (node.nodeLabel.equals("START") || node.getNodeId() == 1) {
+                writer.write(String.format("  { rank=source; %s }\n", node.getNodeId()));
+                break;
+            }
+        }
+
         writer.write("\n"); // Separate nodes and edges
 
         for (Edge edge : edges) {
