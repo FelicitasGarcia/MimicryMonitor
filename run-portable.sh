@@ -3,15 +3,17 @@
 # Portable Mimicry pipeline.
 #
 # Two modes:
-#   -export   (run on Mac) Generate .ll files from source, save them to
-#             inputs/canonical_ll/ so they can be committed and used on Linux.
+#   -export   (Mac) Run the full analysis phase (IR generation, def-use,
+#             CFG extraction) and save all artifacts to inputs/canonical_ll/
+#             so they can be committed and used on Linux.
 #
-#   -run      (run on Linux) Copy the committed .ll files to temps/ and run
-#             the full pipeline skipping IR generation.
+#   -run      (Linux) Restore the Mac-generated artifacts to their expected
+#             locations, then run only the Java monitor construction and
+#             instrumentation steps.
 #
 # Usage:
-#   ./run-portable.sh -export [pipeline options]
-#   ./run-portable.sh -run   [pipeline options]
+#   ./run-portable.sh -export [pipeline options]   # on Mac
+#   ./run-portable.sh -run   [pipeline options]    # on Linux
 
 set -e
 
@@ -29,7 +31,8 @@ SCRIPTS_DIR="$LLVM_DIR/feli/scripts"
 OUTPUTS_DIR="$LLVM_DIR/feli/outputs"
 INPUTS_DIR="$LLVM_DIR/feli/inputs"
 TEMPS_DIR="$LLVM_DIR/feli/temps"
-CANONICAL_LL_DIR="$INPUTS_DIR/canonical_ll"
+CFGS_DIR="$LLVM_DIR/feli/cfgs"
+CANONICAL_DIR="$INPUTS_DIR/canonical_ll"
 
 PUA_PATH="$INPUTS_DIR/programPUA.c"
 OP_PATH="$INPUTS_DIR/programOP.c"
@@ -49,24 +52,23 @@ print_usage() {
   echo "Usage: $0 -export|-run [options]"
   echo ""
   echo "Modes:"
-  echo "  -export               (Mac) Generate .ll files and save to inputs/canonical_ll/"
-  echo "  -run                  (Linux) Use saved .ll files, run full pipeline"
+  echo "  -export               (Mac) Run full analysis, save artifacts to inputs/canonical_ll/"
+  echo "  -run                  (Linux) Restore artifacts, run Java + instrumentation only"
   echo ""
   echo "Input files:"
-  echo "  -pua PATH             Path to PUA source (default: inputs/programPUA.c)"
-  echo "  -op PATH              Path to OP source (default: inputs/programOP.c)"
-  echo "  -sigma PATH           Path to sigma pairing (default: inputs/sigma.txt)"
+  echo "  -pua PATH             Path to PUA source"
+  echo "  -op PATH              Path to OP source"
+  echo "  -sigma PATH           Path to sigma pairing"
   echo ""
   echo "Include paths:"
-  echo "  -Ianalyze D1 [D2 ...]     Include dirs for analyze step"
-  echo "  -Iinstrument F1 [F2 ...]  Extra files to link at instrumentation"
+  echo "  -Ianalyze D1 [D2 ...]     Include dirs for analyze step (Mac only)"
+  echo "  -Iinstrument F1 [F2 ...]  Extra files to link at instrumentation (Linux)"
   echo ""
   echo "Instrumentation options:"
   echo "  -afl                  Compile with AFL++ for fuzzing"
   echo "  -log [PATH]           Enable monitor logging (default: /tmp/mm_monitor.log)"
   echo "  -policy POLICY        Monitor policy: stop-v, stop-iv, or n"
   echo "  -no-render            Skip PNG rendering"
-  echo ""
   echo "  -h                    Show this help"
   exit 0
 }
@@ -111,9 +113,9 @@ echo -e "${YELLOW}Sigma:   ${RESET}$SIGMA_PATH"
 echo -e "${CYAN}=====================================${RESET}"
 
 INSTRUMENT_FLAGS=()
-[[ "$AFLFUZZ" == "1" ]]       && INSTRUMENT_FLAGS+=(-afl)
-[[ -n "$LOGFILE" ]]            && INSTRUMENT_FLAGS+=(-log "$LOGFILE")
-[[ -n "$POLICY" ]]             && INSTRUMENT_FLAGS+=(-policy "$POLICY")
+[[ "$AFLFUZZ" == "1" ]]        && INSTRUMENT_FLAGS+=(-afl)
+[[ -n "$LOGFILE" ]]             && INSTRUMENT_FLAGS+=(-log "$LOGFILE")
+[[ -n "$POLICY" ]]              && INSTRUMENT_FLAGS+=(-policy "$POLICY")
 [[ "$IINSTRUMENTBOOL" == "1" ]] && INSTRUMENT_FLAGS+=(-I "${IINSTRUMENT[@]}")
 
 ANALYZE_FLAGS=(-pua "$PUA_PATH" -op "$OP_PATH" -sigma "$SIGMA_PATH")
@@ -123,43 +125,70 @@ ANALYZE_FLAGS=(-pua "$PUA_PATH" -op "$OP_PATH" -sigma "$SIGMA_PATH")
 # ── EXPORT mode (Mac) ────────────────────────────────────────────────────────
 if [[ "$MODE" == "export" ]]; then
 
-  echo -e "${BLUE}Step 1:${RESET} Generating LLVM IR on this machine..."
+  echo -e "${BLUE}Step 1:${RESET} Running full analysis (IR + def-use + CFG)..."
   cd "$SCRIPTS_DIR"
   ./analyze.sh "${ANALYZE_FLAGS[@]}"
 
-  echo -e "${BLUE}Step 2:${RESET} Saving .ll files to canonical_ll/ for Linux..."
-  mkdir -p "$CANONICAL_LL_DIR"
-  cp "$TEMPS_DIR/programPUA.ll" "$CANONICAL_LL_DIR/programPUA.ll"
-  cp "$TEMPS_DIR/programOP.ll"  "$CANONICAL_LL_DIR/programOP.ll"
-  echo -e "${GREEN}Saved:${RESET}"
-  echo "  $CANONICAL_LL_DIR/programPUA.ll"
-  echo "  $CANONICAL_LL_DIR/programOP.ll"
+  echo -e "${BLUE}Step 2:${RESET} Saving artifacts to canonical_ll/ for Linux..."
+  mkdir -p "$CANONICAL_DIR"
+
+  # .ll files (needed for instrumentation pass on Linux)
+  cp "$TEMPS_DIR/programPUA.ll"           "$CANONICAL_DIR/programPUA.ll"
+  cp "$TEMPS_DIR/programOP.ll"            "$CANONICAL_DIR/programOP.ll"
+
+  # def-use analysis outputs (needed by Java component)
+  cp "$TEMPS_DIR/defUseOP.txt"            "$CANONICAL_DIR/defUseOP.txt"
+  cp "$TEMPS_DIR/defUsePUA.txt"           "$CANONICAL_DIR/defUsePUA.txt"
+
+  # CFG dot files (needed by Java component)
+  cp "$CFGS_DIR/mainOP.dot"               "$CANONICAL_DIR/mainOP.dot"
+  cp "$CFGS_DIR/mainPUA.dot"              "$CANONICAL_DIR/mainPUA.dot"
+
+  echo -e "${GREEN}Saved to $CANONICAL_DIR:${RESET}"
+  ls -1 "$CANONICAL_DIR" | grep -v ".gitkeep"
 
   echo ""
   echo -e "${CYAN}Next steps:${RESET}"
   echo "  git add llvm/feli/inputs/canonical_ll/"
-  echo "  git commit -m 'Export Mac-generated .ll files for portable pipeline'"
+  echo "  git commit -m 'Export Mac analysis artifacts for portable pipeline'"
   echo "  git push"
-  echo "  Then on Linux: ./run-portable.sh -run [same options]"
+  echo ""
+  echo -e "${CYAN}Then on Linux:${RESET}"
+  echo "  ./run-portable.sh -run \\"
+  echo "    -pua <linux-path-to-catPUA.c> \\"
+  echo "    -op  <linux-path-to-catOP.c> \\"
+  echo "    -sigma llvm/feli/inputs/otherInputs/catCU/catSigma.txt \\"
+  echo "    -Iinstrument <linux-path-to-libcoreutils.a> <linux-path-to-version.o>"
 
 # ── RUN mode (Linux) ─────────────────────────────────────────────────────────
 elif [[ "$MODE" == "run" ]]; then
 
-  echo -e "${BLUE}Step 1:${RESET} Copying canonical .ll files to temps/..."
-  if [ ! -f "$CANONICAL_LL_DIR/programPUA.ll" ] || [ ! -f "$CANONICAL_LL_DIR/programOP.ll" ]; then
-    echo -e "${RED}Error: canonical .ll files not found in $CANONICAL_LL_DIR${RESET}"
+  # Verify all canonical artifacts exist
+  MISSING=0
+  for f in programPUA.ll programOP.ll defUseOP.txt defUsePUA.txt mainOP.dot mainPUA.dot; do
+    if [ ! -f "$CANONICAL_DIR/$f" ]; then
+      echo -e "${RED}Error: missing $CANONICAL_DIR/$f${RESET}"
+      MISSING=1
+    fi
+  done
+  if [ "$MISSING" = "1" ]; then
     echo "Run ./run-portable.sh -export on Mac first, then commit and push."
     exit 1
   fi
-  cp "$CANONICAL_LL_DIR/programPUA.ll" "$TEMPS_DIR/programPUA.ll"
-  cp "$CANONICAL_LL_DIR/programOP.ll"  "$TEMPS_DIR/programOP.ll"
-  echo -e "${GREEN}Copied .ll files to $TEMPS_DIR${RESET}"
 
-  echo -e "${BLUE}Step 2:${RESET} Running def-use analysis and CFG generation..."
-  cd "$SCRIPTS_DIR"
-  ./analyze.sh "${ANALYZE_FLAGS[@]}" -skip-ir
+  echo -e "${BLUE}Step 1:${RESET} Restoring Mac analysis artifacts..."
+  mkdir -p "$TEMPS_DIR" "$CFGS_DIR"
 
-  echo -e "${BLUE}Step 3:${RESET} Constructing Mimicry Monitor..."
+  cp "$CANONICAL_DIR/programPUA.ll"  "$TEMPS_DIR/programPUA.ll"
+  cp "$CANONICAL_DIR/programOP.ll"   "$TEMPS_DIR/programOP.ll"
+  cp "$CANONICAL_DIR/defUseOP.txt"   "$TEMPS_DIR/defUseOP.txt"
+  cp "$CANONICAL_DIR/defUsePUA.txt"  "$TEMPS_DIR/defUsePUA.txt"
+  cp "$CANONICAL_DIR/mainOP.dot"     "$CFGS_DIR/mainOP.dot"
+  cp "$CANONICAL_DIR/mainPUA.dot"    "$CFGS_DIR/mainPUA.dot"
+
+  echo -e "${GREEN}Artifacts restored to temps/ and cfgs/${RESET}"
+
+  echo -e "${BLUE}Step 2:${RESET} Constructing Mimicry Monitor (Java)..."
   cd "$MIMICRY_DIR"
   JAVA_ARGS="$OP_PATH $PUA_PATH $SIGMA_PATH"
   [[ "$RENDER" == "0" ]] && JAVA_ARGS="$JAVA_ARGS --no-render"
@@ -167,7 +196,7 @@ elif [[ "$MODE" == "run" ]]; then
     -Dexec.mainClass="org.example.Main" \
     -Dexec.args="$JAVA_ARGS"
 
-  echo -e "${BLUE}Step 4:${RESET} Instrumenting PUA..."
+  echo -e "${BLUE}Step 3:${RESET} Instrumenting PUA..."
   cd "$SCRIPTS_DIR"
   ./instrument.sh "${INSTRUMENT_FLAGS[@]}"
 
