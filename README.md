@@ -4,339 +4,299 @@
 ▐▌  ▐▌█ █   █ █     █     ▀▀▀█  ▐▌  ▐▌▀▄▄▄▀ █   █ █   ▐▌  ▀▄▄▄▀ █    
 ▐▌  ▐▌█       █          ▄   █  ▐▌  ▐▌            █   ▐▌             
                           ▀▀▀                         ▐▌             
+```
+
+# MimicryMonitor
+
+MimicryMonitor builds a **runtime monitor** that checks a *Program Under Analysis* (PUA)
+against a trusted *Oracle Program* (OP). The two programs share code (e.g. a patched vs.
+original version of a coreutils tool); the monitor watches the PUA as it runs and decides
+whether its behavior still matches the OP's model.
+
+At runtime the monitor emits a **verdict**:
+
+| Verdict | Meaning |
+|---------|---------|
+| **V**  (valid)   | The PUA's observed behavior is consistent with the OP model. |
+| **IV** (invalid) | The PUA deviated from the OP model — a *mimicry* divergence was detected. |
+
+---
+
+## What it does (functionality)
+
+Given an OP source file, a PUA source file, and a **sigma pairing** (which maps
+corresponding program points between the two), MimicryMonitor:
+
+1. **Analyzes both programs with LLVM** — compiles each to LLVM IR, extracts the
+   control-flow graph (CFG) of `main`, and computes variable read/write (def-use)
+   information with a custom LLVM pass.
+2. **Reconstructs a source-level CFG** — the Java component maps each IR instruction back
+   to its C source line and rebuilds one node per source statement, contracting away
+   compiler-only blocks.
+3. **Builds the monitor automaton** — it combines the OP and PUA CFGs with their def-use
+   data and the sigma pairing, tracks variable consistency, labels and propagates
+   **verdicts** across states, and minimizes the result.
+4. **Instruments the PUA** — a second LLVM pass injects monitor calls into the PUA so that,
+   as it executes, it drives the automaton and reports V / IV verdicts according to a
+   chosen **policy**.
+
+The end product is `instrumentedPUA`, a normal executable that self-checks at runtime.
+
+### Pipeline at a glance
 
 ```
-## Project Overview
+                inputs (OP.c, PUA.c, sigma.txt)
+                            │
+   ┌────────────────────────┼──────────────────────────┐
+   │ 1. analyze   (pipeline/analyze.sh)                 │
+   │    clang-19  → work/temps/*.ll      (LLVM IR)      │
+   │    opt-19 dot-cfg → work/cfgs/*.dot (CFGs)         │
+   │    opt-19 + LLVMMimicryPasses(defuse)             │
+   │              → work/temps/defUse*.txt              │
+   └────────────────────────┼──────────────────────────┘
+                            │
+   ┌────────────────────────┼──────────────────────────┐
+   │ 2. construct (monitor/, Java)                      │
+   │    CFG reconstruction → DFTA → composition →       │
+   │    verdict labeling/propagation → minimization     │
+   │              → work/outputs/monitor.dot            │
+   └────────────────────────┼──────────────────────────┘
+                            │
+   ┌────────────────────────┼──────────────────────────┐
+   │ 3. instrument (pipeline/instrument.sh)             │
+   │    opt-19 + LLVMMimicryPasses(mimicry-instrument)  │
+   │    + monitor runtime/reporters, link PUA           │
+   │              → work/outputs/instrumentedPUA        │
+   └────────────────────────┴──────────────────────────┘
+```
 
-MimicryMonitor is a tool that builds monitors to compare a Program Under Analysis (PUA) against a known Oracle Program (OP). It constructs an automaton by comparing both programs' control flow graphs (CFGs) and variable behavior, and instruments the PUA to monitor runtime behavior.
+All generated files land under `work/` (git-ignored).
 
-This tool:
-
-1. Analyzes both programs using LLVM to extract control flow graphs (CFGs)
-2. Uses a specialized LLVM pass to identify variable read/write operations
-3. Constructs a monitor automaton based on "sigma pairs" that match instructions between the programs
-4. Instruments the PUA with the generated monitor
-5. Produces an executable that validates PUA's behavior against the OP model at runtime
-
-This approach leverages common code fragments between trusted and untrusted programs to create a powerful verification mechanism.
+---
 
 ## Prerequisites
 
-- LLVM (version 19.1.7 recommended)
-- Clang compiler
-- Java JDK 22 
-  - (If using another version, be sure to change the `pom.xml` file, or run the Java code with your own configurations)
-- Maven (for building the Java component)
-- GraphViz (`dot` command for rendering CFGs)
-- Bash shell environment
-- Ninja build system (recommended)
+- **LLVM 19.1.7** — vendored as a submodule and built by `setup.sh` (see the reproducibility note below)
+- **clang-19** — used to emit LLVM IR (must match the LLVM/`opt` version)
+- **Java JDK 22** and **Maven** — the monitor constructor (`monitor/`)
+- **Graphviz** (`dot` on `PATH`) — renders the CFG / automaton PNGs
+- **Ninja** — recommended for the LLVM build
+- **AFL++** (`afl-clang-fast`, `afl-fuzz`) — only for fuzzing (see `docs/FUZZING.md`)
 
-## Project Structure
+> **Reproducibility:** the LLVM toolchain is pinned to commit `llvmorg-19.1.7` in the
+> `llvm/llvm-project` submodule and built locally, so `clang`/`opt`/the plugin behave
+> identically across machines. The Mimicry passes are built **out-of-tree** against that
+> pinned build (`instrumentation/CMakeLists.txt`) — fast to rebuild, no LLVM source edits.
 
-```
-mimicrymonitor/
-├── monitor/                # Java monitor constructor (Maven project)
-│   ├── pom.xml
-│   └── src/main/java/org/mimicry/   # Automata, MonitorConstructor, ... 
-├── instrumentation/        # LLVM passes (out-of-tree) + C monitor runtime
-│   ├── CMakeLists.txt       #   builds LLVMMimicryPasses.so against the pinned LLVM
-│   ├── MimicryInstrument.cpp / FeliDefUseInfo.cpp
-│   ├── include/llvm/Transforms/Mimicry/*.h
-│   └── monitor_runtime.c / mm_*_reporter.c
-├── pipeline/               # all scripts: setup, run-mimicry, analyze, instrument, fuzz
-├── inputs/                 # default programOP.c / programPUA.c / sigma.txt
-├── examples/               # extra example targets (catCU, lsCU, mvCU, ...)
-├── evaluation/             # tests/ (coreutils PUA tests) and seeds/ (AFL seeds)
-├── work/                   # ALL generated output — IR, CFGs, monitors, renders, fuzz output [gitignored]
-├── docs/                   # FUZZING.md, README-CoreUtilTests.md
-└── llvm/llvm-project/      # pinned LLVM 19.1.7 submodule (vendored; stays here, see note)
-```
+---
 
 ## Installation
 
-> **LLVM project location:** The scripts expect `llvm-project` to be located at `mimicrymonitor/llvm/llvm-project/` (i.e., the `llvm/` subdirectory of this repo). If you place it elsewhere, you must manually update the `BUILD_DIR` variable in the relevant scripts (e.g., `pipeline/analyze.sh`, `pipeline/instrument.sh`).
+```bash
+git clone <repo-url> mimicrymonitor
+cd mimicrymonitor
+./pipeline/setup.sh
+```
 
-### Quick Setup
+`setup.sh` will:
+1. Fetch/check out the pinned LLVM (`llvm/llvm-project`) and build it (one-time, slow).
+2. Build the Mimicry passes out-of-tree → `llvm/llvm-project/build/lib/LLVMMimicryPasses.so`.
+3. Build the Java monitor (`mvn -f monitor/pom.xml clean package`).
+4. Optionally run the demo pipeline.
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/mimicrymonitor.git
-   cd mimicrymonitor
-   ```
+> The LLVM submodule must stay at `llvm/llvm-project/` — the build caches absolute paths,
+> so moving it would require a full rebuild.
 
-2. Run the setup script, and follow the prompts:
-   ```bash
-   ./pipeline/setup.sh
-   ```
+---
 
 ## Usage
 
-### Step 1: Prepare Input Files
-
-1. Create or obtain two C programs:
-    - Oracle Program (OP): The reference implementation with correct behavior
-    - Program Under Analysis (PUA): The program to be verified
-
-2Create a sigma pairing file that maps nodes between the two programs:
-   ```
-   (op_node_id1, pua_node_id1), (op_node_id2, pua_node_id2), ...
-   ```
-
-### Step 2: Run the Analysis Pipeline
-
-You can run the entire pipeline with a single command. If you need certain files or libraries to be included at
-compilation time, you can specify them with -IAnalyze, -Iinstrument
+### One-shot pipeline
 
 ```bash
-./pipeline/run-mimicry.sh -pua PATH/TO/pua.c -op PATH/TO/op.c -sigma  PATH/TO/sigma.txt (-IAnalyze PATH) (-Iinstrument PATH)
+./pipeline/run-mimicry.sh \
+  -pua PATH/TO/pua.c \
+  -op  PATH/TO/op.c \
+  -sigma PATH/TO/sigma.txt \
+  [-Ianalyze DIR ...] [-Iinstrument FILE ...] \
+  [-policy stop-v|stop-iv|n] [-log [PATH]] [-afl] [-no-render]
 ```
 
-This will:
-1. Analyze both programs to generate LLVM IR and CFGs
-2. Build the monitor automaton
-3. Instrument the PUA
-4. Compile the instrumented program 
-5. If desired, run the instrumented version
-
-### Step-by-Step Execution
-
-Alternatively, you can run each step manually:
-
-#### Analysis
+Run with no arguments to use the demo inputs in `inputs/`:
 
 ```bash
-cd pipeline
-./analyze.sh
+./pipeline/run-mimicry.sh
 ```
 
-This generates:
-- LLVM IR files (`programOP.ll`, `programPUA.ll`)
-- CFG dot files (`mainOP.dot`, `mainPUA.dot`) and PNG renders
-- Def-use information (`defUseOP.txt`, `defUseUA.txt`)
+> **Paths can be relative or absolute, and you can run the scripts from any directory.**
+> All path arguments (`-pua`, `-op`, `-sigma`, `-Ianalyze`, `-Iinstrument`, `-log`, and
+> `analyze.sh`/`instrument.sh`/`fuzz.sh` inputs) are resolved to absolute paths internally,
+> relative to your current working directory. Each script also locates the repo root from
+> its own location, so e.g. `cd examples && ../pipeline/analyze.sh -op catCU/catOP.c ...`
+> works and still writes output to the repo-root `work/`.
 
-#### Java Monitor Construction
+#### Options
+
+| Flag | Meaning |
+|------|---------|
+| `-pua PATH`            | PUA C source (default `inputs/programPUA.c`) |
+| `-op PATH`             | OP C source (default `inputs/programOP.c`) |
+| `-sigma PATH`          | Sigma pairing file (default `inputs/sigma.txt`) |
+| `-Ianalyze DIR ...`    | Include dirs needed to compile the sources to IR |
+| `-Iinstrument FILE ...`| Extra objects/libraries to link into `instrumentedPUA` |
+| `-policy POLICY`       | `stop-v` (exit cleanly on V), `stop-iv` (exit cleanly on IV), `n` (run to completion) |
+| `-log [PATH]`          | Enable the human-readable monitor log (default `/tmp/mm_monitor.log`) |
+| `-afl`                 | Build with `afl-clang-fast` for fuzzing |
+| `-no-render`           | Skip PNG rendering of intermediate graphs |
+
+### The sigma pairing
+
+A comma-separated list of `(op_node_id, pua_node_id)` pairs that tells the monitor which
+OP program points correspond to which PUA program points:
+
+```
+(0, 0), (1, 1), (12, 14), ...
+```
+
+### Step-by-step (instead of the one-shot script)
 
 ```bash
-# If using Maven
+# 1. Analyze (emits IR, CFGs, def-use into work/)
+./pipeline/analyze.sh -op inputs/programOP.c -pua inputs/programPUA.c \
+                      -sigma inputs/sigma.txt [-I DIR ...] [-no-render]
+
+# 2. Build the monitor (reads work/, writes work/outputs/monitor.dot)
 mvn -f monitor/pom.xml exec:java -Dexec.mainClass="org.mimicry.Main"
 
-# If using Java directly
-java -cp monitor/target/MM-1.0-SNAPSHOT.jar org.mimicry.Main
+# 3. Instrument the PUA (reads monitor.dot, writes work/outputs/instrumentedPUA)
+./pipeline/instrument.sh [-policy stop-v] [-log] [-afl] [-I FILE ...]
 ```
 
-This creates a monitor automaton saved as `work/outputs/monitor.dot`.
-
-#### Instrumentation
+### Running the result
 
 ```bash
-cd pipeline
-./instrument.sh
+./work/outputs/instrumentedPUA <args>      # self-checks against the OP model
 ```
 
-This instruments the PUA with the monitor and compiles it.
+With `-log`, the monitor writes a readable trace (snapshot, per-instruction transitions,
+and the abort/terminal verdict) to the log file.
 
-#### Monitor Logging
+---
 
-You can enable runtime monitor logs with:
+## Outputs
+
+Everything generated lives under `work/` (git-ignored, recreated each run):
+
+| Path | Contents |
+|------|----------|
+| `work/temps/`   | LLVM IR (`*.ll`), def-use info, intermediate objects |
+| `work/cfgs/`    | LLVM CFG dot files (`mainOP.dot`, `mainPUA.dot`) |
+| `work/dots/`    | reconstructed CFGs and monitor-construction graphs (`.dot`) |
+| `work/renders/` | PNG renders of the above |
+| `work/outputs/` | `monitor.dot`, `instrumentedPUA`, logs |
+
+---
+
+## Project structure
+
+```
+mimicrymonitor/
+├── monitor/                Java monitor constructor (Maven project, pkg org.mimicry)
+│   ├── pom.xml
+│   └── src/main/java/org/mimicry/   Automata, LLVMProcessing, MonitorConstructor, ...
+├── instrumentation/        LLVM passes (out-of-tree) + C monitor runtime
+│   ├── CMakeLists.txt              builds LLVMMimicryPasses.so against the pinned LLVM
+│   ├── MimicryInstrument.cpp       the mimicry-instrument pass
+│   ├── FeliDefUseInfo.cpp          the defuse pass
+│   ├── include/llvm/Transforms/Mimicry/*.h
+│   └── monitor_runtime.c, mm_verdict_reporter.c, mm_log_reporter.c, mm_afl_reporter.c
+├── pipeline/               all scripts: setup, run-mimicry, analyze, instrument, fuzz
+├── inputs/                 default programOP.c / programPUA.c / sigma.txt (demo)
+├── examples/               extra targets (catCU, lsCU, mvCU, timeoutCU, ...)
+├── evaluation/             tests/ (coreutils PUA test suites) and seeds/ (AFL seeds)
+├── work/                   ALL generated output [git-ignored]
+├── docs/                   FUZZING.md, README-CoreUtilTests.md
+└── llvm/llvm-project/      pinned LLVM 19.1.7 submodule (vendored; stays here)
+```
+
+---
+
+## Worked examples
+
+The `examples/` directory contains ready-made OP/PUA pairs (mostly from GNU coreutils).
+Compiling these to IR needs a working coreutils checkout for the headers/objects, passed
+via `-Ianalyze` (compile time) and `-Iinstrument` (link time).
+
+**cat**
 
 ```bash
-cd pipeline
-./instrument.sh -log /tmp/mm_monitor.log
+./pipeline/run-mimicry.sh \
+  -pua examples/catCU/catPUA.c \
+  -op  examples/catCU/catOP.c \
+  -sigma examples/catCU/catSigma.txt \
+  -Ianalyze    /PATH/TO/coreutils/src /PATH/TO/coreutils/lib \
+  -Iinstrument /PATH/TO/coreutils/lib/libcoreutils.a /PATH/TO/coreutils/src/version.o \
+  -policy stop-v
 ```
 
-The log is now human-readable (no timestamp/pid prefix) and includes section headers/dividers when needed, for example:
-
-```text
-------------------------------------------------------------
-NEW MONITORING ITERATION
-------------------------------------------------------------
-log file cleared for new iteration: /tmp/mm_monitor.log
-------------------------------------------------------------
-AUTOMATON SNAPSHOT
-------------------------------------------------------------
-init automaton: nodes=4, initial_node=1, policy=stop-iv
-node 1: verdict=No Verdict yet, terminal=no, condition=(none), transitions=2
-   transition: 1 --then--> 2
-   transition: 1 --else--> 3
-------------------------------------------------------------
-MONITOR START
-------------------------------------------------------------
-start at node 1, verdict: No Verdict yet
-instruction executed: i++, node: 4, verdict: No Verdict yet
-------------------------------------------------------------
-MONITOR ABORT
-------------------------------------------------------------
-ABORT: policy 'stop-iv' triggered at node 4 with verdict IV
-```
-
-### Step 3: Run the Instrumented Program
-
-```bash
-./instrumentedPUA params
-```
-
-The program will report any deviations from the expected behavior defined by the OP.
-
-## Technical Details
-
-### Automata Construction Process
-
-1. **CFG Generation**: LLVM passes analyze both programs to generate control flow graphs and def-use chains
-2. **Data Flow Tracking**: Data Flow Tracking Automata (DFTA) track read/write operations on shared variables
-3. **Composition**: The Java program combines CFGs with DFTAs to create a unified monitor automaton
-4. **Verdict Propagation**: States in the automaton are labeled with verdicts about PUA behavior
-5. **Minimization**: The automaton is compacted to reduce size while preserving behavior
-
-### Instrumentation
-
-The LLVM pass:
-1. Parses the monitor automaton
-2. Identifies instrumentation points in the PUA
-3. Inserts runtime verification code
-4. Produces an executable that validates PUA behavior
-
-### Reporter Architecture (New)
-
-The monitor runtime now uses an explicit reporter pipeline, enabled only by instrumentation parameters.
-
-1. **Reporter core (`mm_verdict_reporter`)**:
-   - Keeps an in-memory list of reporters.
-   - Exposes `mm_add_reporter`, `mm_clear_reporters`, `mm_report_verdict`, and `mm_report_abort`.
-2. **Runtime-controlled registration (`monitor_runtime`)**:
-   - `configureReporters()` is called from `initAutomaton()`.
-   - Registration happens once per process (`reportersConfigured` guard).
-   - No automatic constructor-based registration is used.
-3. **Compile-time gates (set by `instrument.sh`)**:
-   - `MM_ENABLE_LOG_REPORTER=1` only when `-log` is passed.
-   - `MM_ENABLE_AFL_REPORTER=1` only when `-afl` is passed.
-4. **Log reporter (`mm_log_reporter`)**:
-   - Logs human-readable runtime events.
-   - Clears the log at each new automaton iteration (`mm_log_clear_file`).
-   - Adds section headers/dividers for important phases (snapshot, start, abort, terminal).
-5. **AFL reporter (`mm_afl_reporter`)**:
-   - Registered only when AFL mode is requested.
-   - Uses weak AFL symbols and non-coverage attributes to avoid linker/runtime issues in helper code.
-
-### Instrumentation Mechanic (New)
-
-Current instrumentation behavior is split into two layers: LLVM IR instrumentation and runtime assembly/link configuration.
-
-1. **IR instrumentation phase**:
-   - `opt` loads `LLVMMimicryPasses` and runs `mimicry-instrument`.
-   - The pass injects monitor calls and monitor-policy initialization into the generated IR.
-2. **Runtime composition phase (in `instrument.sh`)**:
-   - Always links `monitor_runtime.c` + `mm_verdict_reporter.c`.
-   - Conditionally links `mm_log_reporter.c` when `-log` is set.
-   - Conditionally enables AFL reporter when `-afl` is set.
-3. **AFL-specific build detail**:
-   - Final target is still compiled with `afl-clang-fast` in AFL mode.
-   - `mm_afl_reporter.c` is compiled separately with `clang` and then linked, to prevent AFL self-instrumentation side effects.
-4. **Runtime execution flow**:
-   - `initAutomaton()` configures reporters, clears per-iteration logs (if enabled), logs automaton snapshot, and emits initial verdict.
-   - `monitorAction()` logs each instruction transition, updates verdict, and reports abort/terminal states with explicit sections.
-
-## Included tests:
-In the examples/ dir there are a few test cases available. Most of them borrowed from the Core Utils GNU Project,
-1. cat
-2. timeout 
-
-For them to work, you need to have a working coreutils dir and copy the OP and PUA files into their src dir. Otherwise the ll IR wont be able to compile, because of includes and such nonsense.
-Later run the MM as usual:
-
-   1. cat:
-   ```
-      ./pipeline/run-mimicry.sh -pua /PATH/TO/coreutils/src/catPUA.c 
-                       -op /PATH/TO/coreutils/src/catOP.c 
-                       -sigma examples/catCU/catSigma.txt 
-                       -Ianalyze /PATH/TO/coreutils/lib                   # Include directory at the moment of analysis
-                       -Iinstrument /PATH/TO/coreutils/lib/libcoreutils.a # Include directory at the moment onf instrumentation
-   ```
-   - Input for V verdict: 
-   ```bash
-    ./instrumentedPUA catTest.txt
+- **V verdict** (behaves like the OP):
+  ```bash
+  ./work/outputs/instrumentedPUA catTest.txt
   ```
-   - Input for IV verdict: 
-   ```bash
-         # Open the same file twice with different file descriptors
-            exec 3>file.txt
-            exec 4<file.txt
-         # Run cat with the input from fd 4 and output to fd 3
-            ./instrumentedPUA <&4 >&3 
-   ```
-   2. timeout:
-   ```
-      ./pipeline/run-mimicry.sh -pua /PATH/TO/coreutils/src/timeoutPUA.c 
-                       -op /PATH/TO/coreutils/src/timeout.c 
-                       -sigma /PATH/TO/coreutils/feli/sigma.txt 
-                       -Ianalyze /PATH/TO/coreutils/lib                   # Include directory at the moment of analysis
-                       -Iinstrument /PATH/TO/coreutils/lib/libcoreutils.a # Include directory at the momento onf instrumentation
-   ```
-   - Input for V verdict: 
-   ```bash
-    ./instrumentedPUA 
-   ```
-   - Input for IV verdict: 
-     ```bash
-     ./instrumentedPUA 1 true
-     ```
-     
-   3. demo (runs with demo files at /inputs):
-   ```
-      ./pipeline/run-mimicry.sh 
-      
-   ```
-- Input for V verdict:
-   ```bash
-    ./instrumentedPUA -1  
-   ```
-  - Input for IV verdict:
-    ```bash
-    ./instrumentedPUA 1
-    ```
-  
-     4. ls:
-    ```
-       ./pipeline/run-mimicry.sh  -pua /Users/felicitasgarcia/coreutils/src/lsPUA.c 
-                         -op /Users/felicitasgarcia/coreutils/src/lsOP.c 
-                         -sigma examples/lsCU/sigmaLs.txt 
-                         -Ianalyze /Users/felicitasgarcia/coreutils/lib 
-                         -Iinstrument /Users/felicitasgarcia/coreutils/lib/libcoreutils.a /Users/felicitasgarcia/coreutils/src/ls-ls.o /Users/felicitasgarcia/coreutils/src/version.o
+- **IV verdict** (input file is also the output file — exercises the patched region):
+  ```bash
+  exec 3>file.txt; exec 4<file.txt
+  ./work/outputs/instrumentedPUA <&4 >&3
+  ```
 
-    ```
-    5. mv:
-    ```
-    ./pipeline/run-mimicry.sh  -pua /path/to/coreutils/src/mvPUA.c 
-                      -op /path/to/coreutils/src/mvOP.c 
-                      -sigma /Users/felicitasgarcia/TESIS/mimicrymonitor/examples/mvCU/mvSigma.txt 
-                      -Ianalyze /path/to/coreutils/lib 
-                      -Iinstrument /path/to/coreutils/src/copy.o /path/to/coreutils/src/remove.o /path/to/coreutils/src/version.o /path/to/coreutils/src/force-link.o /path/to/coreutils/src/cp-hash.o /path/to/coreutils/lib/libcoreutils.a
-    ```
-  
+**demo** (uses the bundled `inputs/`):
+
+```bash
+./pipeline/run-mimicry.sh
+./work/outputs/instrumentedPUA -1   # V
+./work/outputs/instrumentedPUA  1   # IV
+```
+
+---
+
+## Fuzzing
+
+The instrumented PUA can be fuzzed with AFL++ (build with `-afl`). See **`docs/FUZZING.md`**
+for the full workflow (instrumented vs. plain modes, seeds, and reading crashes).
+
+---
+
+## Runtime monitor internals
+
+The monitor runtime uses an explicit **reporter pipeline**, enabled only by instrumentation flags:
+
+- **Core (`mm_verdict_reporter`)** — keeps a reporter list; exposes `mm_add_reporter`,
+  `mm_report_verdict`, `mm_report_abort`.
+- **Registration (`monitor_runtime`)** — `configureReporters()` runs once from `initAutomaton()`.
+- **Compile-time gates (set by `instrument.sh`)** — `MM_ENABLE_LOG_REPORTER` (`-log`),
+  `MM_ENABLE_AFL_REPORTER` (`-afl`).
+- **Log reporter (`mm_log_reporter`)** — human-readable trace, cleared per iteration, with
+  section headers (snapshot / start / abort / terminal).
+- **AFL reporter (`mm_afl_reporter`)** — registered only in AFL mode; compiled separately
+  with plain `clang` to avoid AFL self-instrumentation.
+
+`mm_afl_reporter.c` aside, instrumentation works in two layers: the `mimicry-instrument`
+LLVM pass injects monitor calls + policy init into the IR, and `instrument.sh` links the
+runtime and the requested reporters into the final binary.
+
+---
+
 ## Troubleshooting
 
-### Common Issues
+| Symptom | Fix |
+|---------|-----|
+| Pass build errors | Confirm LLVM 19.1.7 is built and `llvm/llvm-project/build/lib/cmake/llvm` exists |
+| Empty/garbage CFG | Make sure `analyze.sh` used **clang-19** (it must match `opt`); check its output for errors |
+| Java can't find inputs | Re-run `analyze.sh` so generated files exist under `work/` (input paths can be relative or absolute, resolved automatically) |
+| Instrumentation fails | Ensure `opt` and the plugin exist, and `work/outputs/monitor.dot` was produced |
+| `dot` / render errors | Install Graphviz; PNGs are optional — use `-no-render` to skip |
 
-1. **LLVM Pass Build Errors**:
-    - Ensure you have the correct LLVM version (19.1.7 recommended)
-    - Check that LLVM development headers are available
-    - Verify pass installation paths
-
-2. **CFG Generation Issues**:
-    - Check the `analyze.sh` script's output for errors
-    - The script looks for generated dot files in system-dependent directories
-    - Adjust paths if necessary
-
-3. **Java Execution Errors**:
-    - Ensure all required input files exist
-    - Check file paths in the Java code
-
-4. **Instrumentation Failures**:
-    - Verify that the `opt` tool is available
-    - Check that the monitor DOT file is properly formatted
-
-
-
-## Thank you
+---
 
 ```
                   ^~^  ,

@@ -63,6 +63,18 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Resolve user-provided paths to absolute so the script works from any cwd.
+to_abs() {
+  [ -z "$1" ] && return 0
+  if command -v realpath >/dev/null 2>&1; then realpath -m -- "$1"
+  elif [ -d "$1" ]; then (cd "$1" && pwd)
+  else echo "$(cd "$(dirname -- "$1")" 2>/dev/null && pwd)/$(basename -- "$1")"; fi
+}
+PUA_PATH="$(to_abs "$PUA_PATH")"
+OP_PATH="$(to_abs "$OP_PATH")"
+SIGMA_PATH="$(to_abs "$SIGMA_PATH")"
+for i in "${!ILIBS[@]}"; do ILIBS[$i]="$(to_abs "${ILIBS[$i]}")"; done
+
 PUA_BASENAME=$(basename "$PUA_PATH" .c)
 OP_BASENAME=$(basename "$OP_PATH" .c)
 

@@ -40,6 +40,16 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Resolve user-provided paths to absolute so the script works from any cwd.
+to_abs() {
+  [ -z "$1" ] && return 0
+  if command -v realpath >/dev/null 2>&1; then realpath -m -- "$1"
+  elif [ -d "$1" ]; then (cd "$1" && pwd)
+  else echo "$(cd "$(dirname -- "$1")" 2>/dev/null && pwd)/$(basename -- "$1")"; fi
+}
+SEEDS_DIR="$(to_abs "$SEEDS_DIR")"
+[ -n "$OUT_DIR" ] && OUT_DIR="$(to_abs "$OUT_DIR")"
+
 # --- Set paths based on mode ---
 if [[ "$MODE" == "plain" ]]; then
   PUA_PLAIN="$MIMICRY_DIR/work/outputs/pua_plain"

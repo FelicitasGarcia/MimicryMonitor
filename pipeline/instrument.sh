@@ -82,6 +82,17 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Resolve user-provided paths to absolute so the script works from any cwd.
+to_abs() {
+  [ -z "$1" ] && return 0
+  if command -v realpath >/dev/null 2>&1; then realpath -m -- "$1"
+  elif [ -d "$1" ]; then (cd "$1" && pwd)
+  else echo "$(cd "$(dirname -- "$1")" 2>/dev/null && pwd)/$(basename -- "$1")"; fi
+}
+[ -n "$PUA_PATH" ] && PUA_PATH="$(to_abs "$PUA_PATH")"
+for i in "${!ILIBS[@]}";  do ILIBS[$i]="$(to_abs "${ILIBS[$i]}")";   done
+for i in "${!ICDIRS[@]}"; do ICDIRS[$i]="$(to_abs "${ICDIRS[$i]}")"; done
+
 # --- Seleccionar compilador ---
 if [[ "$AFLFUZZ" == "1" ]]; then
   AFL_SEARCH_PATHS=("" "/usr/local/bin" "$HOME/AFLplusplus" "$HOME/afl++" "/opt/aflplusplus")

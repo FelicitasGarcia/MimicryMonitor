@@ -93,6 +93,21 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Resolve user-provided paths to absolute so the pipeline works from any cwd
+# (these are passed to analyze.sh / instrument.sh and to the Java step).
+to_abs() {
+  [ -z "$1" ] && return 0
+  if command -v realpath >/dev/null 2>&1; then realpath -m -- "$1"
+  elif [ -d "$1" ]; then (cd "$1" && pwd)
+  else echo "$(cd "$(dirname -- "$1")" 2>/dev/null && pwd)/$(basename -- "$1")"; fi
+}
+PUA_PATH="$(to_abs "$PUA_PATH")"
+OP_PATH="$(to_abs "$OP_PATH")"
+SIGMA_PATH="$(to_abs "$SIGMA_PATH")"
+[ -n "$LOGFILE" ] && LOGFILE="$(to_abs "$LOGFILE")"
+for i in "${!IANALYZE[@]}";    do IANALYZE[$i]="$(to_abs "${IANALYZE[$i]}")";       done
+for i in "${!IINSTRUMENT[@]}"; do IINSTRUMENT[$i]="$(to_abs "${IINSTRUMENT[$i]}")"; done
+
 # --- Construir flags para instrument.sh ---
 INSTRUMENT_FLAGS=()
 [[ "$AFLFUZZ" == "1" ]]   && INSTRUMENT_FLAGS+=(-afl)

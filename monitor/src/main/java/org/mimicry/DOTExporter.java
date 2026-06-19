@@ -1,10 +1,5 @@
 package org.mimicry;
 
-import guru.nidi.graphviz.engine.Engine;
-import guru.nidi.graphviz.engine.Format;
-import guru.nidi.graphviz.engine.Graphviz;
-import guru.nidi.graphviz.engine.GraphvizCmdLineEngine;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -238,22 +233,29 @@ public class DOTExporter {
 
     public void render() {
         try {
-            File dotFile = new File(dotFilePath);
-            // Use neato engine for better node distribution
-            GraphvizCmdLineEngine engine =  new GraphvizCmdLineEngine();
-            engine.timeout(5, TimeUnit.MINUTES);
-
             File outputFile = new File(type.equals("MM") ?
                     "work/outputs/" + destination + ".png" :
                     "work/renders/" + destination + ".png");
             ensureParentDir(outputFile.getPath());
 
-            Graphviz.useEngine(engine);
-            Graphviz.fromFile(dotFile)
-                    .totalMemory(1024*1024*1024) // 1GB memory for large graphs
-                    .render(Format.PNG)
-                    .toFile(outputFile);
-        } catch (IOException e) {
+            // Render with the Graphviz `dot` CLI directly. Going through graphviz-java's
+            // SVG rasterizer emits "Could not create font Helvetica,sans-Serif" warnings:
+            // its kitfox backend can't resolve that SVG font name through Java AWT. The
+            // dot binary does its own font substitution, so the PNG renders cleanly.
+            ProcessBuilder pb = new ProcessBuilder(
+                    "dot", "-Tpng", dotFilePath, "-o", outputFile.getPath());
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
+            try (InputStream out = process.getInputStream()) {
+                out.readAllBytes(); // drain so dot never blocks on a full pipe
+            }
+            if (!process.waitFor(5, TimeUnit.MINUTES)) {
+                process.destroyForcibly();
+                System.err.println("dot render timed out for " + dotFilePath);
+            } else if (process.exitValue() != 0) {
+                System.err.println("dot render failed (exit " + process.exitValue() + ") for " + dotFilePath);
+            }
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
