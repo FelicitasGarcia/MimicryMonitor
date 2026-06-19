@@ -1,0 +1,18 @@
+-- Comandos
+
+# Correr Instrumentación de cat
+./pipeline/run-mimicry.sh \
+  -pua   /home/felicitas/Desktop/DOC/MM/MimicryMonitor/examples/catCU/catPUA.c \
+  -op    /home/felicitas/Desktop/DOC/MM/MimicryMonitor/examples/catCU/catOP.c \
+  -sigma /home/felicitas/Desktop/DOC/MM/MimicryMonitor/examples/catCU/catSigma.txt \
+  -Ianalyze    /home/felicitas/Desktop/DOC/MM/coreutils/src \
+               /home/felicitas/Desktop/DOC/MM/coreutils/lib \
+  -Iinstrument /home/felicitas/Desktop/DOC/MM/coreutils/lib/libcoreutils.a \
+               /home/felicitas/Desktop/DOC/MM/coreutils/src/version.o \
+  -log   /home/felicitas/Desktop/DOC/MM/MimicryMonitor/work/outputs/log.txt \
+  -policy stop-v
+
+# Correr AFL 
+1) (chequear de poner opcional) afl-clang-fast pipeline/afl_fuzz_wrapper.c -o pipeline/afl_fuzz_wrapper 
+2)  - pipeline/fuzz.sh -i evaluation/seeds -t 30 -clean // Version con monitor
+    - pipeline/fuzz.sh -plain -i evaluation/seeds -t 30 -clean // Version sin monitor

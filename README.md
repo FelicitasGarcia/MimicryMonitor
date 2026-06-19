@@ -35,31 +35,26 @@ This approach leverages common code fragments between trusted and untrusted prog
 
 ```
 mimicrymonitor/
-├── exampleFiles/           # Intermediate automata dots and renders
-├── llvm/                   # LLVM execution related files
-│   ├── feli/               # Special Directory with everything necessary
-│   │   ├── cfgs/           # Control flow graphs of LLVM origin
-│   │   ├── inputs/         # Input files
-│   │   ├── outputs/        # Output files
-│   │   ├── scripts/        # Analysis and Instrumentation scripts
-│   │   └── temps/          # Temporary files
-│   └── llvm-project/       # LLVM source code repository — must be placed here (see note below)
-├── node_modules/           # JavaScript dependencies
-├── pom.xml                 # Maven project file
-└── src/                    # Source code for Monitor Constructor
-    └── main/
-        └── java/
-            └── org/
-                └── example/
-                    ├── Automata.java
-                    ├── BisimulationMinimizer.java
-                    ├── CompositionAutomata.java
-                    └── ... (other Java classes)
+├── monitor/                # Java monitor constructor (Maven project)
+│   ├── pom.xml
+│   └── src/main/java/org/mimicry/   # Automata, MonitorConstructor, ... 
+├── instrumentation/        # LLVM passes (out-of-tree) + C monitor runtime
+│   ├── CMakeLists.txt       #   builds LLVMMimicryPasses.so against the pinned LLVM
+│   ├── MimicryInstrument.cpp / FeliDefUseInfo.cpp
+│   ├── include/llvm/Transforms/Mimicry/*.h
+│   └── monitor_runtime.c / mm_*_reporter.c
+├── pipeline/               # all scripts: setup, run-mimicry, analyze, instrument, fuzz
+├── inputs/                 # default programOP.c / programPUA.c / sigma.txt
+├── examples/               # extra example targets (catCU, lsCU, mvCU, ...)
+├── evaluation/             # tests/ (coreutils PUA tests) and seeds/ (AFL seeds)
+├── work/                   # ALL generated output — IR, CFGs, monitors, renders, fuzz output [gitignored]
+├── docs/                   # FUZZING.md, README-CoreUtilTests.md
+└── llvm/llvm-project/      # pinned LLVM 19.1.7 submodule (vendored; stays here, see note)
 ```
 
 ## Installation
 
-> **LLVM project location:** The scripts expect `llvm-project` to be located at `mimicrymonitor/llvm/llvm-project/` (i.e., the `llvm/` subdirectory of this repo). If you place it elsewhere, you must manually update the `BUILD_DIR` variable in the relevant scripts (e.g., `llvm/feli/scripts/analyze.sh`, `llvm/feli/scripts/instrument.sh`).
+> **LLVM project location:** The scripts expect `llvm-project` to be located at `mimicrymonitor/llvm/llvm-project/` (i.e., the `llvm/` subdirectory of this repo). If you place it elsewhere, you must manually update the `BUILD_DIR` variable in the relevant scripts (e.g., `pipeline/analyze.sh`, `pipeline/instrument.sh`).
 
 ### Quick Setup
 
@@ -71,7 +66,7 @@ mimicrymonitor/
 
 2. Run the setup script, and follow the prompts:
    ```bash
-   ./setup.sh
+   ./pipeline/setup.sh
    ```
 
 ## Usage
@@ -93,7 +88,7 @@ You can run the entire pipeline with a single command. If you need certain files
 compilation time, you can specify them with -IAnalyze, -Iinstrument
 
 ```bash
-./run-mimicry.sh -pua PATH/TO/pua.c -op PATH/TO/op.c -sigma  PATH/TO/sigma.txt (-IAnalyze PATH) (-Iinstrument PATH)
+./pipeline/run-mimicry.sh -pua PATH/TO/pua.c -op PATH/TO/op.c -sigma  PATH/TO/sigma.txt (-IAnalyze PATH) (-Iinstrument PATH)
 ```
 
 This will:
@@ -110,7 +105,7 @@ Alternatively, you can run each step manually:
 #### Analysis
 
 ```bash
-cd llvm/feli/scripts
+cd pipeline
 ./analyze.sh
 ```
 
@@ -123,18 +118,18 @@ This generates:
 
 ```bash
 # If using Maven
-mvn exec:java -Dexec.mainClass="org.example.Main"
+mvn -f monitor/pom.xml exec:java -Dexec.mainClass="org.mimicry.Main"
 
 # If using Java directly
-java -cp target/mimicrymonitor-1.0.jar org.example.Main
+java -cp monitor/target/MM-1.0-SNAPSHOT.jar org.mimicry.Main
 ```
 
-This creates a monitor automaton saved as `llvm/feli/outputs/monitor.dot`.
+This creates a monitor automaton saved as `work/outputs/monitor.dot`.
 
 #### Instrumentation
 
 ```bash
-cd llvm/feli/scripts
+cd pipeline
 ./instrument.sh
 ```
 
@@ -145,7 +140,7 @@ This instruments the PUA with the monitor and compiles it.
 You can enable runtime monitor logs with:
 
 ```bash
-cd llvm/feli/scripts
+cd pipeline
 ./instrument.sh -log /tmp/mm_monitor.log
 ```
 
@@ -241,7 +236,7 @@ Current instrumentation behavior is split into two layers: LLVM IR instrumentati
    - `monitorAction()` logs each instruction transition, updates verdict, and reports abort/terminal states with explicit sections.
 
 ## Included tests:
-In the llvm/feli/otherInputs dir there are a few test cases available. Most of them borrowed from the Core Utils GNU Project,
+In the examples/ dir there are a few test cases available. Most of them borrowed from the Core Utils GNU Project,
 1. cat
 2. timeout 
 
@@ -250,9 +245,9 @@ Later run the MM as usual:
 
    1. cat:
    ```
-      ./run-mimicry.sh -pua /PATH/TO/coreutils/src/catPUA.c 
+      ./pipeline/run-mimicry.sh -pua /PATH/TO/coreutils/src/catPUA.c 
                        -op /PATH/TO/coreutils/src/catOP.c 
-                       -sigma llvm/feli/inputs/otherInputs/catCU/catSigma.txt 
+                       -sigma examples/catCU/catSigma.txt 
                        -Ianalyze /PATH/TO/coreutils/lib                   # Include directory at the moment of analysis
                        -Iinstrument /PATH/TO/coreutils/lib/libcoreutils.a # Include directory at the moment onf instrumentation
    ```
@@ -270,7 +265,7 @@ Later run the MM as usual:
    ```
    2. timeout:
    ```
-      ./run-mimicry.sh -pua /PATH/TO/coreutils/src/timeoutPUA.c 
+      ./pipeline/run-mimicry.sh -pua /PATH/TO/coreutils/src/timeoutPUA.c 
                        -op /PATH/TO/coreutils/src/timeout.c 
                        -sigma /PATH/TO/coreutils/feli/sigma.txt 
                        -Ianalyze /PATH/TO/coreutils/lib                   # Include directory at the moment of analysis
@@ -285,9 +280,9 @@ Later run the MM as usual:
      ./instrumentedPUA 1 true
      ```
      
-   3. demo (runs with demo files at /llvm/feli/inputs):
+   3. demo (runs with demo files at /inputs):
    ```
-      ./run-mimicry.sh 
+      ./pipeline/run-mimicry.sh 
       
    ```
 - Input for V verdict:
@@ -301,18 +296,18 @@ Later run the MM as usual:
   
      4. ls:
     ```
-       ./run-mimicry.sh  -pua /Users/felicitasgarcia/coreutils/src/lsPUA.c 
+       ./pipeline/run-mimicry.sh  -pua /Users/felicitasgarcia/coreutils/src/lsPUA.c 
                          -op /Users/felicitasgarcia/coreutils/src/lsOP.c 
-                         -sigma llvm/feli/inputs/otherInputs/lsCU/sigmaLs.txt 
+                         -sigma examples/lsCU/sigmaLs.txt 
                          -Ianalyze /Users/felicitasgarcia/coreutils/lib 
                          -Iinstrument /Users/felicitasgarcia/coreutils/lib/libcoreutils.a /Users/felicitasgarcia/coreutils/src/ls-ls.o /Users/felicitasgarcia/coreutils/src/version.o
 
     ```
     5. mv:
     ```
-    ./run-mimicry.sh  -pua /path/to/coreutils/src/mvPUA.c 
+    ./pipeline/run-mimicry.sh  -pua /path/to/coreutils/src/mvPUA.c 
                       -op /path/to/coreutils/src/mvOP.c 
-                      -sigma /Users/felicitasgarcia/TESIS/mimicrymonitor/llvm/feli/inputs/otherInputs/mvCU/mvSigma.txt 
+                      -sigma /Users/felicitasgarcia/TESIS/mimicrymonitor/examples/mvCU/mvSigma.txt 
                       -Ianalyze /path/to/coreutils/lib 
                       -Iinstrument /path/to/coreutils/src/copy.o /path/to/coreutils/src/remove.o /path/to/coreutils/src/version.o /path/to/coreutils/src/force-link.o /path/to/coreutils/src/cp-hash.o /path/to/coreutils/lib/libcoreutils.a
     ```
