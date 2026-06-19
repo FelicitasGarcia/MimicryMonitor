@@ -1,13 +1,14 @@
 package org.example;
 
 import java.io.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.common.io.Files;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static java.lang.Thread.sleep;
 
 public class LLVMProcessing extends Automata {
     private DOTParser llvmCFG;
@@ -16,6 +17,13 @@ public class LLVMProcessing extends Automata {
     private Map<Integer, String> locationsMap = new HashMap<>(); // Original Location -> Original Instructions
     private Map<String, Map<String, Node>> nodeMap = new HashMap<>(); // BasicBlock Label -> Original Instructions
     private Map<String, Node> locationsNode = new HashMap<>();
+    // Pre-parsed metadata: !N -> source line in the C program (inlinedAt chains already resolved)
+    private Map<Integer, Integer> metadataToLine = new HashMap<>();
+    // (blockLabel + KEY_SEP + normalized instruction text) -> source line.
+    // Built from the .ll itself so it is immune to the metadata-ID renumbering that
+    // opt's dot-cfg printer applies when emitting the .dot (see buildInstrLineMap).
+    private Map<String, Integer> instrLineMap = new HashMap<>();
+    private static final String KEY_SEP = "\t";
 
     public LLVMProcessing(DOTParser llvmCFG, String dbgFilePath, String cProgramFilePath, String type)
             throws IOException, InterruptedException {
@@ -23,6 +31,14 @@ public class LLVMProcessing extends Automata {
         this.dbgFilePath = dbgFilePath;
         // Map all og locations to instructions
         mapOgLocations(cProgramFilePath);
+
+        // Pre-parse all !DILocation metadata entries once (handles inlinedAt chains)
+        buildMetadataMap();
+
+        // Build the (block, instruction-text) -> source line map from the .ll. This
+        // replaces direct !dbg-ID lookups, which break because opt's dot-cfg printer
+        // renumbers metadata in the .dot relative to the .ll.
+        buildInstrLineMap();
 
         // Parse the LLVM CFG
         splitBasicBlocks();
@@ -223,203 +239,149 @@ public class LLVMProcessing extends Automata {
         }
     }
 
-    // Split Basic Blocks into multiple nodes, wher each corresponds to an original
-    // source code lines
+    // Split Basic Blocks into multiple nodes, where each corresponds to an original
+    // source code line. Empty LLVM blocks (only br/unreachable) are contracted away
+    // via a fixed-point pass rather than a BFS skip-search.
     private void splitBasicBlocks() throws IOException {
         int nodeId = 0;
         int edgeId = 0;
         Node prevNode;
         String prevLocation;
+
+        // Phase 1: Build per-block source nodes with intra-block edges (unchanged).
         for (Node block : llvmCFG.getNodes()) {
             prevNode = null;
             prevLocation = "";
             for (String instruction : block.instructions) {
-                String location = getLocationFromDbg(instruction);
-                // If it is an instruction with a location in og source code
-                // Avoid processing branches and unreachable code
+                String location = getLocationFromDbg(block.basicBlockLabel, instruction);
                 if (location != null
                         && !instruction.trim().startsWith("br")
-                        && !instruction.trim().startsWith("unreachable")) {
-                    // and a new source code Instruction
-                    // Same original lines are obv in the same bb and adjacent NOT SO OBVIOUS
-                    if (!location.equals(prevLocation)/* && !visitedLocations.contains(locationInt) */) {
+                        && !instruction.trim().startsWith("unreachable")
+                        && !instruction.contains("@llvm.dbg")
+                        && !instruction.contains("@llvm.lifetime")) {
+                    if (!location.equals(prevLocation)) {
                         Map<String, Node> blockMap = nodeMap.computeIfAbsent(block.basicBlockLabel, k -> new HashMap<>());
                         Node existingNode = blockMap.get(location);
                         Node node;
                         if (existingNode != null) {
-                            // Location already seen non-consecutively — reuse the existing node
-                            // instead of replacing it (which would orphan it in edges)
                             existingNode.instructions.add(instruction);
                             node = existingNode;
                         } else {
                             node = new Node(nodeId++, location, block.basicBlockLabel + "@" + location, instruction);
                             blockMap.put(location, node);
                         }
-
-                        // Add edges in between same block instructions
                         if (prevNode != null) {
                             edges.add(new Edge(prevNode, node, "", edgeId++));
                         }
-
                         prevNode = node;
                         prevLocation = location;
-
                     } else {
-                        // If this is not the first instruction in the location, just append it
                         nodeMap.get(block.basicBlockLabel).get(location).instructions.add(instruction);
                     }
                 }
             }
-
-            // Some blocks dont have real code insts, so we just make a dummy one for
-            // clarity
             if (!nodeMap.containsKey(block.basicBlockLabel)) {
                 block.basicBlockLabel = "";
             }
         }
 
-        // Now, add edges between different block instructions
-        for (Edge edge : llvmCFG.getEdges()) {
-            // Get closest non empty blocks
-            List<String> previousNonEmptyBlocks = getPreviousNonEmptyBlock(edge.getEdgeSource());
-            List<String> nextNonEmptyBlocks = getNextNonEmptyBlock(edge.getEdgeTarget());
+        // Phase 2: Wire inter-block edges naively using 1:1 correspondence.
+        // Non-empty source block → last source node; non-empty target block → first
+        // source node. Empty blocks (basicBlockLabel == "") get a placeholder Node.
+        Map<Node, Node> blockToPlaceholder = new HashMap<>();
 
-            // From: Last instruction from source block
-            for (String previousLabel : previousNonEmptyBlocks) {
-                for (String nextLabel : nextNonEmptyBlocks) {
-                    // From: Last instruction from source block
-                    Node source = getLastLoc(nodeMap.get(previousLabel));
-                    // To: First instruction from target block
-                    Node target = getFirstLoc(nodeMap.get(nextLabel));
+        for (Edge llvmEdge : llvmCFG.getEdges()) {
+            Node srcBlock = llvmEdge.getEdgeSource();
+            Node tgtBlock = llvmEdge.getEdgeTarget();
+            String label = llvmEdge.getEdgeLabel();
 
-                    // If the target is already a child of the source, skip it
-                    if (!shouldAddEdge(source, target, edge.getEdgeLabel())) {
-                        continue;
-                    }
-
-                    // Else add edge
-                    source.getChildren().add(target);
-                    target.getParents().add(source);
-                    edges.add(new Edge(source, target, edge.getEdgeLabel(), edgeId++));
+            Node sourceNode;
+            if (!srcBlock.basicBlockLabel.isEmpty()) {
+                sourceNode = getLastLoc(nodeMap.get(srcBlock.basicBlockLabel));
+            } else {
+                if (!blockToPlaceholder.containsKey(srcBlock)) {
+                    blockToPlaceholder.put(srcBlock, new Node(nodeId++, "EMPTY_" + srcBlock.getNodeId()));
                 }
+                sourceNode = blockToPlaceholder.get(srcBlock);
+            }
+
+            Node targetNode;
+            if (!tgtBlock.basicBlockLabel.isEmpty()) {
+                targetNode = getFirstLoc(nodeMap.get(tgtBlock.basicBlockLabel));
+            } else {
+                if (!blockToPlaceholder.containsKey(tgtBlock)) {
+                    blockToPlaceholder.put(tgtBlock, new Node(nodeId++, "EMPTY_" + tgtBlock.getNodeId()));
+                }
+                targetNode = blockToPlaceholder.get(tgtBlock);
+            }
+
+            if (!hasInterBlockEdge(sourceNode, targetNode, label)) {
+                edges.add(new Edge(sourceNode, targetNode, label, edgeId++));
+                sourceNode.addChild(targetNode);
+                targetNode.addParent(sourceNode);
             }
         }
 
-        // Put all nodes in one collection
+        // Phase 3: Fixed-point contraction.
+        // Repeatedly splice out any placeholder with exactly one successor: for each
+        // predecessor P → placeholder, add P → successor keeping P's edge label, then
+        // delete the placeholder and its edges. Chains resolve one hop per iteration.
+        Set<Node> placeholders = new HashSet<>(blockToPlaceholder.values());
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (Node ph : new ArrayList<>(placeholders)) {
+                List<Edge> outEdges = new ArrayList<>();
+                for (Edge e : edges) {
+                    if (e.getEdgeSource() == ph) outEdges.add(e);
+                }
+                if (outEdges.size() != 1) continue;
+
+                Node succ = outEdges.get(0).getEdgeTarget();
+                if (succ == ph) continue; // self-loop guard
+
+                List<Edge> inEdges = new ArrayList<>();
+                for (Edge e : edges) {
+                    if (e.getEdgeTarget() == ph) inEdges.add(e);
+                }
+
+                for (Edge inEdge : inEdges) {
+                    Node pred = inEdge.getEdgeSource();
+                    String inLabel = inEdge.getEdgeLabel();
+                    if (!hasInterBlockEdge(pred, succ, inLabel)) {
+                        edges.add(new Edge(pred, succ, inLabel, edgeId++));
+                        if (!pred.getChildren().contains(succ)) pred.addChild(succ);
+                        if (!succ.getParents().contains(pred)) succ.addParent(pred);
+                    }
+                    pred.getChildren().remove(ph);
+                }
+                succ.getParents().remove(ph);
+                edges.removeAll(inEdges);
+                edges.remove(outEdges.get(0));
+                placeholders.remove(ph);
+                changed = true;
+            }
+        }
+
+        // Remove any edges that still involve unreachable placeholder nodes
+        // (zero-successor or multi-successor cases that couldn't be contracted).
+        final Set<Node> remaining = placeholders;
+        edges.removeIf(e -> remaining.contains(e.getEdgeSource()) || remaining.contains(e.getEdgeTarget()));
+
+        // Phase 4: Collect all real source nodes.
         for (Map<String, Node> sameLocIns : nodeMap.values()) {
             nodes.addAll(sameLocIns.values());
         }
     }
 
-    private boolean shouldAddEdge(Node source, Node target, String label) {
-        if (source.getChildren().contains(target)) {
-            for (Edge edge : edges) {
-                if (edge.getEdgeSource().equals(source) &&
-                        edge.getEdgeTarget().equals(target) &&
-                        (edge.getEdgeLabel().equals(label) || label.isEmpty())) {
-                    return false;
-                }
+    private boolean hasInterBlockEdge(Node source, Node target, String label) {
+        for (Edge e : edges) {
+            if (e.getEdgeSource() == source && e.getEdgeTarget() == target
+                    && Objects.equals(e.getEdgeLabel(), label)) {
+                return true;
             }
         }
-        return true;
-    }
-
-    // Get all next non-empty blocks at the closest distance from the given edge
-    // target node
-    private List<String> getNextNonEmptyBlock(Node edgeTarget) {
-        Queue<Node> nodesToVisit = new ArrayDeque<Node>();
-        nodesToVisit.add(edgeTarget);
-        List<String> results = new ArrayList<>();
-        int currentDepth = 0;
-        int minDepthWithContent = -1;
-
-        while (!nodesToVisit.isEmpty()) {
-            int levelSize = nodesToVisit.size();
-
-            for (int i = 0; i < levelSize; i++) {
-                Node currentNode = nodesToVisit.poll();
-                if (currentNode == null)
-                    continue;
-
-                String blockLabel = currentNode.basicBlockLabel;
-
-                // Check if block is not empty
-                if (!blockLabel.isEmpty()) {
-                    // If this is the first non-empty block found, record its depth
-                    if (minDepthWithContent == -1) {
-                        minDepthWithContent = currentDepth;
-                        results.add(blockLabel);
-                    }
-                    // If this block is at the same depth as the first non-empty block
-                    else if (currentDepth == minDepthWithContent) {
-                        results.add(blockLabel);
-                    }
-                } else {
-                    // Add all children to the queue
-                    nodesToVisit.addAll(currentNode.getChildren());
-                }
-            }
-
-            // Move to the next depth level
-            currentDepth++;
-
-            // If we've found content and processed all nodes at that depth, we can stop
-            if (minDepthWithContent != -1 && currentDepth > minDepthWithContent) {
-                break;
-            }
-        }
-        return results;
-    }
-
-    // Get all previous non-empty blocks at the closest distance from the given edge
-    // source node
-    private List<String> getPreviousNonEmptyBlock(Node edgeSource) {
-        Queue<Node> nodesToVisit = new ArrayDeque<Node>();
-        nodesToVisit.add(edgeSource);
-        List<String> results = new ArrayList<>();
-        int currentDepth = 0;
-        int minDepthWithContent = -1;
-
-        while (!nodesToVisit.isEmpty()) {
-            int levelSize = nodesToVisit.size();
-
-            for (int i = 0; i < levelSize; i++) {
-                Node currentNode = nodesToVisit.poll();
-                if (currentNode == null)
-                    continue;
-
-                String blockLabel = currentNode.basicBlockLabel;
-
-                // Check if block is not empty
-                if (!blockLabel.isEmpty()) {
-                    // If this is the first non-empty block found, record its depth
-                    if (minDepthWithContent == -1) {
-                        minDepthWithContent = currentDepth;
-                        results.add(blockLabel);
-                    }
-                    // If this block is at the same depth as the first non-empty block
-                    else if (currentDepth == minDepthWithContent) {
-                        results.add(blockLabel);
-                    }
-                    // If we've moved beyond the minimum depth, stop searching
-                    else if (currentDepth > minDepthWithContent) {
-                        return results;
-                    }
-                } else {
-                    // Add all parents to the queue
-                    nodesToVisit.addAll(currentNode.getParents());
-                }
-            }
-
-            // Move to the next depth level
-            currentDepth++;
-
-            // If we've found content and processed all nodes at that depth, we can stop
-            if (minDepthWithContent != -1 && currentDepth > minDepthWithContent) {
-                break;
-            }
-        }
-        return results;
+        return false;
     }
 
     // Get first ll instruction of a group of ll instructions that map to the same C
@@ -450,46 +412,162 @@ public class LLVMProcessing extends Automata {
         return sameBlockIns.get(maxS);
     }
 
-    // Use debug tag and location information to get the original source code line
-    private String getLocationFromDbg(String instruction) throws IOException {
-        if (instruction != null) {
-            int debugTag = getDebugTag(instruction);
-            if (debugTag == -1) {
-                return null;
-            }
+    // Matches "!N = [distinct] !DILocation(...)" — handles both LLVM 16 and LLVM 19 formats.
+    private static final Pattern DILOCATION_PATTERN =
+            Pattern.compile("^!(\\d+)\\s*=\\s*(?:distinct\\s*)?!DILocation\\((.+)\\)\\s*$");
+    private static final Pattern INLINED_AT_PATTERN = Pattern.compile("inlinedAt:\\s*!(\\d+)");
+    private static final Pattern LINE_NUM_PATTERN   = Pattern.compile("line:\\s*(\\d+)");
 
-            try (BufferedReader reader = new BufferedReader(new FileReader(dbgFilePath))) {
-                String line;
-                String matcher = "!" + debugTag + " = !DILocation(line:";
-                while ((line = reader.readLine()) != null) {
-                    if (line.contains(matcher)) {
-                        String[] parts = line.split("line:|,");
-                        String lineNumber = parts[1].trim();
-                        int lineInt = Integer.parseInt(lineNumber);
-                        if (lineInt == 0 || locationsMap.get(lineInt).equals("")) {
-                            return null;
-                        }
-                        return lineNumber;
-                    }
+    // Pre-parse the .ll file once: build a map from metadata ID to resolved source line.
+    // Handles two formats:
+    //   !N = !DILocation(line: X, ...)              → line X (LLVM 16/Mac)
+    //   !N = !DILocation(line: Y, ..., inlinedAt: !M) → follow !M (LLVM inlined, Linux)
+    //   !N = distinct !DILocation(...)              → same, both forms
+    private void buildMetadataMap() throws IOException {
+        // Pass 1: collect raw DILocation content strings keyed by metadata ID
+        Map<Integer, String> rawEntries = new HashMap<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(dbgFilePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Matcher m = DILOCATION_PATTERN.matcher(line.trim());
+                if (m.matches()) {
+                    rawEntries.put(Integer.parseInt(m.group(1)), m.group(2));
                 }
             }
         }
-        return null;
+
+        // Pass 2: resolve each entry, following inlinedAt chains to the root call site
+        for (Map.Entry<Integer, String> entry : rawEntries.entrySet()) {
+            int lineNum = resolveLineNumber(entry.getValue(), rawEntries, 0);
+            if (lineNum > 0) {
+                String ogLine = locationsMap.get(lineNum);
+                if (ogLine != null && !ogLine.isEmpty()) {
+                    metadataToLine.put(entry.getKey(), lineNum);
+                }
+            }
+        }
     }
 
-    // Extract the debug tag from the instruction
-    private int getDebugTag(String instruction) {
-        String[] parts = instruction.split("!dbg(\\\\l...){0,1} !");
-        if (parts.length < 2) {
+    // Recursively follow inlinedAt until we reach a DILocation whose line maps to the
+    // C source file. depth guards against malformed circular metadata.
+    private int resolveLineNumber(String content, Map<Integer, String> rawEntries, int depth) {
+        if (depth > 32) return -1;
+
+        Matcher inlinedAt = INLINED_AT_PATTERN.matcher(content);
+        if (inlinedAt.find()) {
+            int targetId = Integer.parseInt(inlinedAt.group(1));
+            String targetContent = rawEntries.get(targetId);
+            if (targetContent != null) {
+                return resolveLineNumber(targetContent, rawEntries, depth + 1);
+            }
             return -1;
         }
-        try {
-            parts[1] = parts[1].replaceAll("[^0-9]", "");
-            return Integer.parseInt(parts[1]);
-        } catch (NumberFormatException e) {
-            System.err.println(instruction);
-            throw new IllegalArgumentException("Invalid debug tag format.");
+
+        Matcher lineNum = LINE_NUM_PATTERN.matcher(content);
+        if (lineNum.find()) {
+            return Integer.parseInt(lineNum.group(1));
         }
+        return -1;
+    }
+
+    // Matches a function definition header: "define ... @name(<params>) ... {".
+    private static final Pattern FUNC_DEFINE_PATTERN =
+            Pattern.compile("^define\\b.*?@[\\w.$]+\\(([^)]*)\\)");
+    // Matches a basic-block label line, e.g. "40:" or "40:    ; preds = %38".
+    private static final Pattern BLOCK_LABEL_PATTERN = Pattern.compile("^(\\d+):");
+    // The CFG (.dot) is always the 'main' function (analyze.sh copies .main.dot).
+    private static final String CFG_FUNCTION = "main";
+
+    // Walk the .ll once and build (blockLabel + KEY_SEP + normalized text) -> source line.
+    //
+    // Why text instead of metadata IDs: opt's dot-cfg printer assigns its own metadata
+    // slot numbers when it emits the .dot, so an instruction's "!dbg !N" in the .dot does
+    // NOT match the same instruction's "!dbg !M" in the .ll (and the offset is not stable
+    // across LLVM versions/platforms). But the *instruction text* is printed identically in
+    // both, modulo metadata IDs, attribute-group IDs, DOT escaping and line-wrapping — all
+    // of which normalizeInstruction() strips. The .ll resolves each instruction's line via
+    // its own metadata (always self-consistent), keyed by block so that identical statements
+    // in different blocks (e.g. repeated "show_nonprinting = true;" switch cases) stay
+    // distinct. Only the 'main' function is parsed, matching the .dot's scope.
+    private void buildInstrLineMap() throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(dbgFilePath))) {
+            String line;
+            boolean inFunction = false;
+            String currentBlock = null;
+            while ((line = reader.readLine()) != null) {
+                String trimmed = line.trim();
+
+                Matcher def = FUNC_DEFINE_PATTERN.matcher(trimmed);
+                if (def.find()) {
+                    inFunction = trimmed.contains("@" + CFG_FUNCTION + "(");
+                    // LLVM numbers unnamed values: params %0..%(p-1), then the entry block
+                    // gets slot %p. So the entry block's label equals the parameter count,
+                    // which is what the .dot uses for the entry node (e.g. "2" for main).
+                    currentBlock = Integer.toString(countParams(def.group(1)));
+                    continue;
+                }
+                if (!inFunction) continue;
+                if (trimmed.equals("}")) {
+                    inFunction = false;
+                    currentBlock = null;
+                    continue;
+                }
+                Matcher lbl = BLOCK_LABEL_PATTERN.matcher(trimmed);
+                if (lbl.find()) {
+                    currentBlock = lbl.group(1);
+                    continue;
+                }
+                int debugTag = getDebugTag(trimmed);
+                if (debugTag == -1) continue;
+                Integer lineNum = metadataToLine.get(debugTag);
+                if (lineNum != null) {
+                    instrLineMap.put(currentBlock + KEY_SEP + normalizeInstruction(trimmed), lineNum);
+                }
+            }
+        }
+    }
+
+    private int countParams(String params) {
+        String p = params.trim();
+        if (p.isEmpty()) return 0;
+        return p.split(",").length;
+    }
+
+    // Canonicalize an instruction so the .ll form and the .dot form compare equal:
+    // drop DOT line-wraps (\l, \l...), un-escape DOT record special chars, strip metadata
+    // attachments (!dbg, !tbaa, ...) and attribute-group refs (#12), then collapse spaces.
+    private String normalizeInstruction(String s) {
+        s = s.replace("\\l...", " ").replace("\\l", " ");
+        s = s.replace("\\{", "{").replace("\\}", "}")
+             .replace("\\<", "<").replace("\\>", ">")
+             .replace("\\|", "|");
+        s = s.replaceAll("![\\w.]+", "");   // metadata names and ids: !dbg, !351, !tbaa ...
+        s = s.replaceAll("#\\d+", "");        // attribute-group references: #12
+        s = s.replaceAll("\\s+", " ").trim();
+        while (s.endsWith(",")) {
+            s = s.substring(0, s.length() - 1).trim();
+        }
+        return s;
+    }
+
+    // Resolve the original source line for a .dot instruction by matching it (within its
+    // basic block) against the .ll-derived instrLineMap.
+    private String getLocationFromDbg(String blockLabel, String instruction) {
+        if (instruction == null) return null;
+        Integer lineNum = instrLineMap.get(blockLabel + KEY_SEP + normalizeInstruction(instruction));
+        return lineNum != null ? String.valueOf(lineNum) : null;
+    }
+
+    // Matches "!dbg !N" with optional dot-file line-wrap (\l + any whitespace) between
+    // "!dbg" and "!N", handling whatever indentation LLVM uses after the wrap.
+    private static final Pattern DBG_TAG_PATTERN = Pattern.compile("!dbg\\s*(?:\\\\l\\s*)?!(\\d+)");
+
+    private int getDebugTag(String instruction) {
+        Matcher m = DBG_TAG_PATTERN.matcher(instruction);
+        if (m.find()) {
+            return Integer.parseInt(m.group(1));
+        }
+        return -1;
     }
 
     public Set<Edge> getEdges() {

@@ -28,14 +28,6 @@ public class DOTParser {
         BufferedReader br = new BufferedReader(new FileReader(filepath));
         String line;
 
-        Pattern nodePattern = Pattern.compile("Node0x(.*)" + // LLVM NODE ID #1
-                "\\s*\\[shape=record," + // Shape
-                "color=\\s*\"\\B#([A-Za-z0-9]{2,})(?![~!@#$%^&*()=+_`\\-\\|\\/'\\[\\]\\{\\}]|[?.,]*\\w)\", " + // Color
-                "style\\s*=\\s*([A-Za-z]+), " + // Style
-                "fillcolor\\s*=\\s*\"(?:[^\"]|\"\")*\"\\s*" + // Fill Color
-                "fontname\\s*=\\s*\"([A-Za-z]+)\"," + // Font Name
-                "label\\s*=\\s*(\"\\{(.*):\\\\l\\|\\s*" + // BASIC BLOCK LABEL #7
-                "((.*)\\\\l)*(.*)}\"\\]);"); // INSTRUCTIONS #8
         Pattern edgePattern = Pattern.compile(
                 "^(Node0x([A-Za-z0-9]+)" + // Source Node Id
                         "(:\\s*s(\\d+)){0,1}" + // :s0 or :s1 if exists
@@ -44,37 +36,63 @@ public class DOTParser {
                         "(\\s*\\[[^\\]]*\\])?" + // Optional bracket attributes e.g. tooltip
                         "\\s*;");
 
+        Pattern switchCasePattern = Pattern.compile("<(s\\d+)>([^|\\}]*)");
+
         // **First pass: Parse nodes**
+        // We extract each node by locating the label="{...}" attribute directly, so we
+        // are not sensitive to the order or presence of other attributes (color, style,
+        // fontname, tooltip, ...) that differ between LLVM versions.
         int nodeNumber = 0;
         while ((line = br.readLine()) != null) {
             line = line.trim();
-            Matcher nodeMatcher = nodePattern.matcher(line);
 
-            if (nodeMatcher.matches()) {
-                String llvmNodeId = "n" + nodeMatcher.group(1);// Unique node identifier
-                String basicBlockLabel = nodeMatcher.group(6);// Label used as ID
-                String instructions = nodeMatcher.group(7) != null ? nodeMatcher.group(8) : "(No instructions)";
-                String cases = (nodeMatcher.group(9));
-
-                Node newNode = new Node(nodeNumber++, llvmNodeId, basicBlockLabel, instructions);
-
-                if (cases != null) {
-                    Pattern pattern = Pattern.compile("<(s\\d+)>([^|\\}]*)");
-                    Matcher matcher = pattern.matcher(cases);
-
-                    Map<String, String> slotMap = new LinkedHashMap<>();
-
-                    while (matcher.find()) {
-                        String key = matcher.group(1);
-                        String value = matcher.group(2);
-                        slotMap.put(key, value);
-                    }
-
-                    newNode.setSwitchCases(slotMap);
-                }
-
-                nodeMap.put(basicBlockLabel, newNode); // Store by label
+            if (!line.startsWith("Node0x") || !line.contains("[shape=record,") || !line.contains("label=\"{")) {
+                continue;
             }
+
+            // Extract the LLVM hex node ID from "Node0x<HEX> [..."
+            int idStart = "Node0x".length();
+            int idEnd = idStart;
+            while (idEnd < line.length() && Character.isLetterOrDigit(line.charAt(idEnd))) {
+                idEnd++;
+            }
+            String llvmNodeId = "n" + line.substring(idStart, idEnd);
+
+            // Locate label="{...}" — the content ends with }"];
+            int labelOpen = line.indexOf("label=\"{");
+            int labelClose = line.lastIndexOf("}\"];");
+            if (labelOpen < 0 || labelClose <= labelOpen) continue;
+
+            // inner = everything between the opening { and closing }
+            String inner = line.substring(labelOpen + "label=\"{".length(), labelClose);
+
+            // Split on ":\l|" to separate the basic-block label from the instruction body
+            int sep = inner.indexOf(":\\l|");
+            if (sep < 0) continue;
+
+            String basicBlockLabel = inner.substring(0, sep);
+            String instructionBody = inner.substring(sep + ":\\l|".length());
+
+            // Switch cases appear as "|{<s0>T|<s1>F}" at the end of the instruction body
+            String casesPart = null;
+            int switchSep = instructionBody.lastIndexOf("|{<");
+            if (switchSep >= 0) {
+                casesPart = instructionBody.substring(switchSep + 1);
+                instructionBody = instructionBody.substring(0, switchSep);
+            }
+
+            Node newNode = new Node(nodeNumber++, llvmNodeId, basicBlockLabel, instructionBody);
+
+            if (casesPart != null) {
+                Matcher switchMatcher = switchCasePattern.matcher(casesPart);
+                Map<String, String> slotMap = new LinkedHashMap<>();
+                while (switchMatcher.find()) {
+                    slotMap.put(switchMatcher.group(1), switchMatcher.group(2));
+                }
+                newNode.setSwitchCases(slotMap);
+            }
+
+            nodeMap.put(basicBlockLabel, newNode);
         }
         // **Reset the reader to reprocess the file**
 
