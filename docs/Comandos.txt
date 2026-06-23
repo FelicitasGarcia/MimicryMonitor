@@ -27,3 +27,25 @@ pipeline/fuzz.sh -plain -input file -targs "-A" \
   -I    /home/felicitas/Desktop/DOC/MM/coreutils/src /home/felicitas/Desktop/DOC/MM/coreutils/lib \
   -link /home/felicitas/Desktop/DOC/MM/coreutils/lib/libcoreutils.a /home/felicitas/Desktop/DOC/MM/coreutils/src/version.o \
   -i evaluation/seeds-cat -t 60 -clean
+
+
+# Evaluation 
+evaluation/bench/fuzzbench \
+  --seeds evaluation/seeds-cat --input file --targs=-A --trials 5 --time 120 \
+  --plain-pua examples/catCU/catPUA.c \
+  --plain-include /home/felicitas/Desktop/DOC/MM/coreutils/src /home/felicitas/Desktop/DOC/MM/coreutils/lib \
+  --plain-link /home/felicitas/Desktop/DOC/MM/coreutils/lib/libcoreutils.a /home/felicitas/Desktop/DOC/MM/coreutils/src/version.o
+
+# Stop stats for seeds
+evaluation/bench/stopstats \
+  --bin    work/outputs/instrumentedPUA \
+  --corpus evaluation/seeds-cat \
+  --input file --targs=-A \
+  --out    evaluation/bench/results/stopstats
+
+# Replay the corpus para ver las stopstats
+evaluation/bench/stopstats \
+  --bin     work/outputs/instrumentedPUA \
+  --results evaluation/bench/results \
+  --input file --targs=-A \
+  --out     evaluation/bench/results/stopstats

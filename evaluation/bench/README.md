@@ -101,3 +101,39 @@ evaluation/bench/fuzzbench --dry-run ...
 
 Fuzzing is noisy — prefer several trials and a budget long enough that both arms
 actually crash (otherwise TTFC is censored and the comparison is weak).
+
+---
+
+# Monitor early-stop stats (`stopstats`)
+
+Separate tool that answers: **how often, and how early, does the monitor stop the
+instrumented program early** under its policy (e.g. `stop-v`)?
+
+AFL can't see this — a policy stop is a clean `exit()`, indistinguishable from
+normal completion. So the monitor runtime records it itself: when
+`$MM_STOP_LOG` is set, each run appends one line
+`early=<0|1> verdict=<V|IV|NV> steps=<n>` (the telemetry hook in
+`instrumentation/monitor_runtime.c`; zero overhead when the env var is unset).
+
+`stopstats` replays a corpus through the instrumented binary with that env var
+set, then aggregates.
+
+```bash
+# Replay the instrumented corpus a fuzzbench run produced
+evaluation/bench/stopstats --results evaluation/bench/results --input file --targs=-A
+
+# Or point at any dir(s) of inputs
+evaluation/bench/stopstats --corpus evaluation/seeds-cat --input file --targs=-A
+```
+
+Key options: `--bin` (default `work/outputs/instrumentedPUA`), `--corpus DIR…`,
+`--results <fuzzbench dir>` (auto-pulls `instrumented/t*/default/{queue,crashes}`),
+`--input argv|file|stdin`, `--targs`, `--timeout`, `--limit`.
+
+Outputs (in `--out`, default `results/stopstats/`): `stopstats.png` (outcome bars +
+a `steps`-at-stop histogram), `summary.json`, `details.csv`. The summary gives the
+**early-stop rate** (split V/IV) and the **steps-at-stop** distribution (how early).
+
+Prereq: rebuild the instrumented binary (`run-mimicry.sh -afl …`) so it contains
+the telemetry hook. If every run shows `no_record`, the binary predates the hook
+(or every input crashed).

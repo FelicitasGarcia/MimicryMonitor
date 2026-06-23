@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #ifndef MM_ENABLE_LOG_REPORTER
 #define MM_ENABLE_LOG_REPORTER 0
@@ -54,6 +56,15 @@ static const char *currentState = NULL;
 static int stopMonitoring = 0;
 static char *monitorPolicy = NULL;
 static int reportersConfigured = 0;
+
+/* --- Early-stop telemetry (active only when $MM_STOP_LOG is set) ----------
+ * Writes one line per process recording how far the monitor got (steps) and
+ * whether the policy stopped the program early. Used to measure, by replaying
+ * a fuzzing corpus, how often / how early the monitor short-circuits a run.
+ * Gated by the env var so normal and AFL coverage runs pay nothing. */
+static unsigned long mm_steps = 0;          /* monitored instructions executed */
+static const char *mm_last_verdict = "NV";  /* most recent verdict seen */
+static int mm_stop_recorded = 0;            /* ensure exactly one record */
 
 /* ------------------------------------------------------------------ */
 /* Helpers                                                              */
@@ -134,12 +145,48 @@ static void logAutomatonSnapshot(const char *initialNodeId)
 }
 #endif
 
+static void mm_record_stop(int early, const char *verdict)
+{
+    if (mm_stop_recorded)
+        return;
+    mm_stop_recorded = 1;
+
+    const char *path = getenv("MM_STOP_LOG");
+    if (!path || !path[0])
+        return;
+
+    char line[128];
+    int n = snprintf(line, sizeof line, "early=%d verdict=%s steps=%lu\n",
+                     early ? 1 : 0,
+                     (verdict && verdict[0]) ? verdict : "NV",
+                     mm_steps);
+    if (n <= 0)
+        return;
+
+    /* A single < PIPE_BUF write() to an O_APPEND fd is atomic, so the line
+     * stays intact even if several forked children share the file. */
+    int fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    if (fd < 0)
+        return;
+    ssize_t wr = write(fd, line, (size_t)n);
+    (void)wr;
+    close(fd);
+}
+
+/* Runs at normal process exit: records a non-early stop (policy never fired).
+ * No-op if an early stop was already recorded. */
+static void mm_atexit_record(void)
+{
+    mm_record_stop(0, mm_last_verdict);
+}
+
 static void configureReporters(void)
 {
     if (reportersConfigured)
         return;
 
     mm_clear_reporters();
+    atexit(mm_atexit_record);
 
 #if MM_ENABLE_LOG_REPORTER
 #ifdef MM_LOG_FILE
@@ -204,13 +251,17 @@ void initAutomaton(AutomatonNode *nodes, int size, const char *initialNodeId)
                     verdictForHumans(initial->verdict));
 #endif
 
+    mm_last_verdict = initial->verdict;
     MMVerdict v = verdictFromString(initial->verdict);
     mm_report_verdict(v);
 
     if (initial->isTerminal)
     {
         if (shouldAbort(initial->verdict))
+        {
+            mm_record_stop(1, initial->verdict);
             mm_report_abort(v); /* no retorna */
+        }
         stopMonitoring = 1;
         automaton = NULL;
     }
@@ -220,6 +271,8 @@ void monitorAction(const char *transitionType)
 {
     if (stopMonitoring || !automaton || !currentState)
         return;
+
+    mm_steps++; /* a monitored instruction executed */
 
     AutomatonNode *node = findNode(currentState);
     if (!node)
@@ -267,6 +320,7 @@ void monitorAction(const char *transitionType)
                     verdictForHumans(newNode->verdict));
 #endif
 
+    mm_last_verdict = newNode->verdict;
     MMVerdict v = verdictFromString(newNode->verdict);
     mm_report_verdict(v);
 
@@ -279,6 +333,7 @@ void monitorAction(const char *transitionType)
                         currentState ? currentState : "(null)",
                         verdictForHumans(newNode->verdict));
 #endif
+        mm_record_stop(1, newNode->verdict);
         mm_report_abort(v); /* no retorna */
     }
 
