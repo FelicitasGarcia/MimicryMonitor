@@ -12,7 +12,18 @@
   -log   /home/felicitas/Desktop/DOC/MM/MimicryMonitor/work/outputs/log.txt \
   -policy stop-v
 
-# Correr AFL 
-1) (chequear de poner opcional) afl-clang-fast pipeline/afl_fuzz_wrapper.c -o pipeline/afl_fuzz_wrapper 
-2)  - pipeline/fuzz.sh -i evaluation/seeds -t 30 -clean // Version con monitor
-    - pipeline/fuzz.sh -plain -i evaluation/seeds -t 30 -clean // Version sin monitor
+# Correr AFL instrumented
+# 1) build instrumented cat
+./pipeline/run-mimicry.sh -afl -policy stop-v  -no-render \
+  -pua examples/catCU/catPUA.c -op examples/catCU/catOP.c -sigma examples/catCU/catSigma.txt \
+  -Ianalyze    /home/felicitas/Desktop/DOC/MM/coreutils/src /home/felicitas/Desktop/DOC/MM/coreutils/lib \
+  -Iinstrument /home/felicitas/Desktop/DOC/MM/coreutils/lib/libcoreutils.a /home/felicitas/Desktop/DOC/MM/coreutils/src/version.o
+# 2) fuzz it (file input; or -input stdin)
+pipeline/fuzz.sh -input file -targs "-A" -i evaluation/seeds-cat -t 60 -clean
+
+# Correr AFL No Instrumentented
+pipeline/fuzz.sh -plain -input file -targs "-A" \
+  -pua  examples/catCU/catPUA.c \
+  -I    /home/felicitas/Desktop/DOC/MM/coreutils/src /home/felicitas/Desktop/DOC/MM/coreutils/lib \
+  -link /home/felicitas/Desktop/DOC/MM/coreutils/lib/libcoreutils.a /home/felicitas/Desktop/DOC/MM/coreutils/src/version.o \
+  -i evaluation/seeds-cat -t 60 -clean

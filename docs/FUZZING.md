@@ -1,13 +1,23 @@
 # Fuzzing with AFL++
 
-Two fuzzing modes are supported:
+`pipeline/fuzz.sh` drives AFL++ along two independent axes.
 
-| Mode | What runs | Crashes mean |
-|------|-----------|--------------|
-| **Instrumented** | PUA with Mimicry monitor embedded | PUA has a real bug (SIGFPE, SIGSEGV, …) that the monitor did not catch as IV |
-| **Plain** | PUA compiled directly, no monitor | PUA has a real bug regardless of monitor behaviour |
+**Target** — which binary is fuzzed:
 
-Run both and compare crashes to understand which inputs are caught by the monitor vs. which ones bypass it and still crash.
+| Target | What runs | Crashes mean |
+|--------|-----------|--------------|
+| **Instrumented** (default) | PUA with the Mimicry monitor embedded (`work/outputs/instrumentedPUA`) | a real bug (SIGFPE/SIGSEGV) the monitor did not catch as IV |
+| **Plain** (`-plain`) | PUA compiled directly, no monitor | a real bug regardless of monitor behaviour |
+
+**Input delivery** (`-input`) — how AFL's mutated bytes reach the program:
+
+| `-input` | AFL runs | Use for |
+|----------|----------|---------|
+| `argv` (default) | `wrapper @@` → bytes as `argv[1]` | the demo PUA (`pua <integer>`) |
+| `file` | `prog [args] @@` (program opens the mutated file) | cat & co. reading a file |
+| `stdin` | `prog [args]` (AFL feeds stdin) | cat & co. reading stdin |
+
+Run both targets and compare crashes to see which inputs the monitor catches vs. which bypass it.
 
 ---
 
@@ -42,44 +52,34 @@ From the project root:
 This script runs analyze → monitor construction → instrument in one shot.  
 The output binary is `work/outputs/instrumentedPUA`.
 
-### Step 2 — Compile the AFL wrapper
+### Step 2 — Add seeds
 
-The wrapper reads the fuzz input file and passes its content as `argv[1]` to `instrumentedPUA` (AFL passes a file path via `@@`, not a raw string).
+Seeds live in `evaluation/seeds/` (one input per file). Match the corpus to the program
+and the input mode:
 
-```bash
-afl-clang-fast pipeline/afl_fuzz_wrapper.c \
-  -o pipeline/afl_fuzz_wrapper
-```
+- **demo PUA** (`-input argv`) — integer strings: `evaluation/seeds/` (`1`, `127`, `255`, `-1`).
+- **cat** (`-input file`/`stdin`) — byte/text inputs: `evaluation/seeds-cat/`.
 
-Recompile the wrapper whenever `afl_fuzz_wrapper.c` changes. The `instrumentedPUA` path is the default target baked into the wrapper.
+Do **not** include inputs that always crash (e.g. `"0"` for the demo PUA — `atoi("0")=0` →
+division by zero on every run); AFL drops crashing seeds during calibration.
 
-### Step 3 — Add seeds
+### Step 3 — Fuzz
 
-Seeds live in `evaluation/seeds/`. Each file contains one input (a plain integer string). Current seeds:
-
-```
-seed1    → "1"
-seed127  → "127"
-seed255  → "255"
-seedNeg  → "-1"
-```
-
-Do **not** include inputs that always crash (e.g. `"0"` for this PUA — `atoi("0")=0` → division by zero on every run). AFL silently drops crashing seeds during calibration.
-
-### Step 4 — Fuzz
+`fuzz.sh` builds the argv wrapper automatically when needed — no manual compile step.
 
 ```bash
-# Run for 60 seconds, clean previous output
+# demo PUA (argv): 60s, clean previous output
 bash pipeline/fuzz.sh -t 60 -clean
 
-# Run until Ctrl+C
-bash pipeline/fuzz.sh
+# instrumented cat reading a file, with -A; seeds = byte corpus
+bash pipeline/fuzz.sh -input file -targs "-A" -i evaluation/seeds-cat -t 60 -clean
 
-# Custom timeout, keep previous corpus
-bash pipeline/fuzz.sh -t 120
+# instrumented cat reading stdin
+bash pipeline/fuzz.sh -input stdin -targs "-A" -i evaluation/seeds-cat -t 60 -clean
 ```
 
-Output goes to `work/afl_out/`.
+Output goes to `work/afl_out/`. (For cat, build the instrumented binary first with
+`./pipeline/run-mimicry.sh -afl …`, see the cat example in the main README.)
 
 ---
 
@@ -91,12 +91,22 @@ No manual compilation needed. `fuzz.sh -plain` compiles everything automatically
 bash pipeline/fuzz.sh -plain -t 60 -clean
 ```
 
-This will:
-1. Compile `inputs/programPUA.c` with `afl-clang-fast` → `work/outputs/pua_plain`
-2. Compile a wrapper pointing at `pua_plain` → `pipeline/afl_fuzz_wrapper_plain`
-3. Run AFL with the plain wrapper
+`fuzz.sh -plain` compiles the target from source (default `inputs/programPUA.c`) and fuzzes
+it. The **input mode** is independent of `-plain`:
 
-Output goes to `work/afl_out_plain/`.
+```bash
+# demo PUA, plain, argv input (default)
+bash pipeline/fuzz.sh -plain -t 60 -clean
+
+# plain cat reading stdin — needs its headers (-I) and link objects (-link)
+bash pipeline/fuzz.sh -plain -input stdin -targs "-A" \
+  -pua  examples/catCU/catPUA.c \
+  -I    /PATH/TO/coreutils/src /PATH/TO/coreutils/lib \
+  -link /PATH/TO/coreutils/lib/libcoreutils.a /PATH/TO/coreutils/src/version.o \
+  -i evaluation/seeds-cat -t 60 -clean
+```
+
+Output goes to `work/afl_out_plain/`. (`-pua`/`-I`/`-link` apply to `-plain` only.)
 
 ---
 
@@ -105,20 +115,32 @@ Output goes to `work/afl_out_plain/`.
 ```
 Usage: bash pipeline/fuzz.sh [options]
 
-Options:
-  -plain       Fuzz plain PUA (no Mimicry monitor, AFL coverage only)
-  -i DIR       Input seeds directory (default: evaluation/seeds)
-  -o DIR       Output directory (default: auto per mode)
-  -t SECS      Stop after SECS seconds (default: run until Ctrl+C)
-  -clean       Remove previous output before running
-  -h           Show this help
+Target:
+  -plain          Fuzz the plain PUA (no monitor); compiled from -pua
+  (default)       Fuzz work/outputs/instrumentedPUA (built by instrument.sh -afl)
+
+Input delivery:
+  -input MODE     argv (default) | file | stdin
+  -targs "ARGS"   Args passed to the program in file/stdin modes (e.g. "-A")
+
+Plain-compile (only with -plain):
+  -pua PATH       PUA source to compile (default: inputs/programPUA.c)
+  -I DIR [DIR..]  Include dirs for the compile (e.g. coreutils headers)
+  -link F [F..]   Extra objects/libraries to link (e.g. libcoreutils.a version.o)
+
+Run:
+  -i DIR          Input seeds directory (default: evaluation/seeds)
+  -o DIR          Output directory (default: auto per target)
+  -t SECS         Stop after SECS seconds (default: run until Ctrl+C)
+  -clean          Remove previous output before running
+  -h              Show this help
 ```
 
 ---
 
-## How the wrapper works
+## How the `argv` wrapper works
 
-AFL replaces `@@` in the command with a path to a temp file containing the mutated input. Because the PUA reads its input from `argv[1]` (not from a file), a C wrapper is needed:
+In `-input argv` mode, AFL replaces `@@` with a path to a temp file containing the mutated input. Because the demo PUA reads its input from `argv[1]` (not from a file), a small C wrapper bridges the two (`file/stdin` modes skip the wrapper and run the program directly):
 
 ```
 AFL → wrapper (argv[1] = /tmp/afl-tmp-XXXX)

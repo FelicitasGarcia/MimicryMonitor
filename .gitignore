@@ -18,6 +18,10 @@ instrumentation/monitorAction.ll
 pipeline/afl_fuzz_wrapper
 pipeline/afl_fuzz_wrapper_plain
 
+# Benchmark toolkit: local venv + generated results
+evaluation/bench/.venv/
+evaluation/bench/results/
+
 # Core dumps
 core
 
