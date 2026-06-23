@@ -85,8 +85,8 @@ done
 # Resolve user-provided paths to absolute so the script works from any cwd.
 to_abs() {
   [ -z "$1" ] && return 0
-  if command -v realpath >/dev/null 2>&1; then realpath -m -- "$1"
-  elif [ -d "$1" ]; then (cd "$1" && pwd)
+  if realpath -m -- "$1" 2>/dev/null; then :
+  elif [ -e "$1" ] && command -v realpath >/dev/null 2>&1; then realpath -- "$1"
   else echo "$(cd "$(dirname -- "$1")" 2>/dev/null && pwd)/$(basename -- "$1")"; fi
 }
 [ -n "$PUA_PATH" ] && PUA_PATH="$(to_abs "$PUA_PATH")"
@@ -131,13 +131,7 @@ for lib in "${ILIBS[@]}"; do
   fi
 done
 
-# --- Detectar plugin ---
-if [[ "$(uname)" == "Darwin" ]]; then
-    PLUGIN_EXT="dylib"
-else
-    PLUGIN_EXT="so"
-fi
-PLUGIN_PATH="$BUILD_DIR/lib/LLVMMimicryPasses.$PLUGIN_EXT"
+PLUGIN_PATH="$BUILD_DIR/lib/LLVMMimicryPasses.so"
 
 # --- Header ---
 echo -e "${CYAN}========== LLVM Mimicry Instrumentation ==========${RESET}"

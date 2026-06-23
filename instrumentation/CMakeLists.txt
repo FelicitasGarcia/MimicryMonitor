@@ -13,7 +13,7 @@
 # Produces llvm/feli/passes/build/LLVMMimicryPasses.so. setup.sh copies it to
 # build/lib/ where analyze.sh / instrument.sh expect it.
 cmake_minimum_required(VERSION 3.13.4)
-project(MimicryPasses CXX)
+project(MimicryPasses C CXX)
 
 find_package(LLVM REQUIRED CONFIG)
 message(STATUS "Using LLVM ${LLVM_PACKAGE_VERSION} (${LLVM_DIR})")
@@ -39,4 +39,10 @@ set_target_properties(MimicryPassesPlugin PROPERTIES
 # Match LLVM's RTTI setting to keep the plugin ABI-compatible with the opt that loads it.
 if(NOT LLVM_ENABLE_RTTI)
   target_compile_options(MimicryPassesPlugin PRIVATE -fno-rtti)
+endif()
+
+# On macOS the linker requires all symbols to be resolved at link time, but LLVM
+# symbols are provided by the opt binary that dlopen()s this plugin at runtime.
+if(APPLE)
+  target_link_options(MimicryPassesPlugin PRIVATE -undefined dynamic_lookup)
 endif()

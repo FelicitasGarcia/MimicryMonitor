@@ -97,8 +97,8 @@ done
 # (these are passed to analyze.sh / instrument.sh and to the Java step).
 to_abs() {
   [ -z "$1" ] && return 0
-  if command -v realpath >/dev/null 2>&1; then realpath -m -- "$1"
-  elif [ -d "$1" ]; then (cd "$1" && pwd)
+  if realpath -m -- "$1" 2>/dev/null; then :
+  elif [ -e "$1" ] && command -v realpath >/dev/null 2>&1; then realpath -- "$1"
   else echo "$(cd "$(dirname -- "$1")" 2>/dev/null && pwd)/$(basename -- "$1")"; fi
 }
 PUA_PATH="$(to_abs "$PUA_PATH")"
