@@ -66,6 +66,8 @@ static unsigned long mm_steps = 0;          /* monitored instructions executed *
 static const char *mm_last_verdict = "NV";  /* most recent verdict seen */
 static int mm_stop_recorded = 0;            /* ensure exactly one record */
 
+volatile int mm_target_reached = 0;         /* set to 1 by the probe in the target patch */
+
 /* ------------------------------------------------------------------ */
 /* Helpers                                                              */
 /* ------------------------------------------------------------------ */
@@ -156,10 +158,11 @@ static void mm_record_stop(int early, const char *verdict)
         return;
 
     char line[128];
-    int n = snprintf(line, sizeof line, "early=%d verdict=%s steps=%lu\n",
+    int n = snprintf(line, sizeof line, "early=%d verdict=%s steps=%lu target=%d\n",
                      early ? 1 : 0,
                      (verdict && verdict[0]) ? verdict : "NV",
-                     mm_steps);
+                     mm_steps,
+                     mm_target_reached ? 1 : 0);
     if (n <= 0)
         return;
 

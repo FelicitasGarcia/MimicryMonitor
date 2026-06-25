@@ -195,8 +195,11 @@ def main():
     outcomes = Counter()
     early_steps, ran_steps = [], []
     rows = []
+    from tqdm import tqdm
+
     print(f"[replay] {len(inputs)} inputs through {args.bin} (input={args.input})")
-    for i, inp in enumerate(inputs, 1):
+    bar = tqdm(inputs, unit="input", colour="cyan", dynamic_ncols=True)
+    for inp in bar:
         rec = run_one(args, inp, logf)
         outcome, steps = classify(rec)
         outcomes[outcome] += 1
@@ -206,8 +209,9 @@ def main():
             ran_steps.append(steps)
         rows.append({"input": inp.name, "outcome": outcome,
                      "verdict": (rec or {}).get("verdict", ""), "steps": steps if steps is not None else ""})
-        if i % 50 == 0:
-            print(f"  {i}/{len(inputs)}")
+        n_early = sum(v for k, v in outcomes.items() if k.startswith("early_"))
+        bar.set_postfix(early=n_early, IV=outcomes.get("early_IV", 0),
+                        V=outcomes.get("early_V", 0), ran=outcomes.get("ran_to_end", 0))
     if logf.exists():
         logf.unlink()
 

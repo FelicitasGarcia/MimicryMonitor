@@ -44,269 +44,260 @@
 /* The official name of this program (e.g., no 'g' prefix).  */
 #define PROGRAM_NAME "expand"
 
-#define AUTHORS proper_name ("David MacKenzie")
+#define AUTHORS proper_name("David MacKenzie")
 
 static char const shortopts[] = "it:0::1::2::3::4::5::6::7::8::9::";
 
 static struct option const longopts[] =
-{
-  {"tabs", required_argument, nullptr, 't'},
-  {"initial", no_argument, nullptr, 'i'},
-  {GETOPT_HELP_OPTION_DECL},
-  {GETOPT_VERSION_OPTION_DECL},
-  {nullptr, 0, nullptr, 0}
-};
+    {
+        {"tabs", required_argument, nullptr, 't'},
+        {"initial", no_argument, nullptr, 'i'},
+        {GETOPT_HELP_OPTION_DECL},
+        {GETOPT_VERSION_OPTION_DECL},
+        {nullptr, 0, nullptr, 0}};
 
-void
-usage (int status)
+void usage(int status)
 {
   if (status != EXIT_SUCCESS)
-    emit_try_help ();
+    emit_try_help();
   else
-    {
-      printf (_("\
+  {
+    printf(_("\
 Usage: %s [OPTION]... [FILE]...\n\
 "),
-              program_name);
-      fputs (_("\
+           program_name);
+    fputs(_("\
 Convert tabs in each FILE to spaces, writing to standard output.\n\
-"), stdout);
+"),
+          stdout);
 
-      emit_stdin_note ();
-      emit_mandatory_arg_note ();
+    emit_stdin_note();
+    emit_mandatory_arg_note();
 
-      fputs (_("\
+    fputs(_("\
   -i, --initial    do not convert tabs after non blanks\n\
   -t, --tabs=N     have tabs N characters apart, not 8\n\
-"), stdout);
-      emit_tab_list_info ();
-      fputs (HELP_OPTION_DESCRIPTION, stdout);
-      fputs (VERSION_OPTION_DESCRIPTION, stdout);
-      emit_ancillary_info (PROGRAM_NAME);
-    }
-  exit (status);
+"),
+          stdout);
+    emit_tab_list_info();
+    fputs(HELP_OPTION_DESCRIPTION, stdout);
+    fputs(VERSION_OPTION_DESCRIPTION, stdout);
+    emit_ancillary_info(PROGRAM_NAME);
+  }
+  exit(status);
 }
-
 
 /* Change tabs to spaces, writing to stdout.
    Read each file in 'file_list', in order.  */
 
 static void
-expand (void)
+expand(void)
 {
   /* Input stream.  */
-  FILE *fp = next_file (nullptr);
+  FILE *fp = next_file(nullptr);
 
   if (!fp)
     return;
 
   while (true)
+  {
+    /* Input character, or EOF.  */
+    int c;
+
+    /* If true, perform translations.  */
+    bool convert = true;
+
+    /* The following variables have valid values only when CONVERT
+       is true:  */
+
+    /* Column of next input character.  */
+    colno column = 0;
+
+    /* Index in TAB_LIST of next tab stop to examine.  */
+    idx_t tab_index = 0;
+
+    /* Convert a line of text.  */
+
+    do
     {
-      /* Input character, or EOF.  */
-      int c;
+      while ((c = getc(fp)) < 0 && (fp = next_file(fp)))
+        continue;
 
-      /* If true, perform translations.  */
-      bool convert = true;
-
-
-      /* The following variables have valid values only when CONVERT
-         is true:  */
-
-      /* Column of next input character.  */
-      colno column = 0;
-
-      /* Index in TAB_LIST of next tab stop to examine.  */
-      idx_t tab_index = 0;
-
-
-      /* Convert a line of text.  */
-
-      do
+      if (convert)
+      {
+        if (c == '\t')
         {
-          while ((c = getc (fp)) < 0 && (fp = next_file (fp)))
-            continue;
+          /* Column the next input tab stop is on.  */
+          bool last_tab;
+          colno next_tab_column = get_next_tab_column(column, &tab_index, &last_tab);
 
-          if (convert)
-            {
-              if (c == '\t')
-                {
-                  /* Column the next input tab stop is on.  */
-                  bool last_tab;
-                  colno next_tab_column
-                    = get_next_tab_column (column, &tab_index, &last_tab);
+          while (++column < next_tab_column)
+            if (putchar(' ') < 0)
+              write_error();
 
-                  while (++column < next_tab_column)
-                    if (putchar (' ') < 0)
-                      write_error ();
-
-                  c = ' ';
-                }
-              else if (c == '\b')
-                {
-                  /* Go back one column, and force recalculation of the
-                     next tab stop.  */
-                  column -= !!column;
-                  tab_index -= !!tab_index;
-                }
-              else
-                {
-                  if (ckd_add (&column, column, 1))
-                    error (EXIT_FAILURE, 0, _("input line is too long"));
-                }
-
-              convert &= convert_entire_line || !! isblank (c);
-            }
-
-          if (c < 0)
-            return;
-
-          if (putchar (c) < 0)
-            write_error ();
+          c = ' ';
         }
-      while (c != '\n');
-    }
+        else if (c == '\b')
+        {
+          /* Go back one column, and force recalculation of the
+             next tab stop.  */
+          column -= !!column;
+          tab_index -= !!tab_index;
+        }
+        else
+        {
+          if (ckd_add(&column, column, 1))
+            error(EXIT_FAILURE, 0, _("input line is too long"));
+        }
+
+        convert &= convert_entire_line || !!isblank(c);
+      }
+
+      if (c < 0)
+        return;
+
+      if (putchar(c) < 0)
+        write_error();
+    } while (c != '\n');
+  }
 }
 
-int
-main (int argc, char **argv)
+int main(int argc, char **argv)
 {
   int c;
 
-  initialize_main (&argc, &argv);
-  set_program_name (argv[0]);
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
+  initialize_main(&argc, &argv);
+  set_program_name(argv[0]);
+  setlocale(LC_ALL, "");
+  bindtextdomain(PACKAGE, LOCALEDIR);
+  textdomain(PACKAGE);
 
-  atexit (close_stdout);
+  atexit(close_stdout);
   convert_entire_line = true;
 
-  while ((c = getopt_long (argc, argv, shortopts, longopts, nullptr)) != -1)
+  while ((c = getopt_long(argc, argv, shortopts, longopts, nullptr)) != -1)
+  {
+    switch (c)
     {
-      switch (c)
-        {
-        case 'i':
-          convert_entire_line = false;
-          break;
+    case 'i':
+      convert_entire_line = false;
+      break;
 
-        case 't':
-          parse_tab_stops (optarg);
-          break;
+    case 't':
+      parse_tab_stops(optarg);
+      break;
 
-        case '0': 
-        case '1': 
-        case '2': 
-        case '3': 
-        case '4':
-        case '5': 
-        case '6': 
-        case '7': 
-        case '8': 
-        case '9':
-          if (optarg)
-            parse_tab_stops (optarg - 1);
-          else
-            {
-              char tab_stop[2];
-              tab_stop[0] = c;
-              tab_stop[1] = '\0';
-              parse_tab_stops (tab_stop);
-            }
-          break;
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      if (optarg)
+        parse_tab_stops(optarg - 1);
+      else
+      {
+        char tab_stop[2];
+        tab_stop[0] = c;
+        tab_stop[1] = '\0';
+        parse_tab_stops(tab_stop);
+      }
+      break;
 
-        case_GETOPT_HELP_CHAR;
+      case_GETOPT_HELP_CHAR;
 
-        case_GETOPT_VERSION_CHAR (PROGRAM_NAME, AUTHORS);
+      case_GETOPT_VERSION_CHAR(PROGRAM_NAME, AUTHORS);
 
-        default:
-          usage (EXIT_FAILURE);
-        }
+    default:
+      usage(EXIT_FAILURE);
     }
+  }
 
-  finalize_tab_stops ();
+  finalize_tab_stops();
 
-  set_file_list (optind < argc ? &argv[optind] : nullptr);
+  set_file_list(optind < argc ? &argv[optind] : nullptr);
 
   /* Input stream.  */
-  FILE *fp = next_file (nullptr);
+  FILE *fp = next_file(nullptr);
 
   if (!fp)
-    return;
+    return EXIT_SUCCESS;
 
   while (true)
+  {
+    /* Input character, or EOF.  */
+    int c;
+
+    /* If true, perform translations.  */
+    bool convert = true;
+
+    /* The following variables have valid values only when CONVERT
+       is true:  */
+
+    /* Column of next input character.  */
+    uintmax_t column = 0;
+
+    /* Index in TAB_LIST of next tab stop to examine.  */
+    idx_t tab_index = 0;
+
+    /* Convert a line of text.  */
+
+    do
     {
-      /* Input character, or EOF.  */
-      int c;
+      while ((c = getc(fp)) < 0 && (fp = next_file(fp)))
+        continue;
 
-      /* If true, perform translations.  */
-      bool convert = true;
-
-
-      /* The following variables have valid values only when CONVERT
-         is true:  */
-
-      /* Column of next input character.  */
-      uintmax_t column = 0;
-
-      /* Index in TAB_LIST of next tab stop to examine.  */
-      idx_t tab_index = 0;
-
-
-      /* Convert a line of text.  */
-
-      do
+      if (convert)
+      {
+        if (c == '\t')
         {
-          while ((c = getc (fp)) < 0 && (fp = next_file (fp)))
-            continue;
+          uintmax_t next_tab_column;
+          bool last_tab;
+          next_tab_column = get_next_tab_column(column, &tab_index,
+                                                &last_tab);
 
-          if (convert)
-            {
-              if (c == '\t')
-                {
-                  uintmax_t next_tab_column;
-                  bool last_tab;
-                  next_tab_column = get_next_tab_column (column, &tab_index,
-                                                         &last_tab);
+          if (last_tab)
+            next_tab_column = column + 1;
 
-                  if (last_tab)
-                    next_tab_column = column + 1;
+          if (next_tab_column < column)
+            error(EXIT_FAILURE, 0, _("input line is too long"));
 
-                  if (next_tab_column < column)
-                    error (EXIT_FAILURE, 0, _("input line is too long"));
+          while (++column < next_tab_column)
+            if (putchar(' ') < 0)
+              write_error();
 
-                  while (++column < next_tab_column)
-                    if (putchar (' ') < 0)
-                      write_error ();
-
-                  c = ' ';
-                }
-              else if (c == '\b')
-                {
-                  /* Go back one column, and force recalculation of the
-                     next tab stop.  */
-                  column -= !!column;
-                  tab_index -= !!tab_index;
-                }
-              else
-                {
-                  column++;
-                  if (!column)
-                    error (EXIT_FAILURE, 0, _("input line is too long"));
-                }
-
-              convert &= convert_entire_line || !! isblank (c);
-            }
-
-          if (c < 0)
-            return;
-
-          if (putchar (c) < 0)
-            write_error ();
+          c = ' ';
         }
-      while (c != '\n');
-    }
+        else if (c == '\b')
+        {
+          /* Go back one column, and force recalculation of the
+             next tab stop.  */
+          column -= !!column;
+          tab_index -= !!tab_index;
+        }
+        else
+        {
+          column++;
+          if (!column)
+            error(EXIT_FAILURE, 0, _("input line is too long"));
+        }
 
-  cleanup_file_list_stdin ();
+        convert &= convert_entire_line || !!isblank(c);
+      }
+
+      if (c < 0)
+        return EXIT_SUCCESS;
+
+      if (putchar(c) < 0)
+        write_error();
+    } while (c != '\n');
+  }
+
+  cleanup_file_list_stdin();
 
   return exit_status;
 }

@@ -47,6 +47,7 @@ INCLUDE_DIRS=()                             # -I    : include dirs for the plain
 LINK_FILES=()                               # -link : extra objects/libs to link
 TARGET_ARGS=()                              # -targs: args passed to the program (file/stdin modes)
 OUT_DIR=""
+ASAN=0
 
 print_usage() {
   cat <<EOF
@@ -72,6 +73,7 @@ Run options:
   -i DIR          Input seeds directory (default: $SEEDS_DIR)
   -o DIR          Output directory (default: auto per target)
   -t SECS         Stop after SECS seconds (default: run until Ctrl+C)
+  -asan           Compile with AddressSanitizer (plain mode); for instrumented mode, rebuild with instrument.sh -asan
   -clean          Remove previous output before running
   -h              Show this help
 EOF
@@ -89,6 +91,7 @@ while [[ $# -gt 0 ]]; do
     -i)      SEEDS_DIR="$2"; shift 2 ;;
     -o)      OUT_DIR="$2"; shift 2 ;;
     -t)      TIMEOUT="$2"; shift 2 ;;
+    -asan)   ASAN=1; shift ;;
     -clean)  CLEAN=1; shift ;;
     -h)      print_usage ;;
     *)       echo -e "${RED}Unknown option: $1${RESET}"; print_usage ;;
@@ -144,8 +147,13 @@ if [[ "$MODE" == "plain" ]]; then
   fi
   IFLAGS=()
   for d in "${INCLUDE_DIRS[@]}"; do IFLAGS+=("-I$d"); done
-  echo -e "${YELLOW}Compiling plain PUA with afl-clang-fast:${RESET} $PUA_SRC"
-  afl-clang-fast "${IFLAGS[@]}" "$PUA_SRC" "${LINK_FILES[@]}" -o "$TARGET"
+  ASANFLAGS=()
+  if [[ "$ASAN" == "1" ]]; then
+    export AFL_USE_ASAN=1
+    ASANFLAGS+=("-fsanitize=address")
+  fi
+  echo -e "${YELLOW}Compiling plain PUA with afl-clang-fast:${RESET} $PUA_SRC${ASAN:+  [ASan enabled]}"
+  afl-clang-fast "${IFLAGS[@]}" "${ASANFLAGS[@]}" "$PUA_SRC" "${LINK_FILES[@]}" -o "$TARGET"
   echo -e "${GREEN}Compiled:${RESET} $TARGET"
 else
   if [[ ! -x "$TARGET" ]]; then
@@ -192,6 +200,7 @@ echo -e "${YELLOW}Binary:      ${RESET}$TARGET"
 echo -e "${YELLOW}Input mode:  ${RESET}$INPUT_MODE"
 [[ "$INPUT_MODE" != "argv" && ${#TARGET_ARGS[@]} -gt 0 ]] && \
   echo -e "${YELLOW}Target args: ${RESET}${TARGET_ARGS[*]}"
+echo -e "${YELLOW}ASan:        ${RESET}$([[ "$ASAN" == "1" ]] && echo "enabled" || echo "disabled")"
 echo -e "${YELLOW}Seeds:       ${RESET}$SEEDS_DIR"
 echo -e "${YELLOW}Output:      ${RESET}$OUT_DIR"
 echo -e "${YELLOW}AFL cmd:     ${RESET}afl-fuzz -i SEEDS -o OUT -- ${RUN_TARGET[*]}"
@@ -201,6 +210,7 @@ echo -e "${CYAN}==================================${RESET}"
 
 export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1
 export AFL_SKIP_CPUFREQ=1
+[[ "$ASAN" == "1" ]] && export AFL_USE_ASAN=1
 
 cd "$MIMICRY_DIR"
 

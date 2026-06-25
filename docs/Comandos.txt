@@ -12,6 +12,18 @@
   -log   /home/felicitas/Desktop/DOC/MM/MimicryMonitor/work/outputs/log.txt \
   -policy stop-v
 
+# Correr para expand
+./pipeline/run-mimicry.sh -afl -policy stop-v \
+  -pua   examples/expandCU/expandPUA.c \
+  -op    examples/expandCU/expandOP.c \
+  -sigma examples/expandCU/expandSigma.txt \
+  -Ianalyze    /home/felicitas/Desktop/DOC/MM/coreutils/src \
+               /home/felicitas/Desktop/DOC/MM/coreutils/lib \
+  -Iinstrument /home/felicitas/Desktop/DOC/MM/coreutils/src/expand-common.o \
+               /home/felicitas/Desktop/DOC/MM/coreutils/lib/libcoreutils.a \
+               /home/felicitas/Desktop/DOC/MM/coreutils/src/version.o
+
+
 # Correr AFL instrumented
 # 1) build instrumented cat
 ./pipeline/run-mimicry.sh -afl -policy stop-v  -no-render \

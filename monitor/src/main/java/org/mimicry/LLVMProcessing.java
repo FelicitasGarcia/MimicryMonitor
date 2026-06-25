@@ -323,9 +323,14 @@ public class LLVMProcessing extends Automata {
         }
 
         // Phase 3: Fixed-point contraction.
-        // Repeatedly splice out any placeholder with exactly one successor: for each
-        // predecessor P → placeholder, add P → successor keeping P's edge label, then
-        // delete the placeholder and its edges. Chains resolve one hop per iteration.
+        // Splice out placeholder blocks (LLVM blocks that produced no source nodes,
+        // e.g. phi-only or br-only blocks like loop back-edge merge points).
+        //
+        // Single-successor placeholder: pred→ph→succ becomes pred→succ keeping pred's label.
+        // Multi-successor placeholder (e.g. phi + conditional br with line:0): the phi
+        // encodes which successor to take, so we wire pred→each-succ using the outgoing
+        // edge labels (T/F) from ph. We defer a placeholder whose successor is itself a
+        // placeholder so that chains resolve innermost-first.
         Set<Node> placeholders = new HashSet<>(blockToPlaceholder.values());
         boolean changed = true;
         while (changed) {
@@ -335,36 +340,72 @@ public class LLVMProcessing extends Automata {
                 for (Edge e : edges) {
                     if (e.getEdgeSource() == ph) outEdges.add(e);
                 }
-                if (outEdges.size() != 1) continue;
+                if (outEdges.isEmpty()) continue;
 
-                Node succ = outEdges.get(0).getEdgeTarget();
-                if (succ == ph) continue; // self-loop guard
+                // Defer if any successor is itself still a placeholder (resolve chains first).
+                boolean succIsPlaceholder = outEdges.stream()
+                        .anyMatch(e -> placeholders.contains(e.getEdgeTarget()));
+                if (succIsPlaceholder) continue;
 
-                List<Edge> inEdges = new ArrayList<>();
-                for (Edge e : edges) {
-                    if (e.getEdgeTarget() == ph) inEdges.add(e);
-                }
+                if (outEdges.size() == 1) {
+                    Node succ = outEdges.get(0).getEdgeTarget();
+                    if (succ == ph) continue; // self-loop guard
 
-                for (Edge inEdge : inEdges) {
-                    Node pred = inEdge.getEdgeSource();
-                    String inLabel = inEdge.getEdgeLabel();
-                    if (!hasInterBlockEdge(pred, succ, inLabel)) {
-                        edges.add(new Edge(pred, succ, inLabel, edgeId++));
-                        if (!pred.getChildren().contains(succ)) pred.addChild(succ);
-                        if (!succ.getParents().contains(pred)) succ.addParent(pred);
+                    List<Edge> inEdges = new ArrayList<>();
+                    for (Edge e : edges) {
+                        if (e.getEdgeTarget() == ph) inEdges.add(e);
                     }
-                    pred.getChildren().remove(ph);
+
+                    for (Edge inEdge : inEdges) {
+                        Node pred = inEdge.getEdgeSource();
+                        String inLabel = inEdge.getEdgeLabel();
+                        if (!hasInterBlockEdge(pred, succ, inLabel)) {
+                            edges.add(new Edge(pred, succ, inLabel, edgeId++));
+                            if (!pred.getChildren().contains(succ)) pred.addChild(succ);
+                            if (!succ.getParents().contains(pred)) succ.addParent(pred);
+                        }
+                        pred.getChildren().remove(ph);
+                    }
+                    succ.getParents().remove(ph);
+                    edges.removeAll(inEdges);
+                    edges.remove(outEdges.get(0));
+                    placeholders.remove(ph);
+                    changed = true;
+                } else {
+                    // Multi-successor: use outgoing edge labels (the branch T/F labels).
+                    List<Edge> inEdges = new ArrayList<>();
+                    for (Edge e : edges) {
+                        if (e.getEdgeTarget() == ph) inEdges.add(e);
+                    }
+                    if (inEdges.isEmpty()) continue; // entry placeholder with no predecessors — skip
+
+                    for (Edge inEdge : inEdges) {
+                        Node pred = inEdge.getEdgeSource();
+                        for (Edge outEdge : outEdges) {
+                            Node succ = outEdge.getEdgeTarget();
+                            if (succ == ph) continue;
+                            String succLabel = outEdge.getEdgeLabel();
+                            if (!hasInterBlockEdge(pred, succ, succLabel)) {
+                                edges.add(new Edge(pred, succ, succLabel, edgeId++));
+                                if (!pred.getChildren().contains(succ)) pred.addChild(succ);
+                                if (!succ.getParents().contains(pred)) succ.addParent(pred);
+                            }
+                        }
+                        pred.getChildren().remove(ph);
+                    }
+                    for (Edge outEdge : outEdges) {
+                        outEdge.getEdgeTarget().getParents().remove(ph);
+                    }
+                    edges.removeAll(inEdges);
+                    edges.removeAll(outEdges);
+                    placeholders.remove(ph);
+                    changed = true;
                 }
-                succ.getParents().remove(ph);
-                edges.removeAll(inEdges);
-                edges.remove(outEdges.get(0));
-                placeholders.remove(ph);
-                changed = true;
             }
         }
 
         // Remove any edges that still involve unreachable placeholder nodes
-        // (zero-successor or multi-successor cases that couldn't be contracted).
+        // (zero-successor cases or self-loops that couldn't be contracted).
         final Set<Node> remaining = placeholders;
         edges.removeIf(e -> remaining.contains(e.getEdgeSource()) || remaining.contains(e.getEdgeTarget()));
 

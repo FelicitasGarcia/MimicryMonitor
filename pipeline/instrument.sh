@@ -22,6 +22,7 @@ mkdir -p "$MIMICRY_DIR/work/temps" "$MIMICRY_DIR/work/outputs"
 
 IBOOL=0
 AFLFUZZ=0
+ASAN=0
 LOGFILE=""
 POLICY=""
 ILIBS=()
@@ -35,6 +36,7 @@ print_usage() {
   echo "  -pua PATH          Path to PUA .c source — IR is generated locally (arch-agnostic)"
   echo "  -Ic DIR [DIR]      Include dirs for .c → IR compilation (used with -pua)"
   echo "  -afl               Enable and register AFL reporter"
+  echo "  -asan              Compile with AddressSanitizer (-fsanitize=address)"
   echo "  -log [PATH]        Enable and register log reporter (default: /tmp/mm_monitor.log)"
   echo "  -policy POLICY     Monitor policy: stop-v, stop-iv, or n (default: interactive prompt)"
   echo "  -I FILE1 [FILE2]   Extra libraries to link"
@@ -58,6 +60,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -afl)
       AFLFUZZ=1
+      shift
+      ;;
+    -asan)
+      ASAN=1
       shift
       ;;
     -log)
@@ -147,7 +153,12 @@ if [[ -z "$POLICY" ]]; then
   POLICY="n"
 fi
 echo -e "${YELLOW}Policy:    ${RESET}$POLICY"
+echo -e "${YELLOW}ASan:      ${RESET}$([[ "$ASAN" == "1" ]] && echo "enabled" || echo "disabled")"
 echo -e "${CYAN}==================================================${RESET}"
+
+if [[ "$ASAN" == "1" ]]; then
+  export AFL_USE_ASAN=1
+fi
 
 # --- Step 0: Generate IR from source (when -pua is given) ---
 if [[ -n "$PUA_PATH" ]]; then
@@ -204,6 +215,10 @@ MONITOR_RUNTIME=(
 EXTRA_OBJECTS=()
 
 CFLAGS=()
+
+if [[ "$ASAN" == "1" ]]; then
+  CFLAGS+=("-fsanitize=address")
+fi
 
 if [[ -n "$LOGFILE" ]]; then
   echo -e "${YELLOW}Logging → $LOGFILE${RESET}"

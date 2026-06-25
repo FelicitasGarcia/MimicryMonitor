@@ -40,6 +40,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -54,6 +55,17 @@ COL = {
     "execs":   ["total_execs"],
 }
 COLORS = {"instrumented": "#d1495b", "plain": "#2e86ab"}
+
+# ANSI colours for terminal output
+_C = {
+    "instrumented": "\033[91m",  # bright red
+    "plain":        "\033[94m",  # bright blue
+    "reset":        "\033[0m",
+    "bold":         "\033[1m",
+    "green":        "\033[92m",
+    "yellow":       "\033[93m",
+    "grey":         "\033[90m",
+}
 
 
 # ----------------------------------------------------------------------------- run
@@ -70,6 +82,8 @@ def build_cmd(target, seeds, input_mode, targs, out_dir, secs, args):
            "-i", str(seeds), "-o", str(out_dir), "-t", str(secs)]
     if targs:
         cmd += ["-targs", targs]
+    if getattr(args, "asan", False):
+        cmd += ["-asan"]
     if target == "plain":
         cmd += ["-plain", "-pua", str(args.plain_pua)]
         if args.plain_include:
@@ -79,29 +93,98 @@ def build_cmd(target, seeds, input_mode, targs, out_dir, secs, args):
     return cmd
 
 
+def _poll_plot_data(path):
+    """Return (edges, crashes) from the last line of AFL's plot_data, or (0, 0)."""
+    try:
+        lines = path.read_text().splitlines()
+        data_lines = [l for l in lines if l.strip() and not l.startswith("#")]
+        if not data_lines:
+            return 0, 0
+        header = [c.strip() for c in lines[0].lstrip("#").split(",")]
+        row = [v.strip() for v in data_lines[-1].split(",")]
+        def pick(names):
+            for n in names:
+                if n in header:
+                    idx = header.index(n)
+                    return int(float(row[idx])) if idx < len(row) else 0
+            return 0
+        return pick(COL["edges"]), pick(COL["crashes"])
+    except Exception:
+        return 0, 0
+
+
 def run_trials(args):
+    from tqdm import tqdm
+
     env = dict(os.environ,
                AFL_NO_AFFINITY="1",
                AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES="1",
                AFL_SKIP_CPUFREQ="1")
+
+    total = len(args.targets) * args.trials
+    overall = tqdm(total=total, desc="all trials", unit="trial",
+                   colour="cyan", dynamic_ncols=True, file=sys.stderr,
+                   position=0, leave=True)
+
     for target in args.targets:
+        tc = _C.get(target, "")
+        reset = _C["reset"]
+        bold = _C["bold"]
+        tqdm.write(f"\n{tc}{bold}━━━ target: {target} ━━━{reset}", file=sys.stderr)
+
         for i in range(1, args.trials + 1):
             trial_dir = args.results / target / f"t{i}"
             shutil.rmtree(trial_dir, ignore_errors=True)
             trial_dir.mkdir(parents=True, exist_ok=True)
             cmd = build_cmd(target, args.seeds, args.input, args.targs,
                             trial_dir, args.time, args)
-            print(f"[run] {target} trial {i}/{args.trials}  ({args.time}s)")
+
             if args.dry_run:
-                print("      " + " ".join(cmd))
+                tqdm.write(f"  [dry-run] {' '.join(cmd)}", file=sys.stderr)
+                overall.update(1)
                 continue
+
+            plot_data_path = trial_dir / "default" / "plot_data"
             log = (trial_dir / "fuzz.log").open("w")
-            rc = subprocess.run(cmd, cwd=str(REPO_ROOT), env=env,
-                                stdout=log, stderr=subprocess.STDOUT).returncode
+            proc = subprocess.Popen(cmd, cwd=str(REPO_ROOT), env=env,
+                                    stdout=log, stderr=subprocess.STDOUT)
+
+            trial_bar = tqdm(total=args.time, desc=f"  {tc}{bold}{target}{reset} t{i}/{args.trials}",
+                             unit="s", colour="magenta" if target == "instrumented" else "blue",
+                             dynamic_ncols=True, file=sys.stderr,
+                             position=1, leave=False, bar_format=(
+                                 "{desc}: {percentage:3.0f}%|{bar}| "
+                                 "{n:.0f}/{total}s  [{elapsed}<{remaining}]  {postfix}"))
+
+            start = time.monotonic()
+            last_tick = 0
+            while proc.poll() is None:
+                elapsed = time.monotonic() - start
+                tick = int(elapsed)
+                if tick > last_tick:
+                    trial_bar.update(min(tick - last_tick, args.time - last_tick))
+                    last_tick = tick
+                edges, crashes = _poll_plot_data(plot_data_path)
+                crash_label = f"💥 crashes={crashes}" if crashes else "crashes=0"
+                trial_bar.set_postfix_str(f"edges={edges}  {crash_label}", refresh=True)
+                time.sleep(0.5)
+
+            proc.wait()
             log.close()
-            pd = trial_dir / "default" / "plot_data"
-            if not pd.exists():
-                print(f"      WARNING: no plot_data (rc={rc}); see {trial_dir/'fuzz.log'}")
+            trial_bar.update(args.time - last_tick)
+            edges, crashes = _poll_plot_data(plot_data_path)
+            crash_label = f"💥 crashes={crashes}" if crashes else "crashes=0"
+            trial_bar.set_postfix_str(f"edges={edges}  {crash_label}", refresh=True)
+            trial_bar.close()
+
+            rc = proc.returncode
+            if not plot_data_path.exists():
+                tqdm.write(f"  {_C['yellow']}WARNING: no plot_data (rc={rc}); "
+                           f"see {trial_dir/'fuzz.log'}{_C['reset']}", file=sys.stderr)
+
+            overall.update(1)
+
+    overall.close()
 
 
 # --------------------------------------------------------------------------- parse
@@ -375,6 +458,7 @@ def main():
     ap.add_argument("--plain-pua", type=Path, default=REPO_ROOT / "examples" / "catCU" / "catPUA.c")
     ap.add_argument("--plain-include", nargs="*", type=Path, default=[])
     ap.add_argument("--plain-link", nargs="*", type=Path, default=[])
+    ap.add_argument("--asan", action="store_true", help="compile with AddressSanitizer (plain); expect ASan instrumented binary")
     ap.add_argument("--dry-run", action="store_true", help="print fuzz.sh commands, don't run")
     ap.add_argument("--plot-only", action="store_true", help="skip running; parse+plot existing results")
     args = ap.parse_args()
