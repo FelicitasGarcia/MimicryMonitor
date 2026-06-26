@@ -1,12 +1,10 @@
-/* Oracle Program (OP) — original, correct version.
- * Classifies an integer into four categories.
- *
- * Usage: ./op <integer>
- */
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
-int main(int argc, char *argv[]) {
+
+int main(int argc, char *argv[])
+{
     if (argc < 2)
     {
         fprintf(stderr, "usage: %s <integer>\n", argv[0]);
@@ -22,5 +20,6 @@ int main(int argc, char *argv[]) {
         result = 1;
     else
         result = 2;
-    return 10 / result;
+    sleep(1);
+    result = 10 / result;
 }

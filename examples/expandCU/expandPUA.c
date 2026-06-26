@@ -225,7 +225,7 @@ int main(int argc, char **argv)
   FILE *fp = next_file(nullptr);
 
   if (!fp)
-    return EXIT_SUCCESS;
+    return;
 
   while (true)
   {
@@ -263,10 +263,6 @@ int main(int argc, char **argv)
             if (putchar(' ') < 0)
               write_error();
 
-          {
-            extern volatile int mm_target_reached;
-            mm_target_reached = 1;
-          }
           c = ' ';
         }
         else if (c == '\b')
@@ -286,7 +282,7 @@ int main(int argc, char **argv)
       }
 
       if (c < 0)
-        return EXIT_SUCCESS;
+        return;
 
       if (putchar(c) < 0)
         write_error();

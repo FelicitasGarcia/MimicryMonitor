@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """
 targetbench.py — compare how often instrumented vs plain AFL++ reaches the
-target patch (mm_target_reached=1) in the expandCU example.
+target patch (mm_target_reached=1).
+
+Supports two built-in examples (--example):
+  default   — demo integer-classifier PUA (inputs/programPUA.c); argv input mode.
+  expandcu  — expandCU coreutils example; file input mode; needs coreutils build.
 
 Both fuzz sessions write per-execution telemetry to MM_STOP_LOG via
 monitor_runtime.c (instrumented) or mm_target_stub.c (plain).  Each line:
@@ -21,12 +25,14 @@ This script:
 Usage (from repo root):
   evaluation/bench/.venv/bin/python evaluation/bench/targetbench.py --help
 
-Example:
+Examples:
   evaluation/bench/.venv/bin/python evaluation/bench/targetbench.py \\
-    --trials 3 --time 60
+    --example default --trials 3 --time 60
 
-Prereqs:
-  - afl-clang-fast on PATH (or ~/AFLplusplus)
+  evaluation/bench/.venv/bin/python evaluation/bench/targetbench.py \\
+    --example expandcu --trials 3 --time 60
+
+Prereqs (expandcu only):
   - coreutils built at /home/felicitas/Desktop/DOC/MM/coreutils
   - echo core | sudo tee /proc/sys/kernel/core_pattern
 """
@@ -52,12 +58,62 @@ REPO   = Path(__file__).resolve().parents[2]
 FUZZ   = REPO / "pipeline" / "fuzz.sh"
 MIMICRY= REPO / "pipeline" / "run-mimicry.sh"
 CU     = Path("/home/felicitas/Desktop/DOC/MM/coreutils")
+STUB   = REPO / "instrumentation/mm_target_stub.c"
 
-EXPAND_PUA   = REPO / "examples/expandCU/expandPUA.c"
-EXPAND_OP    = REPO / "examples/expandCU/expandOP.c"
-EXPAND_SIGMA = REPO / "examples/expandCU/expandSigma.txt"
-STUB         = REPO / "instrumentation/mm_target_stub.c"
-SEEDS        = REPO / "evaluation/seeds-expand"
+# ── example configs ───────────────────────────────────────────────────────────
+# Each entry: pua, op, sigma, seeds, input_mode, title, ianalyze, iinstrument
+EXAMPLES = {
+    "default": {
+        "pua":          REPO / "inputs/programPUA.c",
+        "op":           REPO / "inputs/programOP.c",
+        "sigma":        REPO / "inputs/sigma.txt",
+        "seeds":        REPO / "evaluation/seeds",
+        "input_mode":   "argv",
+        "title":        "integer-classifier",
+        "ianalyze":     [],
+        "iinstrument":  [],
+        "plain_I":      [],
+        "plain_link":   [],
+    },
+    "expandcu": {
+        "pua":          REPO / "examples/expandCU/expandPUA.c",
+        "op":           REPO / "examples/expandCU/expandOP.c",
+        "sigma":        REPO / "examples/expandCU/expandSigma.txt",
+        "seeds":        REPO / "evaluation/seeds",
+        "input_mode":   "file",
+        "title":        "expandCU",
+        "ianalyze":     [str(CU / "src"), str(CU / "lib")],
+        "iinstrument":  [
+            str(CU / "src/expand-common.o"),
+            str(CU / "lib/libcoreutils.a"),
+            str(CU / "src/version.o"),
+        ],
+        "plain_I":      [str(CU / "src"), str(CU / "lib")],
+        "plain_link":   [
+            str(CU / "src/expand-common.o"),
+            str(CU / "lib/libcoreutils.a"),
+            str(CU / "src/version.o"),
+        ],
+    },
+    "cat": {
+        "pua":          REPO / "examples/catCU/catPUA.c",
+        "op":           REPO / "examples/catCU/catOP.c",
+        "sigma":        REPO / "examples/catCU/catSigma.txt",
+        "seeds":        REPO / "evaluation/seeds-cat",
+        "input_mode":   "file",
+        "title":        "catCU",
+        "ianalyze":     [str(CU / "src"), str(CU / "lib")],
+        "iinstrument":  [
+            str(CU / "lib/libcoreutils.a"),
+            str(CU / "src/version.o"),
+        ],
+        "plain_I":      [str(CU / "src"), str(CU / "lib")],
+        "plain_link":   [
+            str(CU / "lib/libcoreutils.a"),
+            str(CU / "src/version.o"),
+        ],
+    },
+}
 
 COLORS = {"instrumented": "#d1495b", "plain": "#2e86ab"}
 LABELS = {"instrumented": "Instrumented (MM)", "plain": "Plain (AFL only)"}
@@ -66,20 +122,30 @@ LABELS = {"instrumented": "Instrumented (MM)", "plain": "Plain (AFL only)"}
 def parse_args():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--example",     choices=list(EXAMPLES), default="default",
+                   help="which example to benchmark (default: default)")
     p.add_argument("--trials",      type=int,  default=3,
                    help="independent fuzz trials per variant (default 3)")
     p.add_argument("--time",        type=int,  default=60,
                    help="seconds per trial (default 60)")
-    p.add_argument("--seeds",       type=Path, default=SEEDS)
-    p.add_argument("--results",     type=Path, default=REPO / "evaluation/bench/results/targetbench")
+    p.add_argument("--seeds",       type=Path, default=None,
+                   help="override seed directory (default: from --example)")
+    p.add_argument("--results",     type=Path, default=None,
+                   help="results directory (default: evaluation/bench/results/<example>)")
     p.add_argument("--out",         type=Path, default=None,
-                   help="output PNG (default: results/targetbench.png)")
+                   help="output PNG (default: results/<example>.png)")
     p.add_argument("--skip-build",  action="store_true",
                    help="skip run-mimicry.sh (instrumented binary already built)")
     p.add_argument("--skip-fuzz",   action="store_true",
                    help="skip fuzzing, just re-plot from existing results")
     p.add_argument("--dry-run",     action="store_true")
-    return p.parse_args()
+    args = p.parse_args()
+    ex = EXAMPLES[args.example]
+    if args.seeds is None:
+        args.seeds = ex["seeds"]
+    if args.results is None:
+        args.results = REPO / "evaluation/bench/results" / args.example
+    return args
 
 # ── env ──────────────────────────────────────────────────────────────────────
 AFL_ENV = dict(
@@ -94,29 +160,28 @@ def _run(cmd, **kw):
     return subprocess.run(cmd, cwd=str(REPO), **kw)
 
 # ── build ────────────────────────────────────────────────────────────────────
-def build_instrumented():
-    print("\n[build] instrumented binary …")
+def build_instrumented(args):
+    ex = EXAMPLES[args.example]
+    print(f"\n[build] instrumented binary ({args.example}) …")
     cmd = [
         "bash", str(MIMICRY), "-afl", "-policy", "stop-v", "-no-render",
-        "-pua",   str(EXPAND_PUA),
-        "-op",    str(EXPAND_OP),
-        "-sigma", str(EXPAND_SIGMA),
-        "-Ianalyze",
-            str(CU / "src"),
-            str(CU / "lib"),
-        "-Iinstrument",
-            str(CU / "src/expand-common.o"),
-            str(CU / "lib/libcoreutils.a"),
-            str(CU / "src/version.o"),
+        "-pua",   str(ex["pua"]),
+        "-op",    str(ex["op"]),
+        "-sigma", str(ex["sigma"]),
     ]
+    if ex["ianalyze"]:
+        cmd += ["-Ianalyze"] + ex["ianalyze"]
+    if ex["iinstrument"]:
+        cmd += ["-Iinstrument"] + ex["iinstrument"]
     r = _run(cmd)
     if r.returncode != 0:
         sys.exit(f"[build] FAILED (rc={r.returncode})")
     print("[build] OK")
 
 # ── fuzz one trial ───────────────────────────────────────────────────────────
-def fuzz_trial(target, trial_dir, log_path, args):
+def fuzz_trial(variant, trial_dir, log_path, args):
     """Run one AFL++ trial, return when done."""
+    ex = EXAMPLES[args.example]
     trial_dir.mkdir(parents=True, exist_ok=True)
     log_path.unlink(missing_ok=True)
 
@@ -124,36 +189,32 @@ def fuzz_trial(target, trial_dir, log_path, args):
 
     base_cmd = [
         "bash", str(FUZZ),
-        "-input", "file",
+        "-input", ex["input_mode"],
         "-i",     str(args.seeds),
         "-o",     str(trial_dir),
         "-t",     str(args.time),
     ]
 
-    if target == "plain":
-        base_cmd += [
-            "-plain",
-            "-pua",  str(EXPAND_PUA),
-            "-I",    str(CU / "src"), str(CU / "lib"),
-            "-link",
-                str(STUB),
-                str(CU / "src/expand-common.o"),
-                str(CU / "lib/libcoreutils.a"),
-                str(CU / "src/version.o"),
-        ]
+    if variant == "plain":
+        base_cmd += ["-plain", "-pua", str(ex["pua"])]
+        if ex["plain_I"]:
+            base_cmd += ["-I"] + ex["plain_I"]
+        if ex["plain_link"]:
+            base_cmd += ["-link", str(STUB)] + ex["plain_link"]
+        else:
+            base_cmd += ["-link", str(STUB)]
 
     fuzz_log = trial_dir / "fuzz.log"
     with fuzz_log.open("w") as f:
         proc = subprocess.Popen(base_cmd, cwd=str(REPO), env=env,
                                 stdout=f, stderr=subprocess.STDOUT)
-        # progress ticker
         start = time.monotonic()
         while proc.poll() is None:
             elapsed = int(time.monotonic() - start)
-            print(f"\r    {target} … {elapsed:3d}/{args.time}s", end="", flush=True)
+            print(f"\r    {variant} … {elapsed:3d}/{args.time}s", end="", flush=True)
             time.sleep(1)
         proc.wait()
-    print(f"\r    {target} … done ({args.time}s)          ")
+    print(f"\r    {variant} … done ({args.time}s)          ")
 
 # ── parse MM_STOP_LOG ────────────────────────────────────────────────────────
 def parse_stoplog(path):
@@ -278,8 +339,9 @@ def save_summary(data, args):
 # ── plots ────────────────────────────────────────────────────────────────────
 def make_plots(data, rows, args, out_path):
     fig, axes = plt.subplots(2, 2, figsize=(13, 9))
-    fig.suptitle("MimicryMonitor — expandCU target reachability\n"
-                 f"(tab-expansion patch, {args.trials} trials × {args.time}s)",
+    ex_title = EXAMPLES[args.example]["title"]
+    fig.suptitle(f"MimicryMonitor — {ex_title} target reachability\n"
+                 f"({args.trials} trials × {args.time}s)",
                  fontsize=13, fontweight="bold")
 
     ax_cumul, ax_rate, ax_eps, ax_edges = axes.flat
@@ -400,10 +462,10 @@ def main():
     args = parse_args()
     args.results.mkdir(parents=True, exist_ok=True)
     if args.out is None:
-        args.out = args.results / "targetbench.png"
+        args.out = args.results / f"{args.example}.png"
 
     if not args.skip_build and not args.skip_fuzz and not args.dry_run:
-        build_instrumented()
+        build_instrumented(args)
 
     if not args.skip_fuzz:
         run_all(args)
