@@ -73,3 +73,7 @@ evaluation/bench/stopstats \
   --results evaluation/bench/results \
   --input file --targs=-A \
   --out     evaluation/bench/results/stopstats
+
+
+# EJEMPLO JUGUETE 
+evaluation/bench/.venv/bin/python evaluation/bench/targetbench.py  --example default --trials 1 --time 30
