@@ -6,7 +6,7 @@
 
 | Target | What runs | Crashes mean |
 |--------|-----------|--------------|
-| **Instrumented** (default) | PUA with the Mimicry monitor embedded (`work/outputs/instrumentedPUA`) | a real bug (SIGFPE/SIGSEGV) the monitor did not catch as IV |
+| **Instrumented** (default) | PUA with the Mimicry monitor embedded (`work/outputs/instrumentedPUA`) | a real bug the monitor did not catch as IV |
 | **Plain** (`-plain`) | PUA compiled directly, no monitor | a real bug regardless of monitor behaviour |
 
 **Input delivery** (`-input`) — how AFL's mutated bytes reach the program:
@@ -14,10 +14,8 @@
 | `-input` | AFL runs | Use for |
 |----------|----------|---------|
 | `argv` (default) | `wrapper @@` → bytes as `argv[1]` | the demo PUA (`pua <integer>`) |
-| `file` | `prog [args] @@` (program opens the mutated file) | cat & co. reading a file |
-| `stdin` | `prog [args]` (AFL feeds stdin) | cat & co. reading stdin |
-
-Run both targets and compare crashes to see which inputs the monitor catches vs. which bypass it.
+| `file` | `prog [args] @@` (program opens the mutated file) | cat, expand and co. reading a file |
+| `stdin` | `prog [args]` (AFL feeds stdin) | cat and co. reading stdin |
 
 ---
 
@@ -35,78 +33,147 @@ echo core | sudo tee /proc/sys/kernel/core_pattern
 
 ---
 
-## Mode 1 — Instrumented PUA (Mimicry monitor active)
+## Target reachability telemetry (MM\_STOP\_LOG)
 
-### Step 1 — Run the full pipeline with AFL instrumentation
+Both the instrumented and plain builds support a lightweight per-execution log.
+Set `MM_STOP_LOG` to a file path before fuzzing and each process exit appends one line:
 
-From the project root:
-
-```bash
-./pipeline/run-mimicry.sh -afl -policy stop-v
+```
+early=N verdict=X steps=N target=N
 ```
 
-`-policy stop-v` makes the monitor exit cleanly on a V verdict (AFL ignores clean exits).  
-`-policy n` lets the program run to completion without monitor interference.  
-`-policy stop-iv` makes the monitor exit cleanly on an IV verdict (use if IV itself is the signal of interest).
+- `target=1` — the instrumented patch was reached during that execution.
+- `target=0` — it was not.
 
-This script runs analyze → monitor construction → instrument in one shot.  
-The output binary is `work/outputs/instrumentedPUA`.
-
-### Step 2 — Add seeds
-
-Seeds live in `evaluation/seeds/` (one input per file). Match the corpus to the program
-and the input mode:
-
-- **demo PUA** (`-input argv`) — integer strings: `evaluation/seeds/` (`1`, `127`, `255`, `-1`).
-- **cat** (`-input file`/`stdin`) — byte/text inputs: `evaluation/seeds-cat/`.
-
-Do **not** include inputs that always crash (e.g. `"0"` for the demo PUA — `atoi("0")=0` →
-division by zero on every run); AFL drops crashing seeds during calibration.
-
-### Step 3 — Fuzz
-
-`fuzz.sh` builds the argv wrapper automatically when needed — no manual compile step.
+In the instrumented build this is written by `monitor_runtime.c`.  
+In the plain build it is written by `instrumentation/mm_target_stub.c` (linked via `-link`).
 
 ```bash
-# demo PUA (argv): 60s, clean previous output
-bash pipeline/fuzz.sh -t 60 -clean
-
-# instrumented cat reading a file, with -A; seeds = byte corpus
-bash pipeline/fuzz.sh -input file -targs "-A" -i evaluation/seeds-cat -t 60 -clean
-
-# instrumented cat reading stdin
-bash pipeline/fuzz.sh -input stdin -targs "-A" -i evaluation/seeds-cat -t 60 -clean
+export MM_STOP_LOG=/tmp/my_run.txt
+# … run fuzz.sh …
+grep -c "target=1" /tmp/my_run.txt   # hits
+grep -c "target=0" /tmp/my_run.txt   # misses
 ```
-
-Output goes to `work/afl_out/`. (For cat, build the instrumented binary first with
-`./pipeline/run-mimicry.sh -afl …`, see the cat example in the main README.)
 
 ---
 
-## Mode 2 — Plain PUA (no monitor)
+## Example — catCU (file input, with monitor)
 
-No manual compilation needed. `fuzz.sh -plain` compiles everything automatically:
+### Step 1 — Build
 
 ```bash
-bash pipeline/fuzz.sh -plain -t 60 -clean
+./pipeline/run-mimicry.sh -afl -policy stop-v \
+  -pua   examples/catCU/catPUA.c \
+  -op    examples/catCU/catOP.c \
+  -sigma examples/catCU/catSigma.txt \
+  -Ianalyze    /PATH/TO/coreutils/src /PATH/TO/coreutils/lib \
+  -Iinstrument /PATH/TO/coreutils/lib/libcoreutils.a \
+               /PATH/TO/coreutils/src/version.o \
+  -log   work/outputs/log.txt -policy stop-v
 ```
 
-`fuzz.sh -plain` compiles the target from source (default `inputs/programPUA.c`) and fuzzes
-it. The **input mode** is independent of `-plain`:
+### Step 2 — Fuzz
 
 ```bash
-# demo PUA, plain, argv input (default)
-bash pipeline/fuzz.sh -plain -t 60 -clean
+bash pipeline/fuzz.sh -input file -targs "-A" -i evaluation/seeds-cat -t 60 -clean
+```
 
-# plain cat reading stdin — needs its headers (-I) and link objects (-link)
-bash pipeline/fuzz.sh -plain -input stdin -targs "-A" \
+### Step 3 — Plain baseline
+
+```bash
+bash pipeline/fuzz.sh -plain -input file -targs "-A" \
   -pua  examples/catCU/catPUA.c \
   -I    /PATH/TO/coreutils/src /PATH/TO/coreutils/lib \
-  -link /PATH/TO/coreutils/lib/libcoreutils.a /PATH/TO/coreutils/src/version.o \
+  -link /PATH/TO/coreutils/lib/libcoreutils.a \
+        /PATH/TO/coreutils/src/version.o \
   -i evaluation/seeds-cat -t 60 -clean
 ```
 
-Output goes to `work/afl_out_plain/`. (`-pua`/`-I`/`-link` apply to `-plain` only.)
+---
+
+## Example — expandCU (tab-expansion patch, target reachability)
+
+expandCU measures how quickly AFL finds inputs that reach the tab-expansion
+patch (`if (c == '\t')` in `main`). A probe sets `mm_target_reached = 1`
+on every execution that triggers the branch; `MM_STOP_LOG` records the result.
+
+Seeds in `evaluation/seeds-expand/` cover tab inputs, no-tab inputs, and mixed.
+
+### Step 1 — Build instrumented binary
+
+```bash
+./pipeline/run-mimicry.sh -afl -policy stop-v \
+  -pua   examples/expandCU/expandPUA.c \
+  -op    examples/expandCU/expandOP.c \
+  -sigma examples/expandCU/expandSigma.txt \
+  -Ianalyze    /PATH/TO/coreutils/src /PATH/TO/coreutils/lib \
+  -Iinstrument /PATH/TO/coreutils/src/expand-common.o \
+               /PATH/TO/coreutils/lib/libcoreutils.a \
+               /PATH/TO/coreutils/src/version.o
+```
+
+> **Link order matters**: `expand-common.o` must come before `libcoreutils.a`
+> because the archive resolves `expand-common.o`'s dependencies (`fadvise`,
+> `rpl_fopen`).
+
+### Step 2 — Fuzz instrumented
+
+```bash
+export MM_STOP_LOG=/tmp/expand_instrumented_log.txt
+rm -f $MM_STOP_LOG
+bash pipeline/fuzz.sh -input file -i evaluation/seeds-expand -t 60 -clean
+```
+
+### Step 3 — Fuzz plain
+
+```bash
+export MM_STOP_LOG=/tmp/expand_plain_log.txt
+rm -f $MM_STOP_LOG
+bash pipeline/fuzz.sh -plain -input file \
+  -pua  examples/expandCU/expandPUA.c \
+  -I    /PATH/TO/coreutils/src /PATH/TO/coreutils/lib \
+  -link instrumentation/mm_target_stub.c \
+        /PATH/TO/coreutils/src/expand-common.o \
+        /PATH/TO/coreutils/lib/libcoreutils.a \
+        /PATH/TO/coreutils/src/version.o \
+  -i evaluation/seeds-expand -t 60 -clean
+```
+
+### Step 4 — Compare results
+
+```bash
+echo "=== Instrumented ==="
+echo "hit:   $(grep -c 'target=1' /tmp/expand_instrumented_log.txt)"
+echo "miss:  $(grep -c 'target=0' /tmp/expand_instrumented_log.txt)"
+echo "total: $(wc -l < /tmp/expand_instrumented_log.txt)"
+
+echo "=== Plain ==="
+echo "hit:   $(grep -c 'target=1' /tmp/expand_plain_log.txt)"
+echo "miss:  $(grep -c 'target=0' /tmp/expand_plain_log.txt)"
+echo "total: $(wc -l < /tmp/expand_plain_log.txt)"
+```
+
+### Step 5 — Automated benchmark with plots
+
+`evaluation/bench/targetbench.py` runs both variants for N trials, parses the
+logs and AFL's `plot_data`, prints a summary table, and saves a 4-panel PNG:
+
+```bash
+evaluation/bench/.venv/bin/python evaluation/bench/targetbench.py \
+  --trials 3 --time 60
+```
+
+Output: `evaluation/bench/results/targetbench/targetbench.png`
+
+| Panel | Shows |
+|-------|-------|
+| Cumulative hits over executions | mean + shaded min/max across trials |
+| Hit rate per trial | grouped bar chart (instrumented vs plain) |
+| Exec/sec box plot | monitor overhead vs plain throughput |
+| AFL edge coverage over time | exploration speed |
+
+Options: `--skip-build` (binary already built), `--skip-fuzz` (re-plot only),
+`--dry-run` (print commands without running).
 
 ---
 
@@ -138,40 +205,25 @@ Run:
 
 ---
 
-## How the `argv` wrapper works
-
-In `-input argv` mode, AFL replaces `@@` with a path to a temp file containing the mutated input. Because the demo PUA reads its input from `argv[1]` (not from a file), a small C wrapper bridges the two (`file/stdin` modes skip the wrapper and run the program directly):
-
-```
-AFL → wrapper (argv[1] = /tmp/afl-tmp-XXXX)
-        │
-        ├─ reads file content into buf
-        └─ execl(target, target, buf, NULL)
-                 │
-                 └─ target reads buf as argv[1]
-```
-
-The wrapper is compiled with `afl-clang-fast` so it owns the AFL fork server and coverage SHM. The exec'd target inherits the coverage SHM and writes its own coverage into it.
-
----
-
-## Reading results
+## Reading AFL results
 
 After a run, `fuzz.sh` prints a summary. You can also inspect manually:
 
 ```bash
 # Crash inputs (instrumented run)
 ls work/afl_out/default/crashes/
-cat work/afl_out/default/crashes/id:000000,*
 
 # Crash inputs (plain run)
 ls work/afl_out_plain/default/crashes/
 
-# Stats
+# Full stats
 cat work/afl_out/default/fuzzer_stats
+
+# Edge coverage / timing
+cat work/afl_out/default/plot_data
 ```
 
-AFL deduplicates crashes by coverage bitmap — only unique crash paths are saved, so 12 000 executions hitting the same bug still produce 1 saved crash file.
+AFL deduplicates crashes by coverage bitmap — only unique crash paths are saved.
 
 ---
 
@@ -179,8 +231,10 @@ AFL deduplicates crashes by coverage bitmap — only unique crash paths are save
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| All seeds skip with "results in a crash" | Seeds always hit division by zero | Remove the crashing seed (e.g. `seed0`) |
-| "Fork server handshake failed" | `AFL_DEFER_FORKSRV=1` set in the shell environment | Unset it: `unset AFL_DEFER_FORKSRV` |
-| No crashes found despite obvious bug | `core_pattern` routes dumps through apport, delaying crash detection | `echo core \| sudo tee /proc/sys/kernel/core_pattern` |
+| All seeds skip with "results in a crash" | Seeds always crash | Remove the crashing seed |
+| "Fork server handshake failed" | `AFL_DEFER_FORKSRV=1` in environment | `unset AFL_DEFER_FORKSRV` |
+| No crashes despite obvious bug | `core_pattern` routes dumps through apport | `echo core \| sudo tee /proc/sys/kernel/core_pattern` |
 | `afl-clang-fast not found` | AFL++ not on PATH | `export PATH=$PATH:/path/to/AFLplusplus` |
-| Only 1 crash saved despite many inputs | AFL deduplicates by coverage fingerprint | Expected — unique crash paths, not total crash count |
+| Undefined reference to `mm_target_reached` (plain build) | Stub not linked | Add `instrumentation/mm_target_stub.c` to `-link` |
+| Undefined reference to `fadvise` / `rpl_fopen` | Wrong link order for expand | Put `expand-common.o` **before** `libcoreutils.a` |
+| Only 1 crash saved despite many inputs | AFL deduplicates by coverage fingerprint | Expected behaviour |

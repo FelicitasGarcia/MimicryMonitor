@@ -416,12 +416,27 @@ PreservedAnalyses MimicryInstrumentPass::run(Function &F, FunctionAnalysisManage
 
     modified = true;
 
-    // Insert monitorAction("cond") before the branch/switch
-    IRBuilder<> PreBuilder(TI);
-    Value *condStr = createGlobalStringPtr(module, "cond", ++globalCounter);
-    PreBuilder.CreateCall(monitorFunc, {condStr});
-
     if (auto *BI = dyn_cast<BranchInst>(TI)) {
+      // Skip short-circuit &&/|| merge blocks: their branch condition is a PHI
+      // with at least one constant-bool incoming value, which is the IR artifact
+      // of && short-circuit evaluation compiled to a merge block.
+      if (BI->isConditional()) {
+        if (auto *phi = dyn_cast<PHINode>(BI->getCondition())) {
+          bool hasConstBool = false;
+          for (unsigned k = 0; k < phi->getNumIncomingValues(); ++k) {
+            if (isa<ConstantInt>(phi->getIncomingValue(k))) {
+              hasConstBool = true;
+              break;
+            }
+          }
+          if (hasConstBool) continue;
+        }
+      }
+
+      IRBuilder<> PreBuilder(TI);
+      Value *condStr = createGlobalStringPtr(module, "cond", ++globalCounter);
+      PreBuilder.CreateCall(monitorFunc, {condStr});
+
       SmallVector<BasicBlock *, 2> trampolines;
       SmallVector<BasicBlock *, 2> successors;
 
@@ -469,6 +484,10 @@ PreservedAnalyses MimicryInstrumentPass::run(Function &F, FunctionAnalysisManage
       TI->eraseFromParent();
 
     } else if (auto *SI = dyn_cast<SwitchInst>(TI)) {
+      IRBuilder<> PreBuilder(TI);
+      Value *condStr = createGlobalStringPtr(module, "cond", ++globalCounter);
+      PreBuilder.CreateCall(monitorFunc, {condStr});
+
       std::map<BasicBlock *, std::string> labels;
       std::map<BasicBlock *, BasicBlock *> trampMap;
 

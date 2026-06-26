@@ -1,0 +1,418 @@
+#!/usr/bin/env python3
+"""
+targetbench.py — compare how often instrumented vs plain AFL++ reaches the
+target patch (mm_target_reached=1) in the expandCU example.
+
+Both fuzz sessions write per-execution telemetry to MM_STOP_LOG via
+monitor_runtime.c (instrumented) or mm_target_stub.c (plain).  Each line:
+    early=N verdict=X steps=N target=N
+
+This script:
+  1. Builds the instrumented binary (run-mimicry.sh -afl) unless --skip-build.
+  2. Runs N trials of each version (instrumented / plain) via fuzz.sh.
+  3. Parses the stop-logs and AFL plot_data.
+  4. Saves results as JSON + CSV.
+  5. Generates a multi-panel PNG with:
+       - Cumulative target hits over executions (per trial + mean)
+       - Hit rate (target=1 / total) per trial bar chart
+       - Exec/sec comparison box plot
+       - AFL edge coverage over time
+
+Usage (from repo root):
+  evaluation/bench/.venv/bin/python evaluation/bench/targetbench.py --help
+
+Example:
+  evaluation/bench/.venv/bin/python evaluation/bench/targetbench.py \\
+    --trials 3 --time 60
+
+Prereqs:
+  - afl-clang-fast on PATH (or ~/AFLplusplus)
+  - coreutils built at /home/felicitas/Desktop/DOC/MM/coreutils
+  - echo core | sudo tee /proc/sys/kernel/core_pattern
+"""
+
+import argparse
+import csv
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+
+# ── paths ────────────────────────────────────────────────────────────────────
+REPO   = Path(__file__).resolve().parents[2]
+FUZZ   = REPO / "pipeline" / "fuzz.sh"
+MIMICRY= REPO / "pipeline" / "run-mimicry.sh"
+CU     = Path("/home/felicitas/Desktop/DOC/MM/coreutils")
+
+EXPAND_PUA   = REPO / "examples/expandCU/expandPUA.c"
+EXPAND_OP    = REPO / "examples/expandCU/expandOP.c"
+EXPAND_SIGMA = REPO / "examples/expandCU/expandSigma.txt"
+STUB         = REPO / "instrumentation/mm_target_stub.c"
+SEEDS        = REPO / "evaluation/seeds-expand"
+
+COLORS = {"instrumented": "#d1495b", "plain": "#2e86ab"}
+LABELS = {"instrumented": "Instrumented (MM)", "plain": "Plain (AFL only)"}
+
+# ── CLI ──────────────────────────────────────────────────────────────────────
+def parse_args():
+    p = argparse.ArgumentParser(description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--trials",      type=int,  default=3,
+                   help="independent fuzz trials per variant (default 3)")
+    p.add_argument("--time",        type=int,  default=60,
+                   help="seconds per trial (default 60)")
+    p.add_argument("--seeds",       type=Path, default=SEEDS)
+    p.add_argument("--results",     type=Path, default=REPO / "evaluation/bench/results/targetbench")
+    p.add_argument("--out",         type=Path, default=None,
+                   help="output PNG (default: results/targetbench.png)")
+    p.add_argument("--skip-build",  action="store_true",
+                   help="skip run-mimicry.sh (instrumented binary already built)")
+    p.add_argument("--skip-fuzz",   action="store_true",
+                   help="skip fuzzing, just re-plot from existing results")
+    p.add_argument("--dry-run",     action="store_true")
+    return p.parse_args()
+
+# ── env ──────────────────────────────────────────────────────────────────────
+AFL_ENV = dict(
+    os.environ,
+    AFL_NO_AFFINITY="1",
+    AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES="1",
+    AFL_SKIP_CPUFREQ="1",
+)
+
+def _run(cmd, **kw):
+    print(f"  $ {' '.join(str(c) for c in cmd)}", flush=True)
+    return subprocess.run(cmd, cwd=str(REPO), **kw)
+
+# ── build ────────────────────────────────────────────────────────────────────
+def build_instrumented():
+    print("\n[build] instrumented binary …")
+    cmd = [
+        "bash", str(MIMICRY), "-afl", "-policy", "stop-v", "-no-render",
+        "-pua",   str(EXPAND_PUA),
+        "-op",    str(EXPAND_OP),
+        "-sigma", str(EXPAND_SIGMA),
+        "-Ianalyze",
+            str(CU / "src"),
+            str(CU / "lib"),
+        "-Iinstrument",
+            str(CU / "src/expand-common.o"),
+            str(CU / "lib/libcoreutils.a"),
+            str(CU / "src/version.o"),
+    ]
+    r = _run(cmd)
+    if r.returncode != 0:
+        sys.exit(f"[build] FAILED (rc={r.returncode})")
+    print("[build] OK")
+
+# ── fuzz one trial ───────────────────────────────────────────────────────────
+def fuzz_trial(target, trial_dir, log_path, args):
+    """Run one AFL++ trial, return when done."""
+    trial_dir.mkdir(parents=True, exist_ok=True)
+    log_path.unlink(missing_ok=True)
+
+    env = dict(AFL_ENV, MM_STOP_LOG=str(log_path))
+
+    base_cmd = [
+        "bash", str(FUZZ),
+        "-input", "file",
+        "-i",     str(args.seeds),
+        "-o",     str(trial_dir),
+        "-t",     str(args.time),
+    ]
+
+    if target == "plain":
+        base_cmd += [
+            "-plain",
+            "-pua",  str(EXPAND_PUA),
+            "-I",    str(CU / "src"), str(CU / "lib"),
+            "-link",
+                str(STUB),
+                str(CU / "src/expand-common.o"),
+                str(CU / "lib/libcoreutils.a"),
+                str(CU / "src/version.o"),
+        ]
+
+    fuzz_log = trial_dir / "fuzz.log"
+    with fuzz_log.open("w") as f:
+        proc = subprocess.Popen(base_cmd, cwd=str(REPO), env=env,
+                                stdout=f, stderr=subprocess.STDOUT)
+        # progress ticker
+        start = time.monotonic()
+        while proc.poll() is None:
+            elapsed = int(time.monotonic() - start)
+            print(f"\r    {target} … {elapsed:3d}/{args.time}s", end="", flush=True)
+            time.sleep(1)
+        proc.wait()
+    print(f"\r    {target} … done ({args.time}s)          ")
+
+# ── parse MM_STOP_LOG ────────────────────────────────────────────────────────
+def parse_stoplog(path):
+    """Return list of booleans: True = target reached for that execution."""
+    hits = []
+    try:
+        for line in Path(path).read_text().splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            hit = False
+            for tok in line.split():
+                if tok == "target=1":
+                    hit = True
+            hits.append(hit)
+    except FileNotFoundError:
+        pass
+    return hits
+
+# ── parse AFL plot_data ──────────────────────────────────────────────────────
+def parse_plot_data(path):
+    """Return dict of arrays: time, edges, execs, eps."""
+    result = {"time": [], "edges": [], "execs": [], "eps": []}
+    COLS = {
+        "edges": ["edges_found", "map_size"],
+        "execs": ["total_execs"],
+        "eps":   ["execs_per_sec"],
+        "time":  ["relative_time"],
+    }
+    header = None
+    try:
+        for line in Path(path).read_text().splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith("#"):
+                header = [c.strip() for c in line[1:].split(",")]
+                continue
+            if header is None:
+                continue
+            row = [v.strip() for v in line.split(",")]
+            def pick(names):
+                for n in names:
+                    if n in header and header.index(n) < len(row):
+                        try: return float(row[header.index(n)])
+                        except ValueError: return 0.0
+                return 0.0
+            for k, names in COLS.items():
+                result[k].append(pick(names))
+    except FileNotFoundError:
+        pass
+    return {k: np.array(v) for k, v in result.items()}
+
+# ── run all trials ───────────────────────────────────────────────────────────
+def run_all(args):
+    for target in ("instrumented", "plain"):
+        print(f"\n{'─'*50}")
+        print(f" target: {LABELS[target]}")
+        print(f"{'─'*50}")
+        for i in range(1, args.trials + 1):
+            print(f"\n  trial {i}/{args.trials}")
+            trial_dir = args.results / target / f"t{i}"
+            log_path  = args.results / target / f"t{i}_stoplog.txt"
+            if args.dry_run:
+                print(f"  [dry-run] would fuzz → {trial_dir}")
+                continue
+            # clean previous AFL output (not the log)
+            if trial_dir.exists():
+                shutil.rmtree(trial_dir)
+            fuzz_trial(target, trial_dir, log_path, args)
+
+# ── load all results ─────────────────────────────────────────────────────────
+def load_results(args):
+    data = {}
+    for target in ("instrumented", "plain"):
+        trials_hits = []
+        trials_pd   = []
+        for i in range(1, args.trials + 1):
+            log  = args.results / target / f"t{i}_stoplog.txt"
+            pd   = args.results / target / f"t{i}" / "default" / "plot_data"
+            hits = parse_stoplog(log)
+            trials_hits.append(hits)
+            trials_pd.append(parse_plot_data(pd))
+        data[target] = {"hits": trials_hits, "plot_data": trials_pd}
+    return data
+
+# ── save CSV / JSON ──────────────────────────────────────────────────────────
+def save_summary(data, args):
+    rows = []
+    for target, d in data.items():
+        for i, hits in enumerate(d["hits"]):
+            total = len(hits)
+            n_hit = sum(hits)
+            pd    = d["plot_data"][i]
+            eps   = float(pd["eps"][-1]) if len(pd["eps"]) else 0.0
+            rows.append({
+                "target":    target,
+                "trial":     i + 1,
+                "total_execs": total,
+                "target_hits": n_hit,
+                "hit_rate":  round(n_hit / total, 4) if total else 0,
+                "mean_eps":  round(eps, 1),
+            })
+
+    csv_path  = args.results / "summary.csv"
+    json_path = args.results / "summary.json"
+    with csv_path.open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=rows[0].keys())
+        w.writeheader(); w.writerows(rows)
+    json_path.write_text(json.dumps(rows, indent=2))
+
+    print(f"\n{'─'*60}")
+    print(f"{'target':<16} {'trial':>5} {'execs':>8} {'hits':>6} {'hit%':>7} {'eps':>8}")
+    print(f"{'─'*60}")
+    for r in rows:
+        pct = r['hit_rate'] * 100
+        print(f"{r['target']:<16} {r['trial']:>5} {r['total_execs']:>8} "
+              f"{r['target_hits']:>6} {pct:>6.1f}% {r['mean_eps']:>8.1f}")
+    print(f"{'─'*60}")
+    return rows
+
+# ── plots ────────────────────────────────────────────────────────────────────
+def make_plots(data, rows, args, out_path):
+    fig, axes = plt.subplots(2, 2, figsize=(13, 9))
+    fig.suptitle("MimicryMonitor — expandCU target reachability\n"
+                 f"(tab-expansion patch, {args.trials} trials × {args.time}s)",
+                 fontsize=13, fontweight="bold")
+
+    ax_cumul, ax_rate, ax_eps, ax_edges = axes.flat
+
+    # ── 1. Cumulative hits over executions ───────────────────────────────────
+    ax = ax_cumul
+    for target, d in data.items():
+        c = COLORS[target]
+        all_cumuls = []
+        max_len = max((len(h) for h in d["hits"]), default=0)
+        for hits in d["hits"]:
+            cumul = np.cumsum(hits)
+            # extend to max_len with last value
+            if len(cumul) < max_len:
+                cumul = np.append(cumul, np.full(max_len - len(cumul), cumul[-1] if len(cumul) else 0))
+            all_cumuls.append(cumul)
+            ax.plot(np.arange(1, len(hits)+1), np.cumsum(hits),
+                    color=c, alpha=0.25, linewidth=0.8)
+        if all_cumuls:
+            mat = np.vstack(all_cumuls)
+            xs  = np.arange(1, mat.shape[1]+1)
+            ax.plot(xs, mat.mean(axis=0), color=c, linewidth=2,
+                    label=LABELS[target])
+            ax.fill_between(xs, mat.min(axis=0), mat.max(axis=0),
+                            color=c, alpha=0.12)
+
+    ax.set_xlabel("Executions")
+    ax.set_ylabel("Cumulative target hits")
+    ax.set_title("Target hits over executions")
+    ax.legend(fontsize=8)
+    ax.xaxis.set_major_formatter(mticker.FuncFormatter(
+        lambda x, _: f"{int(x/1000)}k" if x >= 1000 else str(int(x))))
+    ax.grid(True, alpha=0.3)
+
+    # ── 2. Hit rate per trial (grouped bar) ──────────────────────────────────
+    ax = ax_rate
+    targets = list(data.keys())
+    n_trials = args.trials
+    x = np.arange(n_trials)
+    width = 0.35
+    for ki, target in enumerate(targets):
+        rates = [r["hit_rate"] * 100 for r in rows if r["target"] == target]
+        bars = ax.bar(x + ki * width, rates, width, label=LABELS[target],
+                      color=COLORS[target], alpha=0.85)
+        for bar, v in zip(bars, rates):
+            ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.3,
+                    f"{v:.1f}%", ha="center", va="bottom", fontsize=7)
+
+    ax.set_xlabel("Trial")
+    ax.set_ylabel("Hit rate (%)")
+    ax.set_title("Target hit rate per trial")
+    ax.set_xticks(x + width/2)
+    ax.set_xticklabels([f"t{i+1}" for i in range(n_trials)])
+    ax.legend(fontsize=8)
+    ax.grid(True, axis="y", alpha=0.3)
+
+    # ── 3. Exec/sec box plot ─────────────────────────────────────────────────
+    ax = ax_eps
+    eps_data = []
+    tick_labels = []
+    tick_colors = []
+    for target in targets:
+        vals = [r["mean_eps"] for r in rows if r["target"] == target]
+        eps_data.append(vals)
+        tick_labels.append(LABELS[target])
+        tick_colors.append(COLORS[target])
+
+    bp = ax.boxplot(eps_data, patch_artist=True, widths=0.4)
+    for patch, c in zip(bp["boxes"], tick_colors):
+        patch.set_facecolor(c)
+        patch.set_alpha(0.7)
+    for element in ("whiskers", "caps", "medians", "fliers"):
+        for item in bp[element]:
+            item.set_color("black")
+
+    ax.set_xticklabels(tick_labels, fontsize=8)
+    ax.set_ylabel("Execs / sec")
+    ax.set_title("Throughput (exec/sec)")
+    ax.grid(True, axis="y", alpha=0.3)
+
+    # ── 4. AFL edge coverage over time ───────────────────────────────────────
+    ax = ax_edges
+    for target, d in data.items():
+        c = COLORS[target]
+        all_series = []
+        for pd in d["plot_data"]:
+            if len(pd["time"]) == 0:
+                continue
+            ax.plot(pd["time"], pd["edges"], color=c, alpha=0.25, linewidth=0.8)
+            all_series.append((pd["time"], pd["edges"]))
+
+        if len(all_series) > 1:
+            grid = np.arange(0, args.time + 1, dtype=float)
+            mat = []
+            for t, e in all_series:
+                idx = np.searchsorted(t, grid, side="right") - 1
+                mat.append(np.where(idx >= 0, e[np.clip(idx, 0, len(e)-1)], 0))
+            mat = np.vstack(mat)
+            ax.plot(grid, mat.mean(axis=0), color=c, linewidth=2, label=LABELS[target])
+            ax.fill_between(grid, mat.min(axis=0), mat.max(axis=0), color=c, alpha=0.12)
+        elif len(all_series) == 1:
+            t, e = all_series[0]
+            ax.plot(t, e, color=c, linewidth=2, label=LABELS[target])
+
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("Edges found")
+    ax.set_title("AFL++ edge coverage over time")
+    ax.legend(fontsize=8)
+    ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    fig.savefig(out_path, dpi=150)
+    print(f"\n[plot] saved → {out_path}")
+    plt.close(fig)
+
+# ── main ─────────────────────────────────────────────────────────────────────
+def main():
+    args = parse_args()
+    args.results.mkdir(parents=True, exist_ok=True)
+    if args.out is None:
+        args.out = args.results / "targetbench.png"
+
+    if not args.skip_build and not args.skip_fuzz and not args.dry_run:
+        build_instrumented()
+
+    if not args.skip_fuzz:
+        run_all(args)
+
+    print("\n[parse] loading results …")
+    data = load_results(args)
+    rows = save_summary(data, args)
+    make_plots(data, rows, args, args.out)
+    print("[done]")
+
+if __name__ == "__main__":
+    main()

@@ -33,12 +33,24 @@
 # 2) fuzz it (file input; or -input stdin)
 pipeline/fuzz.sh -input file -targs "-A" -i evaluation/seeds-cat -t 60 -clean
 
-# Correr AFL No Instrumentented
+# Correr AFL No Instrumentented - cat
 pipeline/fuzz.sh -plain -input file -targs "-A" \
   -pua  examples/catCU/catPUA.c \
   -I    /home/felicitas/Desktop/DOC/MM/coreutils/src /home/felicitas/Desktop/DOC/MM/coreutils/lib \
   -link /home/felicitas/Desktop/DOC/MM/coreutils/lib/libcoreutils.a /home/felicitas/Desktop/DOC/MM/coreutils/src/version.o \
   -i evaluation/seeds-cat -t 60 -clean
+
+# Correr AFL No Instrumentented - expand
+MM_STOP_LOG=/tmp/expand_plain_log.txt \
+pipeline/fuzz.sh -plain -input file \
+  -pua  examples/expandCU/expandPUA.c \
+  -I    /home/felicitas/Desktop/DOC/MM/coreutils/src \
+        /home/felicitas/Desktop/DOC/MM/coreutils/lib \
+  -link instrumentation/mm_target_stub.c \
+        /home/felicitas/Desktop/DOC/MM/coreutils/src/expand-common.o \
+        /home/felicitas/Desktop/DOC/MM/coreutils/lib/libcoreutils.a \
+        /home/felicitas/Desktop/DOC/MM/coreutils/src/version.o \
+  -i evaluation/seeds-expand -t 60 -clean
 
 
 # Evaluation 
