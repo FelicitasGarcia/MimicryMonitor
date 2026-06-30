@@ -213,7 +213,8 @@ mimicrymonitor/
 ├── pipeline/               all scripts: setup, run-mimicry, analyze, instrument, fuzz
 ├── inputs/                 default programOP.c / programPUA.c / sigma.txt (demo)
 ├── examples/               extra targets (catCU, lsCU, mvCU, timeoutCU, ...)
-├── evaluation/             tests/ (coreutils PUA test suites) and seeds/ (AFL seeds)
+├── evaluation/             tests/ (coreutils PUA test suites), seeds/ (AFL seeds),
+│                           bench/ (targetbench — target-reachability benchmark)
 ├── work/                   ALL generated output [git-ignored]
 ├── docs/                   FUZZING.md, README-CoreUtilTests.md
 └── llvm/llvm-project/      pinned LLVM 19.1.7 submodule (vendored; stays here)
@@ -263,6 +264,8 @@ via `-Ianalyze` (compile time) and `-Iinstrument` (link time).
 
 The instrumented PUA can be fuzzed with AFL++ (build with `-afl`). See **`docs/FUZZING.md`**
 for the full workflow (instrumented vs. plain modes, seeds, and reading crashes).
+`evaluation/bench/targetbench.py` automates multi-trial runs and produces coverage/hit-rate
+plots; see `evaluation/bench/README.md`.
 
 ---
 

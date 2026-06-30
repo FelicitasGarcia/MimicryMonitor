@@ -48,6 +48,9 @@ LINK_FILES=()                               # -link : extra objects/libs to link
 TARGET_ARGS=()                              # -targs: args passed to the program (file/stdin modes)
 OUT_DIR=""
 ASAN=0
+GRAMMAR_SO=""                               # -grammar: path to libgrammarmutator-*.so
+GRAMMAR_ONLY=0                              # -grammar-only: AFL_CUSTOM_MUTATOR_ONLY=1
+TREES_DIR=""                                # -trees: pre-generated tree cache dir
 
 print_usage() {
   cat <<EOF
@@ -76,6 +79,11 @@ Run options:
   -asan           Compile with AddressSanitizer (plain mode); for instrumented mode, rebuild with instrument.sh -asan
   -clean          Remove previous output before running
   -h              Show this help
+
+Grammar Mutator (optional):
+  -grammar LIB    Path to libgrammarmutator-*.so; sets AFL_CUSTOM_MUTATOR_LIBRARY
+  -grammar-only   Also set AFL_CUSTOM_MUTATOR_ONLY=1 (suppress AFL's own mutations)
+  -trees DIR      Pre-generated tree cache dir; copied to <out>/default/trees/ before fuzzing
 EOF
   exit 0
 }
@@ -91,9 +99,12 @@ while [[ $# -gt 0 ]]; do
     -i)      SEEDS_DIR="$2"; shift 2 ;;
     -o)      OUT_DIR="$2"; shift 2 ;;
     -t)      TIMEOUT="$2"; shift 2 ;;
-    -asan)   ASAN=1; shift ;;
-    -clean)  CLEAN=1; shift ;;
-    -h)      print_usage ;;
+    -asan)          ASAN=1; shift ;;
+    -clean)         CLEAN=1; shift ;;
+    -grammar)       GRAMMAR_SO="$2"; shift 2 ;;
+    -grammar-only)  GRAMMAR_ONLY=1; shift ;;
+    -trees)         TREES_DIR="$2"; shift 2 ;;
+    -h)             print_usage ;;
     *)       echo -e "${RED}Unknown option: $1${RESET}"; print_usage ;;
   esac
 done
@@ -115,6 +126,8 @@ SEEDS_DIR="$(to_abs "$SEEDS_DIR")"
 PUA_SRC="$(to_abs "$PUA_SRC")"
 for i in "${!INCLUDE_DIRS[@]}"; do INCLUDE_DIRS[$i]="$(to_abs "${INCLUDE_DIRS[$i]}")"; done
 for i in "${!LINK_FILES[@]}";   do LINK_FILES[$i]="$(to_abs "${LINK_FILES[$i]}")";     done
+[ -n "$GRAMMAR_SO" ] && GRAMMAR_SO="$(to_abs "$GRAMMAR_SO")"
+[ -n "$TREES_DIR"  ] && TREES_DIR="$(to_abs "$TREES_DIR")"
 
 # --- Determine the target binary ---
 if [[ "$MODE" == "plain" ]]; then
@@ -134,6 +147,14 @@ fi
 if [[ ! -d "$SEEDS_DIR" || -z "$(ls -A "$SEEDS_DIR")" ]]; then
   echo -e "${RED}Seeds directory empty or missing:${RESET} $SEEDS_DIR"
   exit 1
+fi
+
+# --- Validate grammar mutator options ---
+if [[ -n "$GRAMMAR_SO" && ! -f "$GRAMMAR_SO" ]]; then
+  echo -e "${RED}Grammar mutator .so not found:${RESET} $GRAMMAR_SO"; exit 1
+fi
+if [[ -n "$TREES_DIR" && ! -d "$TREES_DIR" ]]; then
+  echo -e "${RED}Trees directory not found:${RESET} $TREES_DIR"; exit 1
 fi
 
 # --- Build the target binary (plain) or verify it exists (instrumented) ---
@@ -201,6 +222,11 @@ echo -e "${YELLOW}Input mode:  ${RESET}$INPUT_MODE"
 [[ "$INPUT_MODE" != "argv" && ${#TARGET_ARGS[@]} -gt 0 ]] && \
   echo -e "${YELLOW}Target args: ${RESET}${TARGET_ARGS[*]}"
 echo -e "${YELLOW}ASan:        ${RESET}$([[ "$ASAN" == "1" ]] && echo "enabled" || echo "disabled")"
+if [[ -n "$GRAMMAR_SO" ]]; then
+  echo -e "${YELLOW}Grammar:     ${RESET}$GRAMMAR_SO"
+  echo -e "${YELLOW}  only:      ${RESET}$([[ "$GRAMMAR_ONLY" == "1" ]] && echo "yes (AFL mutations suppressed)" || echo "no (combined with AFL mutations)")"
+  [[ -n "$TREES_DIR" ]] && echo -e "${YELLOW}  trees:     ${RESET}$TREES_DIR"
+fi
 echo -e "${YELLOW}Seeds:       ${RESET}$SEEDS_DIR"
 echo -e "${YELLOW}Output:      ${RESET}$OUT_DIR"
 echo -e "${YELLOW}AFL cmd:     ${RESET}afl-fuzz -i SEEDS -o OUT -- ${RUN_TARGET[*]}"
@@ -211,6 +237,15 @@ echo -e "${CYAN}==================================${RESET}"
 export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1
 export AFL_SKIP_CPUFREQ=1
 [[ "$ASAN" == "1" ]] && export AFL_USE_ASAN=1
+if [[ -n "$GRAMMAR_SO" ]]; then
+  export AFL_CUSTOM_MUTATOR_LIBRARY="$GRAMMAR_SO"
+  [[ "$GRAMMAR_ONLY" == "1" ]] && export AFL_CUSTOM_MUTATOR_ONLY=1
+  if [[ -n "$TREES_DIR" ]]; then
+    mkdir -p "$OUT_DIR/default"
+    cp -r "$TREES_DIR" "$OUT_DIR/default/trees"
+    echo -e "${YELLOW}Copied tree cache -> ${RESET}$OUT_DIR/default/trees"
+  fi
+fi
 
 cd "$MIMICRY_DIR"
 

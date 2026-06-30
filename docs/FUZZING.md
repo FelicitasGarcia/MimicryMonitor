@@ -177,6 +177,91 @@ Options: `--skip-build` (binary already built), `--skip-fuzz` (re-plot only),
 
 ---
 
+## Grammar-guided fuzzing (AFL Grammar Mutator)
+
+`fuzz.sh` supports the [AFL Grammar Mutator](https://github.com/AFLplusplus/Grammar-Mutator)
+via three flags. The mutator generates structurally valid inputs from a grammar (e.g. well-formed
+`cat` command lines), which helps AFL explore more meaningful program paths than random
+byte-level mutations alone.
+
+### Prerequisites
+
+The grammar mutator must already be built for your target grammar. The cat grammar is
+pre-built at `/home/felicitas/Grammar-Mutator/`:
+
+```
+libgrammarmutator-cat.so   ← custom mutator loaded by AFL++
+grammar_generator-cat       ← (re-)generates seeds + tree cache
+seeds-cat/                  ← 100 pre-generated seed inputs
+trees-cat/                  ← tree representations for those seeds
+```
+
+### Flags
+
+| Flag | Meaning |
+|------|---------|
+| `-grammar LIB`   | Path to `libgrammarmutator-*.so`; sets `AFL_CUSTOM_MUTATOR_LIBRARY` |
+| `-grammar-only`  | Also set `AFL_CUSTOM_MUTATOR_ONLY=1` — suppress AFL's own byte mutations |
+| `-trees DIR`     | Pre-generated tree cache; copied to `<out>/default/trees/` before fuzzing starts |
+
+> **Why copy the trees?** The grammar mutator stores tree representations of each seed
+> alongside the AFL output queue. Pre-seeding `<out>/default/trees/` with the matching
+> tree files for your seeds avoids the mutator having to re-parse every seed from scratch
+> on the first run, which matters for seeds that don't parse cleanly as plain text.
+
+### Example — catCU with grammar-guided mutations
+
+```bash
+# 1. Build the instrumented binary (once)
+./pipeline/run-mimicry.sh -afl -policy stop-v \
+  -pua   examples/catCU/catPUA.c \
+  -op    examples/catCU/catOP.c \
+  -sigma examples/catCU/catSigma.txt \
+  -Ianalyze    /PATH/TO/coreutils/src /PATH/TO/coreutils/lib \
+  -Iinstrument /PATH/TO/coreutils/lib/libcoreutils.a \
+               /PATH/TO/coreutils/src/version.o
+
+# 2. Fuzz with grammar mutations (combined with AFL's own mutations)
+bash pipeline/fuzz.sh \
+  -input file \
+  -i /home/felicitas/Grammar-Mutator/seeds-cat \
+  -grammar /home/felicitas/Grammar-Mutator/libgrammarmutator-cat.so \
+  -trees   /home/felicitas/Grammar-Mutator/trees-cat \
+  -t 120 -clean
+
+# 3. Grammar mutations only (no random byte mutations from AFL)
+bash pipeline/fuzz.sh \
+  -input file \
+  -i /home/felicitas/Grammar-Mutator/seeds-cat \
+  -grammar      /home/felicitas/Grammar-Mutator/libgrammarmutator-cat.so \
+  -grammar-only \
+  -trees        /home/felicitas/Grammar-Mutator/trees-cat \
+  -t 120 -clean
+```
+
+The same flags work with `-plain` for the baseline:
+
+```bash
+bash pipeline/fuzz.sh -plain -input file \
+  -pua  examples/catCU/catPUA.c \
+  -I    /PATH/TO/coreutils/src /PATH/TO/coreutils/lib \
+  -link /PATH/TO/coreutils/lib/libcoreutils.a /PATH/TO/coreutils/src/version.o \
+  -i    /home/felicitas/Grammar-Mutator/seeds-cat \
+  -grammar      /home/felicitas/Grammar-Mutator/libgrammarmutator-cat.so \
+  -grammar-only \
+  -trees        /home/felicitas/Grammar-Mutator/trees-cat \
+  -t 120 -clean
+```
+
+### Regenerating seeds
+
+```bash
+cd /home/felicitas/Grammar-Mutator
+./grammar_generator-cat 100 1000 seeds-cat trees-cat
+```
+
+---
+
 ## fuzz.sh reference
 
 ```
