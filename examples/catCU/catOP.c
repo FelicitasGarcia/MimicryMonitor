@@ -808,6 +808,6 @@
 
      if (have_read_stdin && close (STDIN_FILENO) < 0)
        error (EXIT_FAILURE, errno, _("closing standard input"));
-
+      
      return ok ? EXIT_SUCCESS : EXIT_FAILURE;
    }

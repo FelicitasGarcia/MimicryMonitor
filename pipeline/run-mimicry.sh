@@ -30,6 +30,7 @@ AFLFUZZ=0
 LOGFILE=""
 POLICY=""
 RENDER=1
+BIN_SUFFIX=""  # -bin-suffix: appended to instrumented binary name
 
 print_usage() {
   echo "Usage: $0 [options]"
@@ -84,7 +85,8 @@ while [[ $# -gt 0 ]]; do
         LOGFILE="/tmp/mm_monitor.log"
       fi
       ;;
-    -policy) POLICY="$2"; shift 2 ;;
+    -policy)     POLICY="$2"; shift 2 ;;
+    -bin-suffix) BIN_SUFFIX="$2"; shift 2 ;;
     -h) print_usage ;;
     *)
       echo -e "${RED}Unknown option: $1${RESET}"
@@ -110,10 +112,11 @@ for i in "${!IINSTRUMENT[@]}"; do IINSTRUMENT[$i]="$(to_abs "${IINSTRUMENT[$i]}"
 
 # --- Construir flags para instrument.sh ---
 INSTRUMENT_FLAGS=()
-[[ "$AFLFUZZ" == "1" ]]   && INSTRUMENT_FLAGS+=(-afl)
-[[ -n "$LOGFILE" ]]        && INSTRUMENT_FLAGS+=(-log "$LOGFILE")
-[[ -n "$POLICY" ]]         && INSTRUMENT_FLAGS+=(-policy "$POLICY")
+[[ "$AFLFUZZ" == "1" ]]         && INSTRUMENT_FLAGS+=(-afl)
+[[ -n "$LOGFILE" ]]              && INSTRUMENT_FLAGS+=(-log "$LOGFILE")
+[[ -n "$POLICY" ]]               && INSTRUMENT_FLAGS+=(-policy "$POLICY")
 [[ "$IINSTRUMENTBOOL" == "1" ]] && INSTRUMENT_FLAGS+=(-I "${IINSTRUMENT[@]}")
+[[ -n "$BIN_SUFFIX" ]]           && INSTRUMENT_FLAGS+=(-bin-suffix "$BIN_SUFFIX")
 
 echo -e "${CYAN}===== MIMICRY ANALYSIS PIPELINE =====${RESET}"
 echo -e "${YELLOW}PUA:     ${RESET}$PUA_PATH"

@@ -708,22 +708,24 @@
 
          if (! (S_ISFIFO (stat_buf.st_mode) || S_ISSOCK (stat_buf.st_mode) || S_TYPEISSHM (&stat_buf) || S_TYPEISTMO (&stat_buf)) && have_out_dev && stat_buf.st_dev == out_dev && stat_buf.st_ino == out_ino)
            {
-           off_t in_pos = lseek (input_desc, 0, SEEK_CUR);
-           if (0 <= in_pos)
-             {
-               if (out_flags < -1)
-                 out_flags = fcntl (STDOUT_FILENO, F_GETFL);
-               int whence = (0 <= out_flags && out_flags & O_APPEND ? SEEK_END : SEEK_CUR);
-
-               if (in_pos < lseek (STDOUT_FILENO, 0, whence))
-                 {
-                   error (0, 0, _("%s: input file is output file"), quotef (infile));
-                   ok = false;
-
-                   goto contin;
+             extern volatile int mm_target_reached;
+             mm_target_reached = 1;
+             if (out_flags < -1)
+                out_flags = fcntl (STDOUT_FILENO, F_GETFL);
+                bool exhausting = 0 <= out_flags && out_flags & O_APPEND;
+                if (!exhausting)
+               {
+                 off_t in_pos = lseek (input_desc, 0, SEEK_CUR);
+                 if (0 <= in_pos)
+                       exhausting = in_pos < lseek (STDOUT_FILENO, 0, SEEK_CUR);
                }
-            }
-          }
+               if (exhausting)
+               {
+                    error (0, 0, _("%s: input file is output file"), quotef (infile));
+                    ok = false;
+                    goto contin;
+               }
+           }
 
          /* Pointer to the input buffer.  */
          char *inbuf;
@@ -808,6 +810,6 @@
 
      if (have_read_stdin && close (STDIN_FILENO) < 0)
        error (EXIT_FAILURE, errno, _("closing standard input"));
-
+       
      return ok ? EXIT_SUCCESS : EXIT_FAILURE;
    }

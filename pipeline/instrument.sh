@@ -29,6 +29,7 @@ ILIBS=()
 PUA_PATH=""   # if set, generate IR locally before instrumenting
 ICBOOL=0
 ICDIRS=()
+BIN_SUFFIX=""  # -bin-suffix: appended to output binary name (for parallel campaigns)
 
 print_usage() {
   echo "Usage: $0 [options]"
@@ -40,6 +41,7 @@ print_usage() {
   echo "  -log [PATH]        Enable and register log reporter (default: /tmp/mm_monitor.log)"
   echo "  -policy POLICY     Monitor policy: stop-v, stop-iv, or n (default: interactive prompt)"
   echo "  -I FILE1 [FILE2]   Extra libraries to link"
+  echo "  -bin-suffix SUFFIX Append SUFFIX to the output binary name (e.g. _sleep)"
   echo "  -h                 Show this help message"
   exit 0
 }
@@ -47,6 +49,7 @@ print_usage() {
 while [[ $# -gt 0 ]]; do
   case $1 in
     -pua) PUA_PATH="$2"; shift 2 ;;
+    -bin-suffix) BIN_SUFFIX="$2"; shift 2 ;;
     -Ic)
       ICBOOL=1; shift
       while [[ $# -gt 0 && ! $1 =~ ^- ]]; do ICDIRS+=("$1"); shift; done ;;
@@ -98,6 +101,7 @@ to_abs() {
 [ -n "$PUA_PATH" ] && PUA_PATH="$(to_abs "$PUA_PATH")"
 for i in "${!ILIBS[@]}";  do ILIBS[$i]="$(to_abs "${ILIBS[$i]}")";   done
 for i in "${!ICDIRS[@]}"; do ICDIRS[$i]="$(to_abs "${ICDIRS[$i]}")"; done
+[[ -n "$BIN_SUFFIX" ]] && EXECUTABLE_NAME="${EXECUTABLE_NAME}${BIN_SUFFIX}"
 
 # --- Seleccionar compilador ---
 if [[ "$AFLFUZZ" == "1" ]]; then

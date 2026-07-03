@@ -47,6 +47,7 @@ import sys
 import time
 from pathlib import Path
 
+import warnings
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -61,7 +62,9 @@ CU     = Path("/home/felicitas/Desktop/DOC/MM/coreutils")
 STUB   = REPO / "instrumentation/mm_target_stub.c"
 
 # ── example configs ───────────────────────────────────────────────────────────
-# Each entry: pua, op, sigma, seeds, input_mode, title, ianalyze, iinstrument
+# Required keys: pua, op, sigma, seeds, input_mode, title, ianalyze, iinstrument
+# Optional keys (override with CLI flags): grammar, grammar_only, trees,
+#                                          wrapper_src, exec_timeout
 EXAMPLES = {
     "default": {
         "pua":          REPO / "inputs/programPUA.c",
@@ -99,8 +102,13 @@ EXAMPLES = {
         "pua":          REPO / "examples/catCU/catPUA.c",
         "op":           REPO / "examples/catCU/catOP.c",
         "sigma":        REPO / "examples/catCU/catSigma.txt",
-        "seeds":        REPO / "evaluation/seeds-cat",
-        "input_mode":   "file",
+        "seeds":        Path("/home/felicitas/Grammar-Mutator/seeds-cat"),
+        "input_mode":   "argv",
+        "wrapper_src":  REPO / "pipeline/afl_cat_cmdline_wrapper.c",
+        "grammar":      Path("/home/felicitas/Grammar-Mutator/libgrammarmutator-cat.so"),
+        "grammar_only": True,
+        "trees":        Path("/home/felicitas/Grammar-Mutator/trees-cat"),
+        "exec_timeout": "5000",
         "title":        "catCU",
         "ianalyze":     [str(CU / "src"), str(CU / "lib")],
         "iinstrument":  [
@@ -130,8 +138,11 @@ def parse_args():
                    help="seconds per trial (default 60)")
     p.add_argument("--seeds",       type=Path, default=None,
                    help="override seed directory (default: from --example)")
+    p.add_argument("--campaign",    default=None,
+                   help="campaign name: namespaces results to results/<example>/<campaign> "
+                        "and appends _<campaign> to binary names so parallel runs don't collide")
     p.add_argument("--results",     type=Path, default=None,
-                   help="results directory (default: evaluation/bench/results/<example>)")
+                   help="results directory (default: evaluation/bench/results/<example>[/<campaign>])")
     p.add_argument("--out",         type=Path, default=None,
                    help="output PNG (default: results/<example>.png)")
     p.add_argument("--skip-build",  action="store_true",
@@ -139,12 +150,38 @@ def parse_args():
     p.add_argument("--skip-fuzz",   action="store_true",
                    help="skip fuzzing, just re-plot from existing results")
     p.add_argument("--dry-run",     action="store_true")
+    p.add_argument("--grammar",     type=Path, default=None,
+                   help="path to libgrammarmutator-*.so (sets AFL_CUSTOM_MUTATOR_LIBRARY)")
+    p.add_argument("--grammar-only", action="store_true",
+                   help="suppress AFL's own mutations (AFL_CUSTOM_MUTATOR_ONLY=1)")
+    p.add_argument("--trees",       type=Path, default=None,
+                   help="pre-generated tree cache dir passed to fuzz.sh -trees")
+    p.add_argument("--wrapper-src", type=Path, default=None,
+                   help="custom wrapper .c compiled instead of afl_fuzz_wrapper.c (argv mode)")
+    p.add_argument("--input-mode",  default=None,
+                   help="override the example's default input mode (argv|file|stdin)")
+    p.add_argument("--exec-timeout", default=None,
+                   help="per-execution timeout passed to afl-fuzz as -t MS (default: AFL's 1000ms)")
     args = p.parse_args()
     ex = EXAMPLES[args.example]
     if args.seeds is None:
         args.seeds = ex["seeds"]
     if args.results is None:
-        args.results = REPO / "evaluation/bench/results" / args.example
+        base = REPO / "evaluation/bench/results" / args.example
+        args.results = base / (args.campaign or "default")
+    # Fall back to example-level defaults for optional keys; CLI flags override.
+    if args.grammar is None and "grammar" in ex:
+        args.grammar = ex["grammar"]
+    if not args.grammar_only:
+        args.grammar_only = ex.get("grammar_only", False)
+    if args.trees is None and "trees" in ex:
+        args.trees = ex["trees"]
+    if args.wrapper_src is None and "wrapper_src" in ex:
+        args.wrapper_src = ex["wrapper_src"]
+    if args.input_mode is None:
+        args.input_mode = ex["input_mode"]
+    if args.exec_timeout is None and "exec_timeout" in ex:
+        args.exec_timeout = ex["exec_timeout"]
     return args
 
 # ── env ──────────────────────────────────────────────────────────────────────
@@ -173,10 +210,50 @@ def build_instrumented(args):
         cmd += ["-Ianalyze"] + ex["ianalyze"]
     if ex["iinstrument"]:
         cmd += ["-Iinstrument"] + ex["iinstrument"]
+    if args.campaign:
+        cmd += ["-bin-suffix", f"_{args.campaign}"]
     r = _run(cmd)
     if r.returncode != 0:
         sys.exit(f"[build] FAILED (rc={r.returncode})")
     print("[build] OK")
+
+def build_plain(args):
+    """Compile the plain PUA binary once, outside the trial timer."""
+    ex = EXAMPLES[args.example]
+    print(f"\n[build-plain] compiling plain binary ({args.example}) …")
+    cmd = [
+        "bash", str(FUZZ), "-plain",
+        "-pua", str(ex["pua"]),
+        "-i",   str(args.seeds),
+        "-o",   "/tmp/targetbench_precompile",
+        "-t",   "1",          # run AFL for 1 second just to get past the compile step
+    ]
+    if ex["plain_I"]:
+        cmd += ["-I"] + ex["plain_I"]
+    if ex["plain_link"]:
+        cmd += ["-link", str(STUB)] + ex["plain_link"]
+    else:
+        cmd += ["-link", str(STUB)]
+    if args.wrapper_src:
+        cmd += ["-wrapper-src", str(args.wrapper_src)]
+    if args.grammar:
+        cmd += ["-grammar", str(args.grammar)]
+    if args.grammar_only:
+        cmd += ["-grammar-only"]
+    if args.trees:
+        cmd += ["-trees", str(args.trees)]
+    if args.exec_timeout:
+        cmd += ["-exec-timeout", args.exec_timeout]
+    if args.campaign:
+        cmd += ["-bin-suffix", f"_{args.campaign}"]
+    r = _run(cmd, env=AFL_ENV)
+    if r.returncode not in (0, 1):   # AFL timeout exits 1; compile failure exits non-zero too
+        # Check binary exists — if so, compile succeeded even if AFL had an error
+        suffix = f"_{args.campaign}" if args.campaign else ""
+        plain_bin = REPO / f"work/outputs/pua_plain{suffix}"
+        if not plain_bin.exists():
+            sys.exit(f"[build-plain] FAILED (rc={r.returncode})")
+    print("[build-plain] OK")
 
 # ── fuzz one trial ───────────────────────────────────────────────────────────
 def fuzz_trial(variant, trial_dir, log_path, args):
@@ -189,20 +266,33 @@ def fuzz_trial(variant, trial_dir, log_path, args):
 
     base_cmd = [
         "bash", str(FUZZ),
-        "-input", ex["input_mode"],
+        "-input", args.input_mode,
         "-i",     str(args.seeds),
         "-o",     str(trial_dir),
         "-t",     str(args.time),
     ]
+    if args.wrapper_src:
+        base_cmd += ["-wrapper-src", str(args.wrapper_src)]
 
+    if args.campaign:
+        base_cmd += ["-bin-suffix", f"_{args.campaign}"]
     if variant == "plain":
-        base_cmd += ["-plain", "-pua", str(ex["pua"])]
+        base_cmd += ["-plain", "-no-recompile", "-pua", str(ex["pua"])]
         if ex["plain_I"]:
             base_cmd += ["-I"] + ex["plain_I"]
         if ex["plain_link"]:
             base_cmd += ["-link", str(STUB)] + ex["plain_link"]
         else:
             base_cmd += ["-link", str(STUB)]
+
+    if args.grammar:
+        base_cmd += ["-grammar", str(args.grammar)]
+    if args.grammar_only:
+        base_cmd += ["-grammar-only"]
+    if args.trees:
+        base_cmd += ["-trees", str(args.trees)]
+    if args.exec_timeout:
+        base_cmd += ["-exec-timeout", args.exec_timeout]
 
     fuzz_log = trial_dir / "fuzz.log"
     with fuzz_log.open("w") as f:
@@ -270,6 +360,8 @@ def parse_plot_data(path):
 
 # ── run all trials ───────────────────────────────────────────────────────────
 def run_all(args):
+    if not args.skip_fuzz:
+        build_plain(args)
     for target in ("instrumented", "plain"):
         print(f"\n{'─'*50}")
         print(f" target: {LABELS[target]}")
@@ -309,7 +401,14 @@ def save_summary(data, args):
             total = len(hits)
             n_hit = sum(hits)
             pd    = d["plot_data"][i]
-            eps   = float(pd["eps"][-1]) if len(pd["eps"]) else 0.0
+            # Use total_execs/elapsed from plot_data rather than the last
+            # instantaneous eps entry, which can be unreliable (smoothed window).
+            if len(pd["execs"]) and len(pd["time"]) and pd["time"][-1] > 0:
+                eps = float(pd["execs"][-1]) / float(pd["time"][-1])
+            elif len(pd["eps"]):
+                eps = float(pd["eps"][-1])
+            else:
+                eps = 0.0
             rows.append({
                 "target":    target,
                 "trial":     i + 1,
@@ -338,7 +437,7 @@ def save_summary(data, args):
 
 # ── plots ────────────────────────────────────────────────────────────────────
 def make_plots(data, rows, args, out_path):
-    fig, axes = plt.subplots(2, 2, figsize=(13, 9))
+    fig, axes = plt.subplots(2, 2, figsize=(13, 11))
     ex_title = EXAMPLES[args.example]["title"]
     fig.suptitle(f"MimicryMonitor — {ex_title} target reachability\n"
                  f"({args.trials} trials × {args.time}s)",
@@ -422,40 +521,107 @@ def make_plots(data, rows, args, out_path):
     ax.set_title("Throughput (exec/sec)")
     ax.grid(True, axis="y", alpha=0.3)
 
-    # ── 4. AFL edge coverage over time ───────────────────────────────────────
+    # ── 4. Hit rate — all trials sorted ascending, interleaved by mode ──────
     ax = ax_edges
-    for target, d in data.items():
-        c = COLORS[target]
-        all_series = []
-        for pd in d["plot_data"]:
-            if len(pd["time"]) == 0:
-                continue
-            ax.plot(pd["time"], pd["edges"], color=c, alpha=0.25, linewidth=0.8)
-            all_series.append((pd["time"], pd["edges"]))
-
-        if len(all_series) > 1:
-            grid = np.arange(0, args.time + 1, dtype=float)
-            mat = []
-            for t, e in all_series:
-                idx = np.searchsorted(t, grid, side="right") - 1
-                mat.append(np.where(idx >= 0, e[np.clip(idx, 0, len(e)-1)], 0))
-            mat = np.vstack(mat)
-            ax.plot(grid, mat.mean(axis=0), color=c, linewidth=2, label=LABELS[target])
-            ax.fill_between(grid, mat.min(axis=0), mat.max(axis=0), color=c, alpha=0.12)
-        elif len(all_series) == 1:
-            t, e = all_series[0]
-            ax.plot(t, e, color=c, linewidth=2, label=LABELS[target])
-
-    ax.set_xlabel("Time (s)")
-    ax.set_ylabel("Edges found")
-    ax.set_title("AFL++ edge coverage over time")
+    SHORT = {"instrumented": "I", "plain": "P"}
+    all_bars = []
+    for r in rows:
+        all_bars.append((r["hit_rate"] * 100,
+                         f"{SHORT[r['target']]}{r['trial']}",
+                         COLORS[r["target"]],
+                         r["target"]))
+    all_bars.sort(key=lambda x: x[0])
+    bar_vals   = [b[0] for b in all_bars]
+    bar_labels = [b[1] for b in all_bars]
+    bar_colors = [b[2] for b in all_bars]
+    bars = ax.bar(range(len(bar_vals)), bar_vals, color=bar_colors, alpha=0.85)
+    for bar, v in zip(bars, bar_vals):
+        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.3,
+                f"{v:.1f}%", ha="center", va="bottom", fontsize=7)
+    ax.set_xticks(range(len(bar_labels)))
+    ax.set_xticklabels(bar_labels, fontsize=7)
+    ax.set_ylabel("Hit rate (%)")
+    ax.set_title("All trials ranked by hit rate (I=instrumented, P=plain)")
+    for target in targets:
+        ax.bar(0, 0, color=COLORS[target], alpha=0.85, label=LABELS[target])
     ax.legend(fontsize=8)
-    ax.grid(True, alpha=0.3)
+    ax.grid(True, axis="y", alpha=0.3)
 
-    plt.tight_layout()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        plt.tight_layout(pad=1.5)
     fig.savefig(out_path, dpi=150)
     print(f"\n[plot] saved → {out_path}")
     plt.close(fig)
+
+# ── markdown report ──────────────────────────────────────────────────────────
+def save_report(data, rows, args):
+    ex_title = EXAMPLES[args.example]["title"]
+    campaign  = args.campaign or "default"
+    lines = []
+    lines.append(f"# MimicryMonitor — {ex_title}")
+    lines.append(f"\n**Campaign:** {campaign}  ")
+    lines.append(f"**Trials:** {args.trials} × {args.time}s\n")
+
+    for target in ("instrumented", "plain"):
+        t_rows = [r for r in rows if r["target"] == target]
+        if not t_rows:
+            continue
+        lines.append(f"## {LABELS[target]}\n")
+        lines.append("| Trial | Execs | Hits | Hit % | Exec/s |")
+        lines.append("|------:|------:|-----:|------:|-------:|")
+        for r in t_rows:
+            lines.append(f"| {r['trial']} | {r['total_execs']} | {r['target_hits']} "
+                         f"| {r['hit_rate']*100:.1f}% | {r['mean_eps']:.1f} |")
+
+        execs = [r["total_execs"] for r in t_rows]
+        hits  = [r["target_hits"] for r in t_rows]
+        rates = [r["hit_rate"] for r in t_rows]
+        mean_execs = sum(execs) / len(execs)
+        mean_hits  = sum(hits)  / len(hits)
+        mean_rate  = sum(rates) / len(rates)
+        lines.append(f"| **Mean** | **{mean_execs:.1f}** | **{mean_hits:.1f}** "
+                     f"| **{mean_rate*100:.1f}%** | |")
+
+        best  = max(t_rows, key=lambda r: r["hit_rate"])
+        worst = min(t_rows, key=lambda r: r["hit_rate"])
+        ratio = best["hit_rate"] / worst["hit_rate"] if worst["hit_rate"] > 0 else float("inf")
+        lines.append(f"\n**Best:** {best['hit_rate']*100:.1f}% (trial {best['trial']})  ")
+        lines.append(f"**Worst:** {worst['hit_rate']*100:.1f}% (trial {worst['trial']})  ")
+        lines.append(f"**Best/worst ratio:** {ratio:.2f}×\n")
+
+    # Summary comparison table
+    lines.append("## Summary\n")
+    lines.append("| Metric | Instrumented | Plain |")
+    lines.append("|--------|-------------|-------|")
+    for target_label, target_key in [("Instrumented", "instrumented"), ("Plain", "plain")]:
+        pass  # built below
+    def stat(key, fn):
+        row = {}
+        for t in ("instrumented", "plain"):
+            t_rows = [r for r in rows if r["target"] == t]
+            row[t] = fn(t_rows) if t_rows else 0
+        return row
+    metrics = [
+        ("Mean execs/trial", lambda rs: f"{sum(r['total_execs'] for r in rs)/len(rs):.1f}"),
+        ("Mean hits/trial",  lambda rs: f"{sum(r['target_hits'] for r in rs)/len(rs):.1f}"),
+        ("Mean hit rate",    lambda rs: f"{sum(r['hit_rate'] for r in rs)/len(rs)*100:.1f}%"),
+        ("Best hit rate",    lambda rs: f"{max(r['hit_rate'] for r in rs)*100:.1f}%"),
+        ("Worst hit rate",   lambda rs: f"{min(r['hit_rate'] for r in rs)*100:.1f}%"),
+        ("Best/worst ratio", lambda rs: f"{max(r['hit_rate'] for r in rs)/min(r['hit_rate'] for r in rs):.2f}×"
+                             if min(r['hit_rate'] for r in rs) > 0 else "∞"),
+    ]
+    for label, fn in metrics:
+        i_rows = [r for r in rows if r["target"] == "instrumented"]
+        p_rows = [r for r in rows if r["target"] == "plain"]
+        i_val = fn(i_rows) if i_rows else "—"
+        p_val = fn(p_rows) if p_rows else "—"
+        lines.append(f"| {label} | {i_val} | {p_val} |")
+
+    md_path = args.results / "report.md"
+    md_path.write_text("\n".join(lines) + "\n")
+    print(f"[report] saved → {md_path}")
+
 
 # ── main ─────────────────────────────────────────────────────────────────────
 def main():
@@ -473,6 +639,7 @@ def main():
     print("\n[parse] loading results …")
     data = load_results(args)
     rows = save_summary(data, args)
+    save_report(data, rows, args)
     make_plots(data, rows, args, args.out)
     print("[done]")
 

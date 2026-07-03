@@ -77,3 +77,6 @@ evaluation/bench/stopstats \
 
 # EJEMPLO JUGUETE 
 evaluation/bench/.venv/bin/python evaluation/bench/targetbench.py  --example default --trials 1 --time 30
+
+# EJEMPLO CAT CON GRAMATICA Y ARGV Y TIMEOUT PARA SLEEP
+evaluation/bench/.venv/bin/python evaluation/bench/targetbench.py --example cat --input-mode argv --wrapper-src pipeline/afl_cat_cmdline_wrapper.c --grammar /home/felicitas/Grammar-Mutator/libgrammarmutator-cat.so --grammar-only --trees /home/felicitas/Grammar-Mutator/trees-cat/ --trials 1 --time 10 --exec-timeout 50000

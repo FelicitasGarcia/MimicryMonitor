@@ -36,12 +36,27 @@ Useful flags:
 
 | Flag | Meaning |
 |------|---------|
-| `--trials N`    | trials per target (default 5) |
-| `--time S`      | seconds per AFL trial (default 60) |
-| `--example`     | `default` \| `expandcu` |
-| `--skip-build`  | binary already built, skip `run-mimicry.sh` |
-| `--skip-fuzz`   | re-plot from existing results only |
-| `--dry-run`     | print commands without running |
+| `--trials N`      | trials per target (default 5) |
+| `--time S`        | seconds per AFL trial (default 60) |
+| `--example`       | `default` \| `expandcu` \| `cat` |
+| `--seeds DIR`     | override seed directory |
+| `--skip-build`    | binary already built, skip `run-mimicry.sh` |
+| `--skip-fuzz`     | re-plot from existing results only |
+| `--dry-run`       | print commands without running |
+| `--grammar LIB`   | path to `libgrammarmutator-*.so`; enables grammar-guided mutations |
+| `--grammar-only`  | suppress AFL's own byte mutations (`AFL_CUSTOM_MUTATOR_ONLY=1`) |
+| `--trees DIR`     | pre-generated tree cache dir (passed to `fuzz.sh -trees`) |
+
+**Grammar Mutator example (catCU):**
+
+```bash
+evaluation/bench/.venv/bin/python evaluation/bench/targetbench.py \
+  --example cat --trials 3 --time 120 \
+  --seeds  /home/felicitas/Grammar-Mutator/seeds-cat \
+  --grammar      /home/felicitas/Grammar-Mutator/libgrammarmutator-cat.so \
+  --grammar-only \
+  --trees        /home/felicitas/Grammar-Mutator/trees-cat
+```
 
 ## Output panels
 

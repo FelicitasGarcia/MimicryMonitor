@@ -209,7 +209,24 @@ trees-cat/                  ← tree representations for those seeds
 > tree files for your seeds avoids the mutator having to re-parse every seed from scratch
 > on the first run, which matters for seeds that don't parse cleanly as plain text.
 
-### Example — catCU with grammar-guided mutations
+### Two modes
+
+**File-content mode** (`-input file`) — AFL writes grammar output to a temp file and
+passes its path as an argument to catPUA. Good for testing flag combinations; does NOT
+reach the fd-aliasing patch (aliasing depends on execution setup, not file content).
+
+**Command-line mode** (`-input argv` + `-wrapper-src`) — the grammar output IS the
+command line. A custom wrapper (`pipeline/afl_cat_cmdline_wrapper.c`) parses it, maps
+sentinel filenames (`fuzz_a`, `fuzz_b`, `fuzz_c`) to real temp files, and when it sees
+`cat fuzz_a > fuzz_a`, opens stdout to the same inode as the input fd before exec-ing
+catPUA — triggering the fd-aliasing check.
+
+The `cat_command_line.json` grammar includes:
+- **Redirect alternatives** in `<invocation>`: `cat <files> > <known_file>`
+- **`<known_file>`**: `fuzz_a | fuzz_b | fuzz_c` — appears in both `<files>` and after
+  `>`, so the mutator can produce same-file-both-sides patterns naturally.
+
+### Example — catCU, command-line mode (fd-aliasing)
 
 ```bash
 # 1. Build the instrumented binary (once)
@@ -221,31 +238,23 @@ trees-cat/                  ← tree representations for those seeds
   -Iinstrument /PATH/TO/coreutils/lib/libcoreutils.a \
                /PATH/TO/coreutils/src/version.o
 
-# 2. Fuzz with grammar mutations (combined with AFL's own mutations)
+# 2. Fuzz — grammar generates the command line; wrapper handles fd setup
 bash pipeline/fuzz.sh \
-  -input file \
-  -i /home/felicitas/Grammar-Mutator/seeds-cat \
-  -grammar /home/felicitas/Grammar-Mutator/libgrammarmutator-cat.so \
-  -trees   /home/felicitas/Grammar-Mutator/trees-cat \
-  -t 120 -clean
-
-# 3. Grammar mutations only (no random byte mutations from AFL)
-bash pipeline/fuzz.sh \
-  -input file \
+  -input argv \
+  -wrapper-src pipeline/afl_cat_cmdline_wrapper.c \
   -i /home/felicitas/Grammar-Mutator/seeds-cat \
   -grammar      /home/felicitas/Grammar-Mutator/libgrammarmutator-cat.so \
   -grammar-only \
   -trees        /home/felicitas/Grammar-Mutator/trees-cat \
   -t 120 -clean
-```
 
-The same flags work with `-plain` for the baseline:
-
-```bash
-bash pipeline/fuzz.sh -plain -input file \
+# 3. Plain baseline (same wrapper, no monitor)
+bash pipeline/fuzz.sh -plain \
   -pua  examples/catCU/catPUA.c \
   -I    /PATH/TO/coreutils/src /PATH/TO/coreutils/lib \
   -link /PATH/TO/coreutils/lib/libcoreutils.a /PATH/TO/coreutils/src/version.o \
+  -input argv \
+  -wrapper-src pipeline/afl_cat_cmdline_wrapper.c \
   -i    /home/felicitas/Grammar-Mutator/seeds-cat \
   -grammar      /home/felicitas/Grammar-Mutator/libgrammarmutator-cat.so \
   -grammar-only \
@@ -253,10 +262,25 @@ bash pipeline/fuzz.sh -plain -input file \
   -t 120 -clean
 ```
 
-### Regenerating seeds
+### Wrapper internals (`pipeline/afl_cat_cmdline_wrapper.c`)
+
+- Reads the AFL `@@` file (a cat command line, e.g. `cat -A fuzz_a > fuzz_a`).
+- Strips the leading `cat`, tokenizes on whitespace.
+- Resolves filenames: `fuzz_{a,b,c}` → `/tmp/cat_fuzz/{a,b,c}` (pre-populated with
+  content including tabs and control chars so `-A`/`-T`/`-v` flags exercise their paths);
+  `/dev/*`, `/proc/*`, `/etc/hostname` pass through; anything else → `/tmp/cat_fuzz/tN`.
+- Detects `> FILENAME`: when the redirect target resolves to the same real path as an
+  input file, opens it **without O_TRUNC** and `dup2`s onto stdout — giving catPUA's
+  fstat check the same inode on both fds.
+- If no input files appear, redirects stdin from `/dev/null` to prevent AFL timeout.
+
+### Regenerating seeds and trees
+
+After editing the grammar, rebuild the `.so` and regenerate:
 
 ```bash
 cd /home/felicitas/Grammar-Mutator
+make clean && make GRAMMAR_FILE=grammars/cat_command_line.json
 ./grammar_generator-cat 100 1000 seeds-cat trees-cat
 ```
 

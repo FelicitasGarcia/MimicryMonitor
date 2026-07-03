@@ -39,6 +39,7 @@ RESET='\033[0m'
 MIMICRY_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SEEDS_DIR="$MIMICRY_DIR/evaluation/seeds"
 TIMEOUT=""
+EXEC_TIMEOUT=""                             # -exec-timeout: per-execution timeout for afl-fuzz (-t MS)
 CLEAN=0
 MODE="instrumented"                         # instrumented | plain
 INPUT_MODE="argv"                           # argv | file | stdin
@@ -51,6 +52,9 @@ ASAN=0
 GRAMMAR_SO=""                               # -grammar: path to libgrammarmutator-*.so
 GRAMMAR_ONLY=0                              # -grammar-only: AFL_CUSTOM_MUTATOR_ONLY=1
 TREES_DIR=""                                # -trees: pre-generated tree cache dir
+WRAPPER_SRC=""                              # -wrapper-src: custom wrapper .c replacing afl_fuzz_wrapper.c
+NO_RECOMPILE=0                              # -no-recompile: skip plain-binary compile (binary already built)
+BIN_SUFFIX=""                               # -bin-suffix: appended to target/wrapper names (for parallel campaigns)
 
 print_usage() {
   cat <<EOF
@@ -84,6 +88,7 @@ Grammar Mutator (optional):
   -grammar LIB    Path to libgrammarmutator-*.so; sets AFL_CUSTOM_MUTATOR_LIBRARY
   -grammar-only   Also set AFL_CUSTOM_MUTATOR_ONLY=1 (suppress AFL's own mutations)
   -trees DIR      Pre-generated tree cache dir; copied to <out>/default/trees/ before fuzzing
+  -wrapper-src F  Custom wrapper .c to compile instead of afl_fuzz_wrapper.c (argv mode only)
 EOF
   exit 0
 }
@@ -104,6 +109,10 @@ while [[ $# -gt 0 ]]; do
     -grammar)       GRAMMAR_SO="$2"; shift 2 ;;
     -grammar-only)  GRAMMAR_ONLY=1; shift ;;
     -trees)         TREES_DIR="$2"; shift 2 ;;
+    -wrapper-src)    WRAPPER_SRC="$2"; shift 2 ;;
+    -no-recompile)   NO_RECOMPILE=1; shift ;;
+    -exec-timeout)   EXEC_TIMEOUT="$2"; shift 2 ;;
+    -bin-suffix)     BIN_SUFFIX="$2"; shift 2 ;;
     -h)             print_usage ;;
     *)       echo -e "${RED}Unknown option: $1${RESET}"; print_usage ;;
   esac
@@ -126,18 +135,19 @@ SEEDS_DIR="$(to_abs "$SEEDS_DIR")"
 PUA_SRC="$(to_abs "$PUA_SRC")"
 for i in "${!INCLUDE_DIRS[@]}"; do INCLUDE_DIRS[$i]="$(to_abs "${INCLUDE_DIRS[$i]}")"; done
 for i in "${!LINK_FILES[@]}";   do LINK_FILES[$i]="$(to_abs "${LINK_FILES[$i]}")";     done
-[ -n "$GRAMMAR_SO" ] && GRAMMAR_SO="$(to_abs "$GRAMMAR_SO")"
-[ -n "$TREES_DIR"  ] && TREES_DIR="$(to_abs "$TREES_DIR")"
+[ -n "$GRAMMAR_SO"   ] && GRAMMAR_SO="$(to_abs "$GRAMMAR_SO")"
+[ -n "$TREES_DIR"    ] && TREES_DIR="$(to_abs "$TREES_DIR")"
+[ -n "$WRAPPER_SRC"  ] && WRAPPER_SRC="$(to_abs "$WRAPPER_SRC")"
 
 # --- Determine the target binary ---
 if [[ "$MODE" == "plain" ]]; then
-  TARGET="$MIMICRY_DIR/work/outputs/pua_plain"
+  TARGET="$MIMICRY_DIR/work/outputs/pua_plain${BIN_SUFFIX}"
   [[ -z "$OUT_DIR" ]] && OUT_DIR="$MIMICRY_DIR/work/afl_out_plain"
-  WRAPPER="$MIMICRY_DIR/pipeline/afl_fuzz_wrapper_plain"
+  WRAPPER="$MIMICRY_DIR/pipeline/afl_fuzz_wrapper_plain${BIN_SUFFIX}"
 else
-  TARGET="$MIMICRY_DIR/work/outputs/instrumentedPUA"
+  TARGET="$MIMICRY_DIR/work/outputs/instrumentedPUA${BIN_SUFFIX}"
   [[ -z "$OUT_DIR" ]] && OUT_DIR="$MIMICRY_DIR/work/afl_out"
-  WRAPPER="$MIMICRY_DIR/pipeline/afl_fuzz_wrapper"
+  WRAPPER="$MIMICRY_DIR/pipeline/afl_fuzz_wrapper${BIN_SUFFIX}"
   if [[ "$PUA_SRC" != "$MIMICRY_DIR/inputs/programPUA.c" || ${#INCLUDE_DIRS[@]} -gt 0 || ${#LINK_FILES[@]} -gt 0 ]]; then
     echo -e "${YELLOW}Note: -pua/-I/-link are ignored in instrumented mode (target is $TARGET).${RESET}"
   fi
@@ -160,22 +170,29 @@ fi
 # --- Build the target binary (plain) or verify it exists (instrumented) ---
 mkdir -p "$MIMICRY_DIR/work/outputs"
 if [[ "$MODE" == "plain" ]]; then
-  if ! command -v afl-clang-fast &>/dev/null; then
-    echo -e "${RED}afl-clang-fast not found. Add AFL++ to PATH.${RESET}"; exit 1
+  if [[ "$NO_RECOMPILE" == "1" ]]; then
+    if [[ ! -x "$TARGET" ]]; then
+      echo -e "${RED}Plain binary not found (and -no-recompile was set):${RESET} $TARGET"; exit 1
+    fi
+    echo -e "${YELLOW}Skipping compile (-no-recompile):${RESET} $TARGET"
+  else
+    if ! command -v afl-clang-fast &>/dev/null; then
+      echo -e "${RED}afl-clang-fast not found. Add AFL++ to PATH.${RESET}"; exit 1
+    fi
+    if [[ ! -f "$PUA_SRC" ]]; then
+      echo -e "${RED}PUA source not found:${RESET} $PUA_SRC"; exit 1
+    fi
+    IFLAGS=()
+    for d in "${INCLUDE_DIRS[@]}"; do IFLAGS+=("-I$d"); done
+    ASANFLAGS=()
+    if [[ "$ASAN" == "1" ]]; then
+      export AFL_USE_ASAN=1
+      ASANFLAGS+=("-fsanitize=address")
+    fi
+    echo -e "${YELLOW}Compiling plain PUA with afl-clang-fast:${RESET} $PUA_SRC${ASAN:+  [ASan enabled]}"
+    afl-clang-fast "${IFLAGS[@]}" "${ASANFLAGS[@]}" "$PUA_SRC" "${LINK_FILES[@]}" -o "$TARGET"
+    echo -e "${GREEN}Compiled:${RESET} $TARGET"
   fi
-  if [[ ! -f "$PUA_SRC" ]]; then
-    echo -e "${RED}PUA source not found:${RESET} $PUA_SRC"; exit 1
-  fi
-  IFLAGS=()
-  for d in "${INCLUDE_DIRS[@]}"; do IFLAGS+=("-I$d"); done
-  ASANFLAGS=()
-  if [[ "$ASAN" == "1" ]]; then
-    export AFL_USE_ASAN=1
-    ASANFLAGS+=("-fsanitize=address")
-  fi
-  echo -e "${YELLOW}Compiling plain PUA with afl-clang-fast:${RESET} $PUA_SRC${ASAN:+  [ASan enabled]}"
-  afl-clang-fast "${IFLAGS[@]}" "${ASANFLAGS[@]}" "$PUA_SRC" "${LINK_FILES[@]}" -o "$TARGET"
-  echo -e "${GREEN}Compiled:${RESET} $TARGET"
 else
   if [[ ! -x "$TARGET" ]]; then
     echo -e "${RED}Instrumented target not found:${RESET} $TARGET"
@@ -193,9 +210,16 @@ case "$INPUT_MODE" in
     if ! command -v afl-clang-fast &>/dev/null; then
       echo -e "${RED}afl-clang-fast not found (needed to build the argv wrapper).${RESET}"; exit 1
     fi
-    echo -e "${YELLOW}Compiling argv wrapper -> ${RESET}$WRAPPER"
-    afl-clang-fast "$MIMICRY_DIR/pipeline/afl_fuzz_wrapper.c" \
-      -DTARGET_BINARY="\"$TARGET\"" -o "$WRAPPER"
+    _WRAPPER_SRC="${WRAPPER_SRC:-$MIMICRY_DIR/pipeline/afl_fuzz_wrapper.c}"
+    if [[ -n "$WRAPPER_SRC" ]]; then
+      if [[ ! -f "$WRAPPER_SRC" ]]; then
+        echo -e "${RED}Wrapper source not found:${RESET} $WRAPPER_SRC"; exit 1
+      fi
+      echo -e "${YELLOW}Compiling custom argv wrapper -> ${RESET}$WRAPPER"
+    else
+      echo -e "${YELLOW}Compiling argv wrapper -> ${RESET}$WRAPPER"
+    fi
+    afl-clang-fast "$_WRAPPER_SRC" -DTARGET_BINARY="\"$TARGET\"" -o "$WRAPPER"
     [[ ${#TARGET_ARGS[@]} -gt 0 ]] && \
       echo -e "${YELLOW}Note: -targs are ignored in argv mode.${RESET}"
     RUN_TARGET=("$WRAPPER" @@)
@@ -249,10 +273,13 @@ fi
 
 cd "$MIMICRY_DIR"
 
+AFL_T_FLAG=()
+[[ -n "$EXEC_TIMEOUT" ]] && AFL_T_FLAG=(-t "$EXEC_TIMEOUT")
+
 if [[ -n "$TIMEOUT" ]]; then
-  timeout "$TIMEOUT" afl-fuzz -i "$SEEDS_DIR" -o "$OUT_DIR" -- "${RUN_TARGET[@]}" || true
+  timeout "$TIMEOUT" afl-fuzz "${AFL_T_FLAG[@]}" -i "$SEEDS_DIR" -o "$OUT_DIR" -- "${RUN_TARGET[@]}" || true
 else
-  afl-fuzz -i "$SEEDS_DIR" -o "$OUT_DIR" -- "${RUN_TARGET[@]}"
+  afl-fuzz "${AFL_T_FLAG[@]}" -i "$SEEDS_DIR" -o "$OUT_DIR" -- "${RUN_TARGET[@]}"
 fi
 
 # --- Summary ---
