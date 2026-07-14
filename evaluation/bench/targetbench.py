@@ -121,6 +121,57 @@ EXAMPLES = {
             str(CU / "src/version.o"),
         ],
     },
+    "cat_no_grammar": {
+        # Same PUA/OP/sigma/seeds as "cat", but with no grammar mutator
+        # configured -- AFL falls back entirely to its own built-in
+        # mutation engine (havoc/splice/bitflip/etc.) starting from the
+        # same seed corpus, instead of grammar-guided command-line mutation.
+        "pua":          REPO / "examples/catCU/catPUA.c",
+        "op":           REPO / "examples/catCU/catOP.c",
+        "sigma":        REPO / "examples/catCU/catSigma.txt",
+        "seeds":        Path("/home/felicitas/Grammar-Mutator/seeds-cat"),
+        "input_mode":   "argv",
+        "wrapper_src":  REPO / "pipeline/afl_cat_cmdline_wrapper.c",
+        "exec_timeout": "5000",
+        "title":        "catCU (no grammar mutator)",
+        "ianalyze":     [str(CU / "src"), str(CU / "lib")],
+        "iinstrument":  [
+            str(CU / "lib/libcoreutils.a"),
+            str(CU / "src/version.o"),
+        ],
+        "plain_I":      [str(CU / "src"), str(CU / "lib")],
+        "plain_link":   [
+            str(CU / "lib/libcoreutils.a"),
+            str(CU / "src/version.o"),
+        ],
+    },
+    "cat_notarget": {
+        # Same as "cat", but catPUA.c has no mm_target_reached probe — the
+        # probe write is a hot-path side effect unrelated to the monitor's
+        # own per-step cost, so overhead_micro.py should measure against
+        # this variant instead of conflating the two.
+        "pua":          REPO / "examples/catCU_notarget/catPUA.c",
+        "op":           REPO / "examples/catCU_notarget/catOP.c",
+        "sigma":        REPO / "examples/catCU_notarget/catSigma.txt",
+        "seeds":        Path("/home/felicitas/Grammar-Mutator/seeds-cat"),
+        "input_mode":   "argv",
+        "wrapper_src":  REPO / "pipeline/afl_cat_cmdline_wrapper.c",
+        "grammar":      Path("/home/felicitas/Grammar-Mutator/libgrammarmutator-cat.so"),
+        "grammar_only": True,
+        "trees":        Path("/home/felicitas/Grammar-Mutator/trees-cat"),
+        "exec_timeout": "5000",
+        "title":        "catCU (no target probe)",
+        "ianalyze":     [str(CU / "src"), str(CU / "lib")],
+        "iinstrument":  [
+            str(CU / "lib/libcoreutils.a"),
+            str(CU / "src/version.o"),
+        ],
+        "plain_I":      [str(CU / "src"), str(CU / "lib")],
+        "plain_link":   [
+            str(CU / "lib/libcoreutils.a"),
+            str(CU / "src/version.o"),
+        ],
+    },
 }
 
 COLORS = {"instrumented": "#d1495b", "plain": "#2e86ab"}
@@ -156,12 +207,20 @@ def parse_args():
                    help="suppress AFL's own mutations (AFL_CUSTOM_MUTATOR_ONLY=1)")
     p.add_argument("--trees",       type=Path, default=None,
                    help="pre-generated tree cache dir passed to fuzz.sh -trees")
+    p.add_argument("--no-grammar",  action="store_true",
+                   help="force the grammar mutator off even if --example defaults one on "
+                        "(AFL uses its own built-in mutations only, seeds unchanged)")
     p.add_argument("--wrapper-src", type=Path, default=None,
                    help="custom wrapper .c compiled instead of afl_fuzz_wrapper.c (argv mode)")
     p.add_argument("--input-mode",  default=None,
                    help="override the example's default input mode (argv|file|stdin)")
     p.add_argument("--exec-timeout", default=None,
                    help="per-execution timeout passed to afl-fuzz as -t MS (default: AFL's 1000ms)")
+    p.add_argument("--policy",       choices=["stop-v", "stop-iv", "n"], default="stop-v",
+                   help="monitor stop policy for the instrumented build (default: stop-v). "
+                        "Use 'n' to disable early aborts — the monitor still runs on every "
+                        "execution but never stops the program early, which isolates pure "
+                        "instrumentation overhead when compared against the plain build.")
     args = p.parse_args()
     ex = EXAMPLES[args.example]
     if args.seeds is None:
@@ -176,6 +235,10 @@ def parse_args():
         args.grammar_only = ex.get("grammar_only", False)
     if args.trees is None and "trees" in ex:
         args.trees = ex["trees"]
+    if args.no_grammar:
+        args.grammar = None
+        args.grammar_only = False
+        args.trees = None
     if args.wrapper_src is None and "wrapper_src" in ex:
         args.wrapper_src = ex["wrapper_src"]
     if args.input_mode is None:
@@ -201,7 +264,7 @@ def build_instrumented(args):
     ex = EXAMPLES[args.example]
     print(f"\n[build] instrumented binary ({args.example}) …")
     cmd = [
-        "bash", str(MIMICRY), "-afl", "-policy", "stop-v", "-no-render",
+        "bash", str(MIMICRY), "-afl", "-policy", args.policy, "-no-render",
         "-pua",   str(ex["pua"]),
         "-op",    str(ex["op"]),
         "-sigma", str(ex["sigma"]),
@@ -440,7 +503,7 @@ def make_plots(data, rows, args, out_path):
     fig, axes = plt.subplots(2, 2, figsize=(13, 11))
     ex_title = EXAMPLES[args.example]["title"]
     fig.suptitle(f"MimicryMonitor — {ex_title} target reachability\n"
-                 f"({args.trials} trials × {args.time}s)",
+                 f"({args.trials} trials × {args.time}s, policy={args.policy})",
                  fontsize=13, fontweight="bold")
 
     ax_cumul, ax_rate, ax_eps, ax_edges = axes.flat
@@ -561,7 +624,8 @@ def save_report(data, rows, args):
     lines = []
     lines.append(f"# MimicryMonitor — {ex_title}")
     lines.append(f"\n**Campaign:** {campaign}  ")
-    lines.append(f"**Trials:** {args.trials} × {args.time}s\n")
+    lines.append(f"**Trials:** {args.trials} × {args.time}s  ")
+    lines.append(f"**Policy:** {args.policy}\n")
 
     for target in ("instrumented", "plain"):
         t_rows = [r for r in rows if r["target"] == target]
