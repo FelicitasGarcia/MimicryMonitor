@@ -45,31 +45,48 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from overhead_micro import build_wrapper, DEFAULT_WRAPPER_SRC  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[2]
-RESULTS_ROOT = REPO / "evaluation/bench/results/cat"
+RESULTS = REPO / "evaluation/bench/results"
 
-# campaign name (results/cat/<name>/<variant>/tN/default) -> plain binary
-# built for that campaign. Every trial/variant subdir under a given campaign
-# name shares one binary (targetbench.py builds it once per campaign, not
-# per trial), so this is a 5-entry map, not 120.
+# Since the 2026-07-29 results reorg, campaigns are grouped by research
+# question (results/<experiment>/<campaign>/<variant>/tN/default) rather than
+# all living under one results/cat/ tree, so each campaign this tool knows how
+# to replay is explicitly located here -- a glob can't safely find them all
+# without also sweeping in unrelated experiment folders (iv_feedback's dated
+# sub-batches, overhead_micro's direct-replay outputs, etc).
+CAMPAIGN_LOCATIONS = {
+    "default":       RESULTS / "rq1_effect" / "baseline_pilot" / "default",
+    "overhead_long": RESULTS / "rq2_overhead" / "overhead_long",
+    "sleep":         RESULTS / "rq1_effect" / "sleep_nosleep" / "sleep",
+    "no_sleep":      RESULTS / "rq1_effect" / "sleep_nosleep" / "no_sleep",
+    "grammar":       RESULTS / "rq1_effect" / "grammar_mutator_comparison" / "grammar",
+}
+
+# campaign name -> plain binary built for that campaign. Every trial/variant
+# subdir under a given campaign shares one binary (targetbench.py builds it
+# once per campaign, not per trial), so this is a handful of entries, not 120.
+# Binary filenames are untouched by the results-folder reorg (they're named
+# from the original --campaign value passed at build time, e.g. "run2" for
+# what's now the "grammar" folder under grammar_mutator_comparison/).
 CAMPAIGN_PLAIN_BIN = {
     "default":       REPO / "work/outputs/pua_plain",
-    "overhead":      REPO / "work/outputs/pua_plain_overhead",
     "overhead_long": REPO / "work/outputs/pua_plain_overhead_long",
     "sleep":         REPO / "work/outputs/pua_plain_sleep",
     "no_sleep":      REPO / "work/outputs/pua_plain_no_sleep",
+    "grammar":       REPO / "work/outputs/pua_plain_run2",
 }
 
 
 def campaign_name_from_path(campaign_trial_dir):
-    """.../results/cat/overhead_long/instrumented/t1/default -> 'overhead_long'"""
-    parts = Path(campaign_trial_dir).resolve().parts
-    idx = parts.index("cat")
-    return parts[idx + 1]
+    """.../results/<experiment>/<campaign>/<variant>/tN/default -> '<campaign>'"""
+    return Path(campaign_trial_dir).resolve().parts[-4]
 
 
-def discover_campaign_trial_dirs(root=RESULTS_ROOT):
-    """Every .../<campaign>/<variant>/tN/default dir that has a queue/ subdir."""
-    return sorted(d.parent for d in root.glob("*/*/t*/default/queue") if d.is_dir())
+def discover_campaign_trial_dirs():
+    """Every known campaign's .../<variant>/tN/default dir that has a queue/ subdir."""
+    dirs = []
+    for loc in CAMPAIGN_LOCATIONS.values():
+        dirs.extend(sorted(d.parent for d in loc.glob("*/t*/default/queue") if d.is_dir()))
+    return dirs
 
 
 def parse_stoplog_last(path):
@@ -168,9 +185,10 @@ def main():
     ap = argparse.ArgumentParser(description="Label AFL queue entries by target-patch reachability.",
                                  formatter_class=argparse.RawDescriptionHelpFormatter, epilog=__doc__)
     ap.add_argument("dirs", nargs="*", help="campaign trial dir(s), e.g. "
-                                             "results/cat/overhead_long/instrumented/t1/default")
+                                             "results/rq2_overhead/overhead_long/instrumented/t1/default")
     ap.add_argument("--all-campaigns", action="store_true",
-                    help=f"label every trial dir under {RESULTS_ROOT}")
+                    help=f"label every trial dir under the known campaigns: "
+                         f"{', '.join(CAMPAIGN_LOCATIONS)}")
     ap.add_argument("--out", type=Path, default=None,
                     help="write combined JSON labels here (default: print summary only)")
     args = ap.parse_args()

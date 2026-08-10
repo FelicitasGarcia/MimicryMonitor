@@ -27,6 +27,7 @@ IINSTRUMENTBOOL=0
 
 # Flags que se propagan a instrument.sh
 AFLFUZZ=0
+AFL_IV_FEEDBACK=0
 LOGFILE=""
 POLICY=""
 RENDER=1
@@ -46,6 +47,7 @@ print_usage() {
   echo ""
   echo "Instrumentation options:"
   echo "  -afl                      Compile with AFL++ for fuzzing"
+  echo "  -afl-iv-feedback          With -afl: give AFL more energy to IV-reaching inputs (opt-in)"
   echo "  -log [PATH]               Enable monitor logging (default: /tmp/mm_monitor.log)"
   echo "  -policy POLICY            Monitor policy: stop-v, stop-iv, or n"
   echo "  -no-render                Skip PNG rendering of all intermediate graphs"
@@ -76,6 +78,7 @@ while [[ $# -gt 0 ]]; do
       done
       ;;
     -afl)       AFLFUZZ=1; shift ;;
+    -afl-iv-feedback) AFL_IV_FEEDBACK=1; shift ;;
     -no-render) RENDER=0; shift ;;
     -log)
       shift
@@ -113,6 +116,7 @@ for i in "${!IINSTRUMENT[@]}"; do IINSTRUMENT[$i]="$(to_abs "${IINSTRUMENT[$i]}"
 # --- Construir flags para instrument.sh ---
 INSTRUMENT_FLAGS=()
 [[ "$AFLFUZZ" == "1" ]]         && INSTRUMENT_FLAGS+=(-afl)
+[[ "$AFL_IV_FEEDBACK" == "1" ]] && INSTRUMENT_FLAGS+=(-afl-iv-feedback)
 [[ -n "$LOGFILE" ]]              && INSTRUMENT_FLAGS+=(-log "$LOGFILE")
 [[ -n "$POLICY" ]]               && INSTRUMENT_FLAGS+=(-policy "$POLICY")
 [[ "$IINSTRUMENTBOOL" == "1" ]] && INSTRUMENT_FLAGS+=(-I "${IINSTRUMENT[@]}")

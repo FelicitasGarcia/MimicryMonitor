@@ -17,6 +17,10 @@ extern uint32_t __afl_map_size;
 #define MM_NO_COVERAGE
 #endif
 
+#ifndef MM_ENABLE_AFL_IV_FEEDBACK
+#define MM_ENABLE_AFL_IV_FEEDBACK 0
+#endif
+
 /* ------------------------------------------------------------------ */
 /* Callbacks                                                            */
 /* ------------------------------------------------------------------ */
@@ -24,15 +28,20 @@ extern uint32_t __afl_map_size;
 static MM_NO_COVERAGE void afl_on_verdict(MMVerdict verdict, void *ctx)
 {
     (void)ctx;
+#if MM_ENABLE_AFL_IV_FEEDBACK
     /*
-     * En este momento no necesitamos hacer nada especial:
-     * AFL++ ya registró la coverage del path que llevó a este veredicto.
-     * Si en el futuro quisiera marcar "llegué a IV" como señal extra,
-     * podría escribir en una posición fija del bitmap, por ejemplo:
-     *
-     *   if (verdict == MM_VERDICT_IV && __afl_area_ptr)
-     *       __afl_area_ptr[MAP_SIZE - 1] |= 1;
+     * Mark "this execution reached IV" as one extra, fixed byte in AFL's own
+     * coverage bitmap -- not a separate channel, the same map afl-fuzz already
+     * reads for its virgin-map / favored / calculate_score logic. The first
+     * input to ever set this byte gets kept and favored the same way a
+     * genuinely rare edge would; every later IV input's rarity score keeps
+     * benefiting from it too. __afl_map_size is negotiated per-target at
+     * forkserver startup, so index off its *current* value rather than a
+     * literal constant -- always in-bounds regardless of map size.
      */
+    if (verdict == MM_VERDICT_IV && __afl_area_ptr && __afl_map_size)
+        __afl_area_ptr[__afl_map_size - 1] |= 1;
+#endif
     (void)verdict;
 }
 

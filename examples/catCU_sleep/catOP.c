@@ -724,7 +724,7 @@
                }
             }
           }
-
+          else { }
          /* Pointer to the input buffer.  */
          char *inbuf;
 
@@ -799,7 +799,7 @@
            }
        }
      while (++argind < argc);
-
+     usleep(10000);
      if (pending_cr)
        {
          if (full_write (STDOUT_FILENO, "\r", 1) != 1)
@@ -808,6 +808,6 @@
 
      if (have_read_stdin && close (STDIN_FILENO) < 0)
        error (EXIT_FAILURE, errno, _("closing standard input"));
-
+     sleep(1);
      return ok ? EXIT_SUCCESS : EXIT_FAILURE;
    }

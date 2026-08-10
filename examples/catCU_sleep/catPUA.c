@@ -708,6 +708,8 @@
 
          if (! (S_ISFIFO (stat_buf.st_mode) || S_ISSOCK (stat_buf.st_mode) || S_TYPEISSHM (&stat_buf) || S_TYPEISTMO (&stat_buf)) && have_out_dev && stat_buf.st_dev == out_dev && stat_buf.st_ino == out_ino)
            {
+             extern volatile int mm_target_reached;
+             mm_target_reached = 1;
              if (out_flags < -1)
                 out_flags = fcntl (STDOUT_FILENO, F_GETFL);
                 bool exhausting = 0 <= out_flags && out_flags & O_APPEND;
@@ -724,7 +726,7 @@
                     goto contin;
                }
            }
-
+          else { }
          /* Pointer to the input buffer.  */
          char *inbuf;
 
@@ -799,7 +801,10 @@
            }
        }
      while (++argind < argc);
-
+     {
+       extern volatile int mm_target_reached;
+       if (!mm_target_reached) { usleep(10000); }
+     }
      if (pending_cr)
        {
          if (full_write (STDOUT_FILENO, "\r", 1) != 1)
@@ -808,6 +813,6 @@
 
      if (have_read_stdin && close (STDIN_FILENO) < 0)
        error (EXIT_FAILURE, errno, _("closing standard input"));
-
+     
      return ok ? EXIT_SUCCESS : EXIT_FAILURE;
    }

@@ -18,9 +18,17 @@ distinct inputs rather than N copies of the same handful of files.
 
 Usage:
   evaluation/bench/.venv/bin/python evaluation/bench/build_seed_pool.py \\
-    --glob 'results/cat/*/instrumented/t*/default/queue' \\
-    --glob 'results/cat/*/plain/t*/default/queue' \\
-    --out results/cat/pooled/queue
+    --glob 'results/*/*/instrumented/t*/default/queue' \\
+    --glob 'results/*/*/plain/t*/default/queue' \\
+    --out results/pooled/queue
+
+Since the 2026-07-29 results reorg, campaigns are grouped by research question
+(results/<experiment>/<campaign>/<variant>/tN/default) rather than all living
+under one results/cat/ tree -- the default globs below name the specific
+experiment/campaign pairs this tool has historically pooled from (matches
+afl_provenance_label.py's CAMPAIGN_LOCATIONS) rather than a blanket
+results/*/*/... glob, which would also sweep in unrelated experiments
+(iv_feedback's dated sub-batches, trial_duration_calibration, etc).
 """
 
 import argparse
@@ -33,8 +41,10 @@ REPO = Path(__file__).resolve().parents[2]
 BENCH = REPO / "evaluation/bench"
 
 DEFAULT_GLOBS = [
-    "results/cat/*/instrumented/t*/default/queue",
-    "results/cat/*/plain/t*/default/queue",
+    "results/rq1_effect/baseline_pilot/default/*/t*/default/queue",
+    "results/rq2_overhead/overhead_long/*/t*/default/queue",
+    "results/rq1_effect/sleep_nosleep/*/*/t*/default/queue",
+    "results/rq1_effect/grammar_mutator_comparison/grammar/*/t*/default/queue",
 ]
 
 
@@ -43,8 +53,9 @@ def parse_args():
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--glob", action="append", dest="globs", default=None,
                    help="glob (relative to evaluation/bench/) matching queue/ dirs to pool; "
-                        "repeatable. Default: all cat/* instrumented+plain campaigns.")
-    p.add_argument("--out", type=Path, default=BENCH / "results/cat/pooled/queue",
+                        "repeatable. Default: the historical default/overhead_long/sleep/"
+                        "no_sleep/grammar campaigns, instrumented+plain.")
+    p.add_argument("--out", type=Path, default=BENCH / "results/pooled/queue",
                    help="output dir for the pooled, deduplicated queue")
     p.add_argument("--force", action="store_true",
                    help="wipe --out first if it already exists")
@@ -52,9 +63,11 @@ def parse_args():
 
 
 def campaign_tag(queue_dir):
-    """results/cat/overhead_long/instrumented/t3/default/queue -> overhead_long_instrumented_t3"""
-    parts = queue_dir.relative_to(BENCH).parts  # ('results','cat',campaign,variant,'t3','default','queue')
-    campaign, variant, trial = parts[2], parts[3], parts[4]
+    """.../<campaign>/<variant>/t3/default/queue -> <campaign>_<variant>_t3 -- indexed
+    from the end, not the start, so it doesn't care how many wrapper directories
+    (results/rq1_effect/..., results/rq2_overhead/..., etc.) precede <campaign>."""
+    parts = queue_dir.relative_to(BENCH).parts  # (..., campaign, variant, 't3', 'default', 'queue')
+    campaign, variant, trial = parts[-5], parts[-4], parts[-3]
     return f"{campaign}_{variant}_{trial}"
 
 

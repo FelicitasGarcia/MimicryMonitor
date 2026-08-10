@@ -39,6 +39,7 @@ Prereqs (expandcu only):
 
 import argparse
 import csv
+import datetime
 import json
 import os
 import shutil
@@ -53,6 +54,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+
+import notion_publish
 
 # ── paths ────────────────────────────────────────────────────────────────────
 REPO   = Path(__file__).resolve().parents[2]
@@ -145,6 +148,33 @@ EXAMPLES = {
             str(CU / "src/version.o"),
         ],
     },
+    "cat_sleep": {
+        # Same as "cat" (grammar mutator on), but catPUA.c has an extra
+        # sleep(1) right before returning from main() -- both instrumented
+        # and plain are built from this source, so every run that reaches
+        # main()'s normal return (i.e. every IV/"hit") pays the 1s sleep.
+        "pua":          REPO / "examples/catCU_sleep/catPUA.c",
+        "op":           REPO / "examples/catCU_sleep/catOP.c",
+        "sigma":        REPO / "examples/catCU_sleep/catSigma.txt",
+        "seeds":        Path("/home/felicitas/Grammar-Mutator/seeds-cat"),
+        "input_mode":   "argv",
+        "wrapper_src":  REPO / "pipeline/afl_cat_cmdline_wrapper.c",
+        "grammar":      Path("/home/felicitas/Grammar-Mutator/libgrammarmutator-cat.so"),
+        "grammar_only": True,
+        "trees":        Path("/home/felicitas/Grammar-Mutator/trees-cat"),
+        "exec_timeout": "5000",
+        "title":        "catCU (sleep-injected)",
+        "ianalyze":     [str(CU / "src"), str(CU / "lib")],
+        "iinstrument":  [
+            str(CU / "lib/libcoreutils.a"),
+            str(CU / "src/version.o"),
+        ],
+        "plain_I":      [str(CU / "src"), str(CU / "lib")],
+        "plain_link":   [
+            str(CU / "lib/libcoreutils.a"),
+            str(CU / "src/version.o"),
+        ],
+    },
     "cat_notarget": {
         # Same as "cat", but catPUA.c has no mm_target_reached probe — the
         # probe write is a hot-path side effect unrelated to the monitor's
@@ -177,8 +207,15 @@ EXAMPLES = {
 COLORS = {"instrumented": "#d1495b", "plain": "#2e86ab"}
 LABELS = {"instrumented": "Instrumented (MM)", "plain": "Plain (AFL only)"}
 
+
+def default_experiment_name(example):
+    """One fresh, timestamped results folder per targetbench.py invocation --
+    used unless the caller passes --experiment to explicitly group several
+    runs (e.g. different --example configs being compared) into one folder."""
+    return f"{datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S')}_{example}"
+
 # ── CLI ──────────────────────────────────────────────────────────────────────
-def parse_args():
+def parse_args(argv=None):
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--example",     choices=list(EXAMPLES), default="default",
@@ -190,10 +227,18 @@ def parse_args():
     p.add_argument("--seeds",       type=Path, default=None,
                    help="override seed directory (default: from --example)")
     p.add_argument("--campaign",    default=None,
-                   help="campaign name: namespaces results to results/<example>/<campaign> "
-                        "and appends _<campaign> to binary names so parallel runs don't collide")
+                   help="arm/run label within --experiment: namespaces results to "
+                        "results/<experiment>/<campaign> and appends _<campaign> to binary "
+                        "names so parallel runs don't collide. Give each arm a distinct "
+                        "name when comparing several --example configs under one --experiment.")
+    p.add_argument("--experiment",  default=None,
+                   help="results folder under evaluation/bench/results/. Default: a fresh "
+                        "timestamped folder for this invocation alone. Pass the SAME "
+                        "--experiment name across multiple runs (with distinct --campaign "
+                        "values) to group them together for comparison.")
     p.add_argument("--results",     type=Path, default=None,
-                   help="results directory (default: evaluation/bench/results/<example>[/<campaign>])")
+                   help="results directory, overriding --experiment/--campaign entirely "
+                        "(default: evaluation/bench/results/<experiment>/<campaign or example>)")
     p.add_argument("--out",         type=Path, default=None,
                    help="output PNG (default: results/<example>.png)")
     p.add_argument("--skip-build",  action="store_true",
@@ -221,13 +266,22 @@ def parse_args():
                         "Use 'n' to disable early aborts — the monitor still runs on every "
                         "execution but never stops the program early, which isolates pure "
                         "instrumentation overhead when compared against the plain build.")
-    args = p.parse_args()
+    p.add_argument("--iv-feedback",  action="store_true",
+                   help="build the instrumented binary with -afl-iv-feedback: mark "
+                        "IV-reaching executions in AFL's own coverage map so afl-fuzz "
+                        "favors/energizes them (no effect on the plain build)")
+    p.add_argument("--notion",      action="store_true",
+                   help="after finishing, publish the campaign to the Notion tracking "
+                        "page via notion_publish.py (needs $NOTION_TOKEN). A failure "
+                        "here is a warning, not a fatal error -- results are already "
+                        "saved on disk regardless.")
+    args = p.parse_args(argv)
     ex = EXAMPLES[args.example]
     if args.seeds is None:
         args.seeds = ex["seeds"]
     if args.results is None:
-        base = REPO / "evaluation/bench/results" / args.example
-        args.results = base / (args.campaign or "default")
+        experiment = args.experiment or default_experiment_name(args.example)
+        args.results = REPO / "evaluation/bench/results" / experiment / (args.campaign or args.example)
     # Fall back to example-level defaults for optional keys; CLI flags override.
     if args.grammar is None and "grammar" in ex:
         args.grammar = ex["grammar"]
@@ -273,6 +327,8 @@ def build_instrumented(args):
         cmd += ["-Ianalyze"] + ex["ianalyze"]
     if ex["iinstrument"]:
         cmd += ["-Iinstrument"] + ex["iinstrument"]
+    if args.iv_feedback:
+        cmd += ["-afl-iv-feedback"]
     if args.campaign:
         cmd += ["-bin-suffix", f"_{args.campaign}"]
     r = _run(cmd)
@@ -442,9 +498,9 @@ def run_all(args):
             fuzz_trial(target, trial_dir, log_path, args)
 
 # ── load all results ─────────────────────────────────────────────────────────
-def load_results(args):
+def load_results(args, targets=("instrumented", "plain")):
     data = {}
-    for target in ("instrumented", "plain"):
+    for target in targets:
         trials_hits = []
         trials_pd   = []
         for i in range(1, args.trials + 1):
@@ -502,66 +558,58 @@ def save_summary(data, args):
 def make_plots(data, rows, args, out_path):
     fig, axes = plt.subplots(2, 2, figsize=(13, 11))
     ex_title = EXAMPLES[args.example]["title"]
-    fig.suptitle(f"MimicryMonitor — {ex_title} target reachability\n"
-                 f"({args.trials} trials × {args.time}s, policy={args.policy})",
+    iv_suffix = ", iv-feedback" if args.iv_feedback else ""
+    fig.suptitle(f"MimicryMonitor — {ex_title} target reachability", y=0.975,
                  fontsize=13, fontweight="bold")
+    fig.text(0.5, 0.945, f"({args.trials} trials × {args.time}s, policy={args.policy}{iv_suffix})",
+              ha="center", fontsize=10.5)
 
-    ax_cumul, ax_rate, ax_eps, ax_edges = axes.flat
+    # whole-campaign totals (summed across all trials, not per-trial averages)
+    campaign_totals = {}
+    totals_parts = []
+    for target in ("instrumented", "plain"):
+        t_rows = [r for r in rows if r["target"] == target]
+        if not t_rows:
+            continue
+        tot_execs = sum(r["total_execs"] for r in t_rows)
+        tot_hits  = sum(r["target_hits"] for r in t_rows)
+        tot_rate  = tot_hits / tot_execs * 100 if tot_execs else 0.0
+        campaign_totals[target] = (tot_execs, tot_hits, tot_rate)
+        totals_parts.append(f"{LABELS[target]}: {tot_hits:,} hits / {tot_execs:,} execs ({tot_rate:.1f}%)")
+    fig.text(0.5, 0.92, "Campaign totals — " + "    |    ".join(totals_parts),
+              ha="center", fontsize=9.5, color="#333333")
 
-    # ── 1. Cumulative hits over executions ───────────────────────────────────
+    ax_cumul, ax_ranked, ax_eps, ax_table = axes.flat
+
+    # ── 1. Campaign totals: executions bar with hits shaded inside ──────────
     ax = ax_cumul
-    for target, d in data.items():
+    targets_present = [t for t in ("instrumented", "plain") if t in campaign_totals]
+    xs = np.arange(len(targets_present))
+    bar_w = 0.5
+    for xi, target in enumerate(targets_present):
+        tot_execs, tot_hits, tot_rate = campaign_totals[target]
         c = COLORS[target]
-        all_cumuls = []
-        max_len = max((len(h) for h in d["hits"]), default=0)
-        for hits in d["hits"]:
-            cumul = np.cumsum(hits)
-            # extend to max_len with last value
-            if len(cumul) < max_len:
-                cumul = np.append(cumul, np.full(max_len - len(cumul), cumul[-1] if len(cumul) else 0))
-            all_cumuls.append(cumul)
-            ax.plot(np.arange(1, len(hits)+1), np.cumsum(hits),
-                    color=c, alpha=0.25, linewidth=0.8)
-        if all_cumuls:
-            mat = np.vstack(all_cumuls)
-            xs  = np.arange(1, mat.shape[1]+1)
-            ax.plot(xs, mat.mean(axis=0), color=c, linewidth=2,
-                    label=LABELS[target])
-            ax.fill_between(xs, mat.min(axis=0), mat.max(axis=0),
-                            color=c, alpha=0.12)
+        # full bar = total execs (faint), overlaid bar = total hits (solid) drawn on top
+        ax.bar(xi, tot_execs, bar_w, color=c, alpha=0.30,
+               edgecolor=c, linewidth=1)
+        ax.bar(xi, tot_hits, bar_w, color=c, alpha=0.95)
+        ax.text(xi, tot_execs, f"{tot_execs:,} execs", ha="center", va="bottom",
+                fontsize=9, color=c, fontweight="bold")
+        ax.text(xi, tot_hits / 2, f"{tot_hits:,} hits\n({tot_rate:.1f}%)",
+                ha="center", va="center", fontsize=8.5, color="white", fontweight="bold")
 
-    ax.set_xlabel("Executions")
-    ax.set_ylabel("Cumulative target hits")
-    ax.set_title("Target hits over executions")
-    ax.legend(fontsize=8)
-    ax.xaxis.set_major_formatter(mticker.FuncFormatter(
+    ax.set_xticks(xs)
+    ax.set_xticklabels([LABELS[t] for t in targets_present])
+    ax.set_ylabel("Count (campaign total)")
+    ax.set_title("Campaign totals: executions vs. target hits")
+    ax.set_ylim(0, max(v[0] for v in campaign_totals.values()) * 1.15)
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(
         lambda x, _: f"{int(x/1000)}k" if x >= 1000 else str(int(x))))
-    ax.grid(True, alpha=0.3)
-
-    # ── 2. Hit rate per trial (grouped bar) ──────────────────────────────────
-    ax = ax_rate
-    targets = list(data.keys())
-    n_trials = args.trials
-    x = np.arange(n_trials)
-    width = 0.35
-    for ki, target in enumerate(targets):
-        rates = [r["hit_rate"] * 100 for r in rows if r["target"] == target]
-        bars = ax.bar(x + ki * width, rates, width, label=LABELS[target],
-                      color=COLORS[target], alpha=0.85)
-        for bar, v in zip(bars, rates):
-            ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.3,
-                    f"{v:.1f}%", ha="center", va="bottom", fontsize=7)
-
-    ax.set_xlabel("Trial")
-    ax.set_ylabel("Hit rate (%)")
-    ax.set_title("Target hit rate per trial")
-    ax.set_xticks(x + width/2)
-    ax.set_xticklabels([f"t{i+1}" for i in range(n_trials)])
-    ax.legend(fontsize=8)
     ax.grid(True, axis="y", alpha=0.3)
 
-    # ── 3. Exec/sec box plot ─────────────────────────────────────────────────
+    # ── 2. Exec/sec box plot ─────────────────────────────────────────────────
     ax = ax_eps
+    targets = list(data.keys())
     eps_data = []
     tick_labels = []
     tick_colors = []
@@ -584,35 +632,84 @@ def make_plots(data, rows, args, out_path):
     ax.set_title("Throughput (exec/sec)")
     ax.grid(True, axis="y", alpha=0.3)
 
-    # ── 4. Hit rate — all trials sorted ascending, interleaved by mode ──────
-    ax = ax_edges
+    # ── 3. Hit rate — all trials sorted ascending, interleaved by mode ──────
+    ax = ax_ranked
     SHORT = {"instrumented": "I", "plain": "P"}
     all_bars = []
     for r in rows:
         all_bars.append((r["hit_rate"] * 100,
                          f"{SHORT[r['target']]}{r['trial']}",
                          COLORS[r["target"]],
-                         r["target"]))
+                         r["target"],
+                         r["target_hits"], r["total_execs"]))
     all_bars.sort(key=lambda x: x[0])
     bar_vals   = [b[0] for b in all_bars]
     bar_labels = [b[1] for b in all_bars]
     bar_colors = [b[2] for b in all_bars]
     bars = ax.bar(range(len(bar_vals)), bar_vals, color=bar_colors, alpha=0.85)
-    for bar, v in zip(bars, bar_vals):
+    for bar, (v, _, _, _, hits, execs) in zip(bars, all_bars):
         ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.3,
-                f"{v:.1f}%", ha="center", va="bottom", fontsize=7)
+                f"{v:.1f}%\n{hits}/{execs}", ha="center", va="bottom",
+                fontsize=6, linespacing=1.3)
     ax.set_xticks(range(len(bar_labels)))
     ax.set_xticklabels(bar_labels, fontsize=7)
     ax.set_ylabel("Hit rate (%)")
-    ax.set_title("All trials ranked by hit rate (I=instrumented, P=plain)")
+    ax.set_title("All trials ranked by hit rate  (I=instrumented, P=plain; label: hits/execs)")
+    ax.set_ylim(0, max(105, ax.get_ylim()[1] * 1.15))
     for target in targets:
         ax.bar(0, 0, color=COLORS[target], alpha=0.85, label=LABELS[target])
     ax.legend(fontsize=8)
     ax.grid(True, axis="y", alpha=0.3)
 
+    # ── 4. Campaign summary table (concrete totals, no chart-reading needed) ─
+    ax = ax_table
+    ax.axis("off")
+    ax.set_title("Campaign summary", fontsize=11, fontweight="bold", pad=14)
+
+    def target_stat(target, fn):
+        t_rows = [r for r in rows if r["target"] == target]
+        return fn(t_rows) if t_rows else "—"
+
+    table_metrics = [
+        ("Total execs",     lambda rs: f"{sum(r['total_execs'] for r in rs):,}"),
+        ("Total hits",      lambda rs: f"{sum(r['target_hits'] for r in rs):,}"),
+        ("Campaign hit %",  lambda rs: f"{sum(r['target_hits'] for r in rs)/sum(r['total_execs'] for r in rs)*100:.1f}%"
+                             if sum(r['total_execs'] for r in rs) else "—"),
+        ("Mean execs/trial", lambda rs: f"{sum(r['total_execs'] for r in rs)/len(rs):,.1f}"),
+        ("Mean hits/trial",  lambda rs: f"{sum(r['target_hits'] for r in rs)/len(rs):,.1f}"),
+        ("Mean hit rate",    lambda rs: f"{sum(r['hit_rate'] for r in rs)/len(rs)*100:.1f}%"),
+        ("Best hit rate",    lambda rs: f"{max(r['hit_rate'] for r in rs)*100:.1f}%"),
+        ("Worst hit rate",   lambda rs: f"{min(r['hit_rate'] for r in rs)*100:.1f}%"),
+    ]
+    col_labels = ["Metric", LABELS["instrumented"], LABELS["plain"]]
+    cell_text = [[label, target_stat("instrumented", fn), target_stat("plain", fn)]
+                 for label, fn in table_metrics]
+
+    def tint(hex_color, amount=0.85):
+        r, g, b = (int(hex_color[i:i+2], 16) for i in (1, 3, 5))
+        r, g, b = (int(v + (255 - v) * amount) for v in (r, g, b))
+        return f"#{r:02x}{g:02x}{b:02x}"
+
+    tbl = ax.table(cellText=cell_text, colLabels=col_labels,
+                    cellLoc="center", loc="upper center")
+    tbl.auto_set_font_size(False)
+    tbl.set_fontsize(9)
+    tbl.scale(1, 1.6)
+    for (r, c), cell in tbl.get_celld().items():
+        cell.set_edgecolor("#cccccc")
+        if r == 0:
+            cell.set_facecolor("#e0e0e0")
+            cell.set_text_props(fontweight="bold")
+        elif c == 0:
+            cell.set_text_props(ha="left")
+        elif c == 1:
+            cell.set_facecolor(tint(COLORS["instrumented"]))
+        elif c == 2:
+            cell.set_facecolor(tint(COLORS["plain"]))
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        plt.tight_layout(pad=1.5)
+        plt.tight_layout(pad=1.5, rect=(0, 0, 1, 0.89))
     fig.savefig(out_path, dpi=150)
     print(f"\n[plot] saved → {out_path}")
     plt.close(fig)
@@ -625,7 +722,8 @@ def save_report(data, rows, args):
     lines.append(f"# MimicryMonitor — {ex_title}")
     lines.append(f"\n**Campaign:** {campaign}  ")
     lines.append(f"**Trials:** {args.trials} × {args.time}s  ")
-    lines.append(f"**Policy:** {args.policy}\n")
+    lines.append(f"**Policy:** {args.policy}  ")
+    lines.append(f"**IV feedback:** {'enabled' if args.iv_feedback else 'disabled'}\n")
 
     for target in ("instrumented", "plain"):
         t_rows = [r for r in rows if r["target"] == target]
@@ -647,6 +745,12 @@ def save_report(data, rows, args):
         lines.append(f"| **Mean** | **{mean_execs:.1f}** | **{mean_hits:.1f}** "
                      f"| **{mean_rate*100:.1f}%** | |")
 
+        total_execs = sum(execs)
+        total_hits  = sum(hits)
+        total_rate  = total_hits / total_execs if total_execs else 0
+        lines.append(f"| **Total (campaign)** | **{total_execs}** | **{total_hits}** "
+                     f"| **{total_rate*100:.1f}%** | |")
+
         best  = max(t_rows, key=lambda r: r["hit_rate"])
         worst = min(t_rows, key=lambda r: r["hit_rate"])
         ratio = best["hit_rate"] / worst["hit_rate"] if worst["hit_rate"] > 0 else float("inf")
@@ -667,6 +771,10 @@ def save_report(data, rows, args):
             row[t] = fn(t_rows) if t_rows else 0
         return row
     metrics = [
+        ("Total execs (campaign)", lambda rs: f"{sum(r['total_execs'] for r in rs)}"),
+        ("Total hits (campaign)",  lambda rs: f"{sum(r['target_hits'] for r in rs)}"),
+        ("Campaign hit rate",      lambda rs: f"{sum(r['target_hits'] for r in rs)/sum(r['total_execs'] for r in rs)*100:.1f}%"
+                                   if sum(r['total_execs'] for r in rs) else "—"),
         ("Mean execs/trial", lambda rs: f"{sum(r['total_execs'] for r in rs)/len(rs):.1f}"),
         ("Mean hits/trial",  lambda rs: f"{sum(r['target_hits'] for r in rs)/len(rs):.1f}"),
         ("Mean hit rate",    lambda rs: f"{sum(r['hit_rate'] for r in rs)/len(rs)*100:.1f}%"),
@@ -706,6 +814,16 @@ def main():
     save_report(data, rows, args)
     make_plots(data, rows, args, args.out)
     print("[done]")
+
+    if args.notion:
+        campaign = args.campaign or args.example
+        try:
+            notion_publish.publish(args.results, campaign,
+                                    notion_publish.DEFAULT_PAGE,
+                                    os.environ.get("NOTION_TOKEN"),
+                                    example=args.example)
+        except notion_publish.NotionPublishError as e:
+            print(f"[notion] publish failed (non-fatal): {e}")
 
 if __name__ == "__main__":
     main()

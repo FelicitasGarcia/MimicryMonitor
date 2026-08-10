@@ -18,7 +18,7 @@ is also written, disambiguated by campaign/trial/instance columns.
 
 Usage:
     python3 afl_provenance_export.py CAMPAIGN_TRIAL_DIR [CAMPAIGN_TRIAL_DIR ...] --out DIR
-    python3 afl_provenance_export.py --all-campaigns --out evaluation/bench/results/provenance
+    python3 afl_provenance_export.py --all-campaigns --out evaluation/bench/results/rq3_genealogy
 """
 import argparse
 import csv

@@ -31,7 +31,7 @@ stoplog for early=1 and warns loudly if it finds any.
 
 Usage:
   evaluation/bench/.venv/bin/python evaluation/bench/overhead_micro.py \\
-    --queue-dir evaluation/bench/results/cat/overhead_long/instrumented/t1/default/queue \\
+    --queue-dir evaluation/bench/results/rq2_overhead/overhead_long/instrumented/t1/default/queue \\
     --instrumented-bin work/outputs/instrumentedPUA_overhead_long \\
     --plain-bin work/outputs/pua_plain_overhead_long \\
     --n-inputs 150 --reps 30 --cpu 3 --campaign t1
@@ -85,13 +85,13 @@ def parse_args():
                    help="per-exec timeout in seconds; input pair skipped on timeout")
     p.add_argument("--seed", type=int, default=0, help="RNG seed (sampling + order)")
     p.add_argument("--campaign", default=None,
-                   help="namespaces results to results/overhead_micro/<campaign>")
+                   help="namespaces results to results/rq2_overhead/micro/<campaign>")
     p.add_argument("--results", type=Path, default=None)
     p.add_argument("--skip-run", action="store_true",
                    help="skip replay, just re-fit/re-plot from existing raw.csv")
     args = p.parse_args()
     if args.results is None:
-        args.results = REPO / "evaluation/bench/results/overhead_micro" / (args.campaign or "default")
+        args.results = REPO / "evaluation/bench/results/rq2_overhead/micro" / (args.campaign or "default")
     return args
 
 # ── environment sanity ──────────────────────────────────────────────────────

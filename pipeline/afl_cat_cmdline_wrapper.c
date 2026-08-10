@@ -140,11 +140,23 @@ int main(int argc, char *argv[])
     int start = (strcmp(tok[0], "cat") == 0) ? 1 : 0;
 
     /* ── Pass 1: collect input file names (before >) ─────────────────── */
+    /* "-" is deliberately excluded here: real cat/coreutils treats a bare
+     * "-" as literal stdin (STREQ(infile,"-") in catPUA.c), not as a
+     * filename. If resolve() mapped it to a tmp file like any other
+     * unrecognized name, two occurrences of the single byte "-" (input and
+     * redirect target) would alias via resolve()'s string cache and trip
+     * the self-copy probe without ever constructing anything resembling
+     * the real cat-X-into-itself bug -- an artifact of this wrapper's own
+     * name resolution, not a discovery about the target. Skipping "-" here
+     * means it never enters the aliasing comparison below; it's still
+     * passed through literally in Pass 2 so catPUA gets real (if harness-
+     * supplied, effectively empty) stdin semantics, exactly as real cat
+     * would see it. */
     char *in_names[MAX_FILES];
     int   n_in = 0;
     for (int i = start; i < ntok; i++) {
         if (is_redirect(tok[i])) { i++; continue; }   /* skip redirect target */
-        if (!is_flag(tok[i]) && n_in < MAX_FILES)
+        if (!is_flag(tok[i]) && strcmp(tok[i], "-") != 0 && n_in < MAX_FILES)
             in_names[n_in++] = tok[i];
     }
 
@@ -160,9 +172,13 @@ int main(int argc, char *argv[])
         if (is_redirect(tok[i])) {
             if (i + 1 >= ntok) continue;
             const char *out_name = tok[++i];
+            /* Note: "-" as a REDIRECT TARGET is not stdin-special -- a real
+             * shell's `> -` writes to a literal file named "-", so it's
+             * resolved normally here, same as any other name. */
             redir_real = resolve(out_name);
 
-            /* Aliasing: redirect target resolves to same real path as an input. */
+            /* Aliasing: redirect target resolves to same real path as an
+             * input (in_names never contains "-", see Pass 1). */
             for (int j = 0; j < n_in; j++) {
                 if (strcmp(resolve(in_names[j]), redir_real) == 0) {
                     aliasing = 1;
@@ -171,6 +187,8 @@ int main(int argc, char *argv[])
             }
         } else if (is_flag(tok[i])) {
             exec_argv[exec_argc++] = tok[i];
+        } else if (strcmp(tok[i], "-") == 0) {
+            exec_argv[exec_argc++] = tok[i];   /* literal stdin, not resolved */
         } else {
             exec_argv[exec_argc++] = (char *)resolve(tok[i]);
         }
