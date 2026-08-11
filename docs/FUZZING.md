@@ -155,11 +155,11 @@ echo "total: $(wc -l < /tmp/expand_plain_log.txt)"
 
 ### Step 5 — Automated benchmark with plots
 
-`evaluation/bench/targetbench.py` runs both variants for N trials, parses the
+`evaluation/bench/rq1_effect/targetbench.py` runs both variants for N trials, parses the
 logs and AFL's `plot_data`, prints a summary table, and saves a 4-panel PNG:
 
 ```bash
-evaluation/bench/.venv/bin/python evaluation/bench/targetbench.py \
+evaluation/bench/.venv/bin/python evaluation/bench/rq1_effect/targetbench.py \
   --trials 3 --time 60
 ```
 

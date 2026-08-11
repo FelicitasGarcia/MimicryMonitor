@@ -1,5 +1,23 @@
 # Target-reachability benchmark (`targetbench`)
 
+Scripts are grouped by which research question they serve, mirroring
+`results/rq1_effect/`, `results/rq2_overhead/`, `results/rq3_genealogy/`:
+
+| Folder / file | Purpose | Depends on |
+|---|---|---|
+| `rq1_effect/targetbench.py` | Core campaign runner: instrumented vs. plain, N trials | `notion/notion_publish.py` (optional `--notion`) |
+| `rq1_effect/run_iv_feedback_experiment.py` | 4-condition A/B/C/D IV-feedback experiment | `rq1_effect/targetbench.py` |
+| `rq2_overhead/overhead_micro.py` | Direct-replay CPU/wall-time overhead micro-benchmark | — |
+| `rq2_overhead/build_seed_pool.py` | Pools/dedupes AFL queues across campaigns for `overhead_micro.py --queue-dir` | — |
+| `rq3_genealogy/afl_provenance.py` | Traces one queue entry's AFL ancestry | — |
+| `rq3_genealogy/afl_provenance_label.py` | Labels queue entries by target-hit descent | `rq2_overhead/overhead_micro.py` (wrapper builder) |
+| `rq3_genealogy/afl_provenance_export.py` | Exports ancestry as CSV edges + DOT graph | `afl_provenance.py`, `afl_provenance_label.py` |
+| `rq3_genealogy/tests/test_afl_provenance.py` | Unit tests for `afl_provenance.py` | `afl_provenance.py` |
+| `notion/notion_publish.py` | Publishes a campaign's toggle (chart + table) to Notion | — |
+| `notion/notion_panorama.py` | Idempotent upsert into the Notion panorama table | used by `notion_publish.py` |
+| `campaign_dashboard.py` | Live terminal dashboard watching a running campaign | — |
+| `sync_context.py` | Regenerates `CLAUDE.md`'s `AUTO` block from repo state | — |
+
 Measures how quickly instrumented vs. plain AFL++ reaches the patched region
 of the PUA (`mm_target_reached=1`).
 
@@ -24,11 +42,11 @@ evaluation/bench/.venv/bin/pip install matplotlib numpy
 
 ```bash
 # demo integer-classifier PUA (argv input)
-evaluation/bench/.venv/bin/python evaluation/bench/targetbench.py \
+evaluation/bench/.venv/bin/python evaluation/bench/rq1_effect/targetbench.py \
   --example default --trials 3 --time 60
 
 # expandCU (file input; needs coreutils build)
-evaluation/bench/.venv/bin/python evaluation/bench/targetbench.py \
+evaluation/bench/.venv/bin/python evaluation/bench/rq1_effect/targetbench.py \
   --example expandcu --trials 3 --time 60
 ```
 
@@ -50,7 +68,7 @@ Useful flags:
 **Grammar Mutator example (catCU):**
 
 ```bash
-evaluation/bench/.venv/bin/python evaluation/bench/targetbench.py \
+evaluation/bench/.venv/bin/python evaluation/bench/rq1_effect/targetbench.py \
   --example cat --trials 3 --time 120 \
   --seeds  /home/felicitas/Grammar-Mutator/seeds-cat \
   --grammar      /home/felicitas/Grammar-Mutator/libgrammarmutator-cat.so \
