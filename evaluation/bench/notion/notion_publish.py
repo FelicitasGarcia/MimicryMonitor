@@ -62,6 +62,11 @@ NOTION_VERSION = "2022-06-28"
 DEFAULT_PAGE   = "3b892dbb42ef81c49ce1e513baedcf22"
 REPO           = Path(__file__).resolve().parents[3]
 
+# Heading (under "# 1. RQ1: Efecto esperado") that --combined toggles belong
+# under. A plain (non-toggleable) heading_2 -- the per-campaign toggles that
+# live under it are heading_3 siblings, not literal Notion children of it.
+COMBINED_SECTION_HEADING = "Visualizaciones por campaña"
+
 
 # ── low-level API helpers ────────────────────────────────────────────────────
 
@@ -281,6 +286,39 @@ def list_children(token, block_id):
     return out
 
 
+_HEADING_RANK = {"heading_1": 1, "heading_2": 2, "heading_3": 3}
+
+
+def find_section_insert_point(token, page, heading_text, heading_type="heading_2"):
+    """Return the block id of the LAST block belonging to the named section
+    (right before the next heading of equal-or-higher level, or the end of
+    the page if it's the last section) -- so a new sibling block appended
+    with after=<this id> lands inside the section instead of at the page's
+    end. Sub-headings inside the section (e.g. per-campaign toggle headings,
+    which are heading_3 siblings of a heading_2 section header, not its
+    literal Notion children) are skipped over, not treated as boundaries.
+    Returns None if the heading itself isn't found."""
+    blocks = list_children(token, page)
+    section_rank = _HEADING_RANK[heading_type]
+    start = None
+    for i, b in enumerate(blocks):
+        if b["type"] != heading_type:
+            continue
+        text = "".join(r["plain_text"] for r in b[heading_type]["rich_text"]).strip()
+        if text == heading_text:
+            start = i
+            break
+    if start is None:
+        return None
+    last_id = blocks[start]["id"]
+    for b in blocks[start + 1:]:
+        rank = _HEADING_RANK.get(b["type"])
+        if rank is not None and rank <= section_rank:
+            break
+        last_id = b["id"]
+    return last_id
+
+
 def find_panorama_table(token, page, time_suffix):
     """Return the block id of the 'Trials de <time_suffix>' table under
     'Panorama de campañas' (e.g. time_suffix='1200s'), or None if that
@@ -385,13 +423,23 @@ def publish(results: Path, campaign, page, token, example="cat", combined=False,
     if not bench_png.exists() and not (overhead_png and overhead_png.exists()) and not summary:
         raise NotionPublishError("nothing to publish")
 
-    # 1. toggle heading appended at the end of the page
-    toggle = api(token, "PATCH", f"/blocks/{page}/children", {
-        "children": [{
-            "type": "heading_3",
-            "heading_3": {"rich_text": rt(header), "is_toggleable": True},
-        }]
-    })["results"][0]["id"]
+    # 1. toggle heading appended at the end of the page, or -- for a combined
+    #    (run_iv_feedback_experiment.py) result -- inserted at the end of the
+    #    "Visualizaciones por campaña" section under RQ1 instead, so it lands
+    #    next to the other campaign comparisons rather than wherever the page
+    #    currently happens to end (which drifts as later sections get added).
+    new_block = {"type": "heading_3",
+                 "heading_3": {"rich_text": rt(header), "is_toggleable": True}}
+    append_after = None
+    if combined:
+        append_after = find_section_insert_point(token, page, COMBINED_SECTION_HEADING)
+        if append_after is None:
+            print(f"[notion] section '{COMBINED_SECTION_HEADING}' not found -- "
+                  f"appending at the end of the page instead")
+    payload = {"children": [new_block]}
+    if append_after:
+        payload["after"] = append_after
+    toggle = api(token, "PATCH", f"/blocks/{page}/children", payload)["results"][0]["id"]
 
     # 2. children of the toggle (separate request so the summary table's
     #    rows stay within Notion's 2-level nesting limit per request)

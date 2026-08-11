@@ -1,0 +1,15 @@
+digraph "CFG for 'write_pending' function" {
+	label="CFG for 'write_pending' function";
+
+	Node0x6397119ad5b0 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870" fontname="Courier",label="{2:\l|  %3 = alloca ptr, align 8\l  %4 = alloca ptr, align 8\l  %5 = alloca i64, align 8\l  store ptr %0, ptr %3, align 8\l  store ptr %1, ptr %4, align 8\l  %6 = load ptr, ptr %4, align 8, !dbg !306\l  %7 = load ptr, ptr %6, align 8, !dbg !307\l  %8 = load ptr, ptr %3, align 8, !dbg !308\l  %9 = ptrtoint ptr %7 to i64, !dbg !309\l  %10 = ptrtoint ptr %8 to i64, !dbg !309\l  %11 = sub i64 %9, %10, !dbg !309\l  store i64 %11, ptr %5, align 8, !dbg !305\l  %12 = load i64, ptr %5, align 8, !dbg !310\l  %13 = icmp slt i64 0, %12, !dbg !312\l  br i1 %13, label %14, label %24, !dbg !313\l|{<s0>T|<s1>F}}"];
+	Node0x6397119ad5b0:s0 -> Node0x6397119949a0[tooltip="2 -> 14\nProbability 50.00%" ];
+	Node0x6397119ad5b0:s1 -> Node0x63971196f580[tooltip="2 -> 24\nProbability 50.00%" ];
+	Node0x6397119949a0 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#be242e70" fontname="Courier",label="{14:\l|  %15 = load ptr, ptr %3, align 8, !dbg !314\l  %16 = load i64, ptr %5, align 8, !dbg !317\l  %17 = call i64 @full_write(i32 noundef 1, ptr noundef %15, i64 noundef %16),\l... !dbg !318\l  %18 = load i64, ptr %5, align 8, !dbg !319\l  %19 = icmp ne i64 %17, %18, !dbg !320\l  br i1 %19, label %20, label %21, !dbg !321\l|{<s0>T|<s1>F}}"];
+	Node0x6397119949a0:s0 -> Node0x6397119f9d90[tooltip="14 -> 20\nProbability 50.00%" ];
+	Node0x6397119949a0:s1 -> Node0x6397119f9e30[tooltip="14 -> 21\nProbability 50.00%" ];
+	Node0x6397119f9d90 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#c5333470" fontname="Courier",label="{20:\l|  call void @write_error(), !dbg !322\l  br label %21, !dbg !322\l}"];
+	Node0x6397119f9d90 -> Node0x6397119f9e30[tooltip="20 -> 21\nProbability 100.00%" ];
+	Node0x6397119f9e30 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#be242e70" fontname="Courier",label="{21:\l|  %22 = load ptr, ptr %3, align 8, !dbg !323\l  %23 = load ptr, ptr %4, align 8, !dbg !324\l  store ptr %22, ptr %23, align 8, !dbg !325\l  br label %24, !dbg !326\l}"];
+	Node0x6397119f9e30 -> Node0x63971196f580[tooltip="21 -> 24\nProbability 100.00%" ];
+	Node0x63971196f580 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870" fontname="Courier",label="{24:\l|  ret void, !dbg !327\l}"];
+}

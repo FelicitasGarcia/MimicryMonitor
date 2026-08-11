@@ -4,7 +4,7 @@ Interleaved comparison for the AFL IV-feedback mechanism (see
 instrumentation/mm_afl_reporter.c, pipeline/instrument.sh -afl-iv-feedback
 and -afl-iv-feedback-path).
 
-Five conditions, same --example otherwise identical (seeds, grammar,
+Six conditions, same --example otherwise identical (seeds, grammar,
 exec-timeout, ...):
 
   stop_only     iv-feedback=off,    policy=stop-v  (just stop -- today's
@@ -23,6 +23,9 @@ exec-timeout, ...):
   fb_stop       iv-feedback=coarse, policy=stop-v  (coarse feedback AND stop
                                                     -- the original mechanism
                                                     as intended)
+  fb_path_stop  iv-feedback=path,   policy=stop-v  (path-aware feedback AND
+                                                    stop -- the path-aware
+                                                    analogue of fb_stop)
   none          plain AFL, no monitor at all -- the baseline. Fuzzed ONCE and
                 shared across the comparison, not re-run per instrumented
                 arm: plain ignores policy/iv-feedback entirely, so fuzzing it
@@ -42,7 +45,7 @@ Reuses targetbench.py's build/fuzz/report/plot functions directly so each
 condition's results are laid out exactly like a normal targetbench.py
 campaign -- readable by campaign_dashboard.py and re-plottable with
 --skip-fuzz. On top of that, produces one combined comparison chart across
-all five conditions (campaign-totals bars + ranked hit-rate + throughput +
+all six conditions (campaign-totals bars + ranked hit-rate + throughput +
 a concrete-numbers summary table, same column format as a single campaign's
 report).
 
@@ -78,11 +81,12 @@ mticker = tb.mticker
 # variants vary policy/feedback_mode -- "none" is the one shared plain
 # baseline.
 CONDITIONS = [
-    ("stop_only",    "instrumented", None,     "stop-v"),
-    ("fb_only",      "instrumented", "coarse", "n"),
-    ("fb_path_only", "instrumented", "path",   "n"),
-    ("fb_stop",      "instrumented", "coarse", "stop-v"),
-    ("none",         "plain",        None,     "n"),
+    ("stop_only",     "instrumented", None,     "stop-v"),
+    ("fb_only",       "instrumented", "coarse", "n"),
+    ("fb_path_only",  "instrumented", "path",   "n"),
+    ("fb_stop",       "instrumented", "coarse", "stop-v"),
+    ("fb_path_stop",  "instrumented", "path",   "stop-v"),
+    ("none",          "plain",        None,     "n"),
 ]
 
 ARM_TITLES = {
@@ -90,25 +94,30 @@ ARM_TITLES = {
     "fb_only":      "Feedback only",
     "fb_path_only": "Feedback (path) only",
     "fb_stop":      "Feedback + stop-v",
+    "fb_path_stop": "Feedback (path) + stop-v",
     "none":         "None (plain AFL)",
 }
 
-# Categorical palette slots 1-5 (blue/orange/aqua/yellow/magenta) -- validated
-# adjacent-pairlist CVD-safe order for bar charts (see dataviz skill
-# references/palette.md); fixed order, not cycled, assigned in the same
-# left-to-right order the conditions appear in the charts (CONDITIONS order)
-# so adjacent bars only ever pair adjacent, validated palette slots.
+# Categorical palette slots 1-6 (blue/orange/aqua/yellow/magenta/green) --
+# validated adjacent-pairlist CVD-safe order for bar charts (see dataviz
+# skill references/palette.md). Each condition keeps the slot it was FIRST
+# assigned, permanently -- do not resequence existing entries when adding a
+# new condition (color follows the entity, never repainted just because the
+# roster changed -- some of these colors are already baked into published
+# Notion charts). A newly added condition takes the next never-yet-used slot.
 ARM_COLORS = {
     "stop_only":    "#2a78d6",
     "fb_only":      "#eb6834",
     "fb_path_only": "#1baf7a",
     "fb_stop":      "#eda100",
     "none":         "#e87ba4",
+    "fb_path_stop": "#008300",
 }
 
 # Single-letter tags, used both in the ranked-trials chart and to build the
 # default experiment-dir suffix for a given --conditions subset.
-SHORT = {"stop_only": "S", "fb_only": "F", "fb_path_only": "P", "fb_stop": "B", "none": "N"}
+SHORT = {"stop_only": "S", "fb_only": "F", "fb_path_only": "P", "fb_stop": "B",
+         "fb_path_stop": "Q", "none": "N"}
 
 
 def rex_trial_already_done(trial_dir, trial_seconds):
@@ -168,6 +177,8 @@ CONDITION_DESCRIPTIONS = {
                      'paths instead of "reached IV at all"',
     "fb_stop":      "iv-feedback coarse, policy stop-v -- coarse feedback "
                      "AND stop, the original mechanism as intended",
+    "fb_path_stop": "iv-feedback path, policy stop-v -- path-aware feedback "
+                     "AND stop, the path-aware analogue of fb_stop",
     "none":         "plain AFL, no monitor -- fuzzed ONCE and shared across "
                      "the comparison (plain ignores policy/iv-feedback, so "
                      "it isn't re-run per instrumented arm)",
@@ -399,7 +410,7 @@ def main():
     p.add_argument("--time",       type=int, default=120,
                     help="seconds per trial (default 120)")
     p.add_argument("--skip-build", action="store_true",
-                    help="skip building all 5 binaries (4 instrumented + 1 plain); "
+                    help="skip building all 6 binaries (5 instrumented + 1 plain); "
                          "assumes they already exist from a previous run")
     p.add_argument("--skip-fuzz",  action="store_true",
                     help="skip building AND fuzzing -- just re-render reports/plots/"
