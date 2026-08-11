@@ -1,23 +1,34 @@
 #!/usr/bin/env python3
 """
 Interleaved comparison for the AFL IV-feedback mechanism (see
-instrumentation/mm_afl_reporter.c, pipeline/instrument.sh -afl-iv-feedback).
+instrumentation/mm_afl_reporter.c, pipeline/instrument.sh -afl-iv-feedback
+and -afl-iv-feedback-path).
 
-Four conditions, same --example otherwise identical (seeds, grammar,
+Five conditions, same --example otherwise identical (seeds, grammar,
 exec-timeout, ...):
 
-  stop_only   iv-feedback=off, policy=stop-v   (just stop -- today's baseline
-                                                behavior, no bitmap nudge)
-  fb_only     iv-feedback=on,  policy=n        (just feedback -- monitor never
-                                                aborts early, isolates the
-                                                bitmap-nudge effect on its own)
-  fb_stop     iv-feedback=on,  policy=stop-v   (feedback AND stop -- the full
-                                                mechanism as intended)
-  none        plain AFL, no monitor at all -- the baseline. Fuzzed ONCE and
-              shared across the comparison, not re-run per instrumented arm:
-              plain ignores policy/iv-feedback entirely, so fuzzing it three
-              times (once per instrumented arm) only burned CPU on identical
-              runs and told us nothing an extra "none" trial wouldn't.
+  stop_only     iv-feedback=off,    policy=stop-v  (just stop -- today's
+                                                    baseline behavior, no
+                                                    bitmap nudge)
+  fb_only       iv-feedback=coarse, policy=n       (coarse feedback only --
+                                                    monitor never aborts
+                                                    early, isolates the
+                                                    single-fixed-bit nudge)
+  fb_path_only  iv-feedback=path,   policy=n       (path-aware feedback only
+                                                    -- same isolation as
+                                                    fb_only, but favoring
+                                                    novel IV-bound monitor
+                                                    paths instead of "reached
+                                                    IV at all")
+  fb_stop       iv-feedback=coarse, policy=stop-v  (coarse feedback AND stop
+                                                    -- the original mechanism
+                                                    as intended)
+  none          plain AFL, no monitor at all -- the baseline. Fuzzed ONCE and
+                shared across the comparison, not re-run per instrumented
+                arm: plain ignores policy/iv-feedback entirely, so fuzzing it
+                repeatedly (once per instrumented arm) only burns CPU on
+                identical runs and tells us nothing an extra "none" trial
+                wouldn't.
 
 Trials are NOT run back-to-back per condition. Instead they're interleaved
 round-robin: trial 1 of every condition runs before trial 2 of any of them.
@@ -31,7 +42,7 @@ Reuses targetbench.py's build/fuzz/report/plot functions directly so each
 condition's results are laid out exactly like a normal targetbench.py
 campaign -- readable by campaign_dashboard.py and re-plottable with
 --skip-fuzz. On top of that, produces one combined comparison chart across
-all four conditions (campaign-totals bars + ranked hit-rate + throughput +
+all five conditions (campaign-totals bars + ranked hit-rate + throughput +
 a concrete-numbers summary table, same column format as a single campaign's
 report).
 
@@ -47,6 +58,7 @@ Usage:
       --experiment-dir 2026-08-03_10x1800s_abcd-only-sleep --skip-fuzz
 """
 import argparse
+import os
 import shutil
 import sys
 import warnings
@@ -59,33 +71,44 @@ np = tb.np
 plt = tb.plt
 mticker = tb.mticker
 
-# (name, target_kind, iv_feedback, policy) -- target_kind picks which of
+# (name, target_kind, feedback_mode, policy) -- target_kind picks which of
 # targetbench.py's two fuzz variants ("instrumented"/"plain") this condition
-# actually builds and runs. Only the instrumented variants vary policy/
-# iv-feedback; "none" is the one shared plain baseline.
+# actually builds and runs. feedback_mode is None (off), "coarse"
+# (-afl-iv-feedback) or "path" (-afl-iv-feedback-path); only the instrumented
+# variants vary policy/feedback_mode -- "none" is the one shared plain
+# baseline.
 CONDITIONS = [
-    ("stop_only", "instrumented", False, "stop-v"),
-    ("fb_only",   "instrumented", True,  "n"),
-    ("fb_stop",   "instrumented", True,  "stop-v"),
-    ("none",      "plain",        False, "n"),
+    ("stop_only",    "instrumented", None,     "stop-v"),
+    ("fb_only",      "instrumented", "coarse", "n"),
+    ("fb_path_only", "instrumented", "path",   "n"),
+    ("fb_stop",      "instrumented", "coarse", "stop-v"),
+    ("none",         "plain",        None,     "n"),
 ]
 
 ARM_TITLES = {
-    "stop_only": "Stop-v only",
-    "fb_only":   "Feedback only",
-    "fb_stop":   "Feedback + stop-v",
-    "none":      "None (plain AFL)",
+    "stop_only":    "Stop-v only",
+    "fb_only":      "Feedback only",
+    "fb_path_only": "Feedback (path) only",
+    "fb_stop":      "Feedback + stop-v",
+    "none":         "None (plain AFL)",
 }
 
-# Categorical palette slots 1-4 (blue/orange/aqua/yellow) -- validated
+# Categorical palette slots 1-5 (blue/orange/aqua/yellow/magenta) -- validated
 # adjacent-pairlist CVD-safe order for bar charts (see dataviz skill
-# references/palette.md); fixed order, not cycled.
+# references/palette.md); fixed order, not cycled, assigned in the same
+# left-to-right order the conditions appear in the charts (CONDITIONS order)
+# so adjacent bars only ever pair adjacent, validated palette slots.
 ARM_COLORS = {
-    "stop_only": "#2a78d6",
-    "fb_only":   "#eb6834",
-    "fb_stop":   "#1baf7a",
-    "none":      "#eda100",
+    "stop_only":    "#2a78d6",
+    "fb_only":      "#eb6834",
+    "fb_path_only": "#1baf7a",
+    "fb_stop":      "#eda100",
+    "none":         "#e87ba4",
 }
+
+# Single-letter tags, used both in the ranked-trials chart and to build the
+# default experiment-dir suffix for a given --conditions subset.
+SHORT = {"stop_only": "S", "fb_only": "F", "fb_path_only": "P", "fb_stop": "B", "none": "N"}
 
 
 def rex_trial_already_done(trial_dir, trial_seconds):
@@ -111,7 +134,7 @@ def rex_trial_already_done(trial_dir, trial_seconds):
         return False
 
 
-def make_arm_args(example, campaign, iv_feedback, policy, trials, time_s, experiment, no_grammar=False):
+def make_arm_args(example, campaign, feedback_mode, policy, trials, time_s, experiment, no_grammar=False):
     argv = [
         "--example", example,
         "--trials",  str(trials),
@@ -120,8 +143,10 @@ def make_arm_args(example, campaign, iv_feedback, policy, trials, time_s, experi
         "--campaign", campaign,
         "--policy",  policy,
     ]
-    if iv_feedback:
+    if feedback_mode == "coarse":
         argv.append("--iv-feedback")
+    elif feedback_mode == "path":
+        argv.append("--iv-feedback-path")
     if no_grammar:
         argv.append("--no-grammar")
     args = tb.parse_args(argv)
@@ -130,31 +155,42 @@ def make_arm_args(example, campaign, iv_feedback, policy, trials, time_s, experi
     return args
 
 
+# One-line description per condition, kept separate from EXPERIMENT_README so
+# a --conditions subset only lists the ones actually run in that folder's
+# README instead of describing arms that never happened there.
+CONDITION_DESCRIPTIONS = {
+    "stop_only":    "iv-feedback OFF, policy stop-v -- just stop, today's "
+                     "baseline, no bitmap nudge",
+    "fb_only":      "iv-feedback coarse, policy n -- just the single-fixed-"
+                     "bit feedback, monitor never aborts early",
+    "fb_path_only": "iv-feedback path, policy n -- path-aware feedback, same "
+                     'isolation as fb_only, favors novel IV-bound monitor '
+                     'paths instead of "reached IV at all"',
+    "fb_stop":      "iv-feedback coarse, policy stop-v -- coarse feedback "
+                     "AND stop, the original mechanism as intended",
+    "none":         "plain AFL, no monitor -- fuzzed ONCE and shared across "
+                     "the comparison (plain ignores policy/iv-feedback, so "
+                     "it isn't re-run per instrumented arm)",
+}
+
 EXPERIMENT_README = """\
 # IV-feedback comparison — {date}, {trials} trials x {time_s}s
 
 Interleaved comparison of the AFL IV-feedback mechanism
-(`instrumentation/mm_afl_reporter.c`, `pipeline/instrument.sh -afl-iv-feedback`)
-on the `{example}` example.
+(`instrumentation/mm_afl_reporter.c`, `pipeline/instrument.sh -afl-iv-feedback`
+and `-afl-iv-feedback-path`) on the `{example}` example.
 
 **Conditions:**
-- `stop_only` — iv-feedback OFF, policy stop-v  (just stop -- today's baseline,
-                                                  no bitmap nudge)
-- `fb_only`   — iv-feedback ON,  policy n       (just feedback -- monitor never
-                                                  aborts early)
-- `fb_stop`   — iv-feedback ON,  policy stop-v  (feedback AND stop)
-- `none`      — plain AFL, no monitor -- fuzzed ONCE and shared across the
-                comparison (plain ignores policy/iv-feedback, so it isn't
-                re-run per instrumented arm)
+{conditions_block}
 
-Trials are interleaved round-robin across all four conditions (trial 1 of
-every condition before trial 2 of any of them) to spread time-correlated
-machine noise evenly rather than concentrating it in whichever condition
-happens to run first or last.
+Trials are interleaved round-robin across all {n_conditions} condition(s)
+above (trial 1 of every condition before trial 2 of any of them) to spread
+time-correlated machine noise evenly rather than concentrating it in
+whichever condition happens to run first or last.
 
 **Files:**
-- `iv_feedback_comparison.png` -- combined chart across all 4 conditions
-  (campaign totals, ranked hit rate, throughput, summary table)
+- `iv_feedback_comparison.png` -- combined chart across all {n_conditions}
+  condition(s) (campaign totals, ranked hit rate, throughput, summary table)
 - `iv_feedback_summary.md` -- same summary table as markdown
 - `<condition>/report.md`, `<condition>/{example}.png` -- per-condition detail
   (same layout a normal targetbench.py campaign produces)
@@ -245,7 +281,6 @@ def make_combined_plot(arm_rows, arms, out_path, cli):
 
     # ── 2. hit rate, all trials across all conditions, sorted ascending ─────
     ax = ax_ranked
-    SHORT = {"stop_only": "S", "fb_only": "F", "fb_stop": "B", "none": "N"}
     all_bars = []
     for name in arms:
         for r in arm_rows[name]:
@@ -364,41 +399,69 @@ def main():
     p.add_argument("--time",       type=int, default=120,
                     help="seconds per trial (default 120)")
     p.add_argument("--skip-build", action="store_true",
-                    help="skip building all 4 binaries (3 instrumented + 1 plain); "
+                    help="skip building all 5 binaries (4 instrumented + 1 plain); "
                          "assumes they already exist from a previous run")
     p.add_argument("--skip-fuzz",  action="store_true",
                     help="skip building AND fuzzing -- just re-render reports/plots/"
                          "comparison from whatever trial data already exists on disk")
     p.add_argument("--experiment-dir", default=None,
                     help="dated folder name under results/rq1_effect/iv_feedback/ "
-                         "(default: <today>_<trials>x<time>s_abcd). Reuse an existing "
+                         "(default: <today>_<trials>x<time>s_abcde). Reuse an existing "
                          "name with --skip-fuzz to re-render its chart.")
     p.add_argument("--no-grammar", action="store_true",
-                    help="disable the grammar mutator for all 4 conditions -- "
+                    help="disable the grammar mutator for all conditions -- "
                          "fuzz with plain AFL++ mutations instead")
+    p.add_argument("--conditions", default=None,
+                    help="comma-separated subset of condition names to run "
+                         f"(default: all -- {','.join(n for n, *_ in CONDITIONS)}). "
+                         "Order/colors are unaffected by the order given here -- "
+                         "each condition keeps its own fixed color regardless of "
+                         "which others are included.")
+    p.add_argument("--notion", action="store_true",
+                    help="after finishing, publish the combined comparison chart "
+                         "(iv_feedback_comparison.png) + summary table to the Notion "
+                         "tracking page as ONE toggle (notion_publish.py --combined) -- "
+                         "not one toggle per condition (needs $NOTION_TOKEN). A "
+                         "failure here is a warning, not fatal -- results are already "
+                         "saved on disk regardless.")
     cli = p.parse_args()
 
+    if cli.conditions:
+        wanted = [c.strip() for c in cli.conditions.split(",") if c.strip()]
+        known = {n for n, *_ in CONDITIONS}
+        unknown = [c for c in wanted if c not in known]
+        if unknown:
+            p.error(f"unknown --conditions {unknown} -- choose from {sorted(known)}")
+        active_conditions = [c for c in CONDITIONS if c[0] in wanted]
+    else:
+        active_conditions = CONDITIONS
+
     import datetime
+    suffix = "".join(SHORT[n] for n, *_ in active_conditions)
     experiment_dir = cli.experiment_dir or (
-        f"{datetime.date.today().isoformat()}_{cli.trials}x{cli.time}s_abcd"
+        f"{datetime.date.today().isoformat()}_{cli.trials}x{cli.time}s_{suffix}"
     )
     experiment = f"rq1_effect/iv_feedback/{experiment_dir}"
 
     arm_args = {
-        name: make_arm_args(cli.example, name, iv_feedback, policy, cli.trials, cli.time,
+        name: make_arm_args(cli.example, name, feedback_mode, policy, cli.trials, cli.time,
                              experiment, no_grammar=cli.no_grammar)
-        for name, _, iv_feedback, policy in CONDITIONS
+        for name, _, feedback_mode, policy in active_conditions
     }
 
     experiment_root = tb.REPO / "evaluation/bench/results" / experiment
     if not cli.skip_fuzz:
+        conditions_block = "\n".join(
+            f"- `{name}` — {CONDITION_DESCRIPTIONS[name]}" for name, *_ in active_conditions
+        )
         (experiment_root / "README.md").write_text(EXPERIMENT_README.format(
             date=datetime.date.today().isoformat(), trials=cli.trials, time_s=cli.time,
-            example=cli.example,
+            example=cli.example, conditions_block=conditions_block,
+            n_conditions=len(active_conditions),
         ))
 
     if not cli.skip_build and not cli.skip_fuzz:
-        for name, target_kind, _, _ in CONDITIONS:
+        for name, target_kind, _, _ in active_conditions:
             print(f"\n{'='*60}\nbuilding condition: {name} ({target_kind})\n{'='*60}")
             if target_kind == "instrumented":
                 tb.build_instrumented(arm_args[name])
@@ -410,7 +473,7 @@ def main():
         try:
             for r in range(1, cli.trials + 1):
                 print(f"\n{'#'*60}\n round {r}/{cli.trials} (interleaved across all conditions)\n{'#'*60}")
-                for name, target_kind, _, _ in CONDITIONS:
+                for name, target_kind, _, _ in active_conditions:
                     args = arm_args[name]
                     trial_dir = args.results / target_kind / f"t{r}"
                     log_path  = args.results / target_kind / f"t{r}_stoplog.txt"
@@ -430,7 +493,7 @@ def main():
 
     print(f"\n{'='*60}\nrendering reports/plots ({completed_rounds} trial(s) per condition)\n{'='*60}")
     all_rows = {}
-    for name, target_kind, _, _ in CONDITIONS:
+    for name, target_kind, _, _ in active_conditions:
         args = arm_args[name]
         args.trials = completed_rounds or 1  # avoid div-by-zero if nothing ran yet
         if completed_rounds == 0:
@@ -448,7 +511,7 @@ def main():
             print(f"[{name}] FAILED to render report/plot: {e!r}")
 
     if all_rows:
-        arms = [name for name, _, _, _ in CONDITIONS if name in all_rows]
+        arms = [name for name, _, _, _ in active_conditions if name in all_rows]
         comparison_path = experiment_root / "iv_feedback_comparison.png"
         try:
             make_combined_plot(all_rows, arms, comparison_path, cli)
@@ -459,11 +522,19 @@ def main():
         except Exception as e:
             print(f"[summary] FAILED to render: {e!r}")
 
+        if cli.notion:
+            try:
+                tb.notion_publish.publish(
+                    experiment_root, experiment_dir, tb.notion_publish.DEFAULT_PAGE,
+                    os.environ.get("NOTION_TOKEN"), example=cli.example, combined=True)
+            except tb.notion_publish.NotionPublishError as e:
+                print(f"[notion] publish failed (non-fatal): {e}")
+
     update_index_readme()
 
     print(f"\n[done] results under:")
     print(f"  {experiment_root}/")
-    for name, _, _, _ in CONDITIONS:
+    for name, _, _, _ in active_conditions:
         print(f"    {name}/")
 
 

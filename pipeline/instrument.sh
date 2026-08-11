@@ -23,6 +23,7 @@ mkdir -p "$MIMICRY_DIR/work/temps" "$MIMICRY_DIR/work/outputs"
 IBOOL=0
 AFLFUZZ=0
 AFL_IV_FEEDBACK=0
+AFL_IV_FEEDBACK_PATH=0
 ASAN=0
 LOGFILE=""
 POLICY=""
@@ -40,6 +41,9 @@ print_usage() {
   echo "  -afl               Enable and register AFL reporter"
   echo "  -afl-iv-feedback   With -afl: mark IV-reaching executions in AFL's own coverage map"
   echo "                     so afl-fuzz favors/energizes inputs that reach IV (opt-in)"
+  echo "  -afl-iv-feedback-path  With -afl: path-sensitive variant of the above — favors inputs"
+  echo "                     whose monitor path is novel *and* IV, not just 'reached IV at all'"
+  echo "                     (mutually exclusive with -afl-iv-feedback)"
   echo "  -asan              Compile with AddressSanitizer (-fsanitize=address)"
   echo "  -log [PATH]        Enable and register log reporter (default: /tmp/mm_monitor.log)"
   echo "  -policy POLICY     Monitor policy: stop-v, stop-iv, or n (default: interactive prompt)"
@@ -70,6 +74,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -afl-iv-feedback)
       AFL_IV_FEEDBACK=1
+      shift
+      ;;
+    -afl-iv-feedback-path)
+      AFL_IV_FEEDBACK_PATH=1
       shift
       ;;
     -asan)
@@ -238,6 +246,11 @@ if [[ -n "$LOGFILE" ]]; then
   MONITOR_RUNTIME+=("$PASSES_DIR/mm_log_reporter.c")
 fi
 
+if [[ "$AFL_IV_FEEDBACK" == "1" && "$AFL_IV_FEEDBACK_PATH" == "1" ]]; then
+  echo -e "${RED}Error:${RESET} -afl-iv-feedback and -afl-iv-feedback-path are mutually exclusive — pick one"
+  exit 1
+fi
+
 if [[ "$AFLFUZZ" == "1" ]]; then
   echo -e "${YELLOW}Including AFL++ reporter${RESET}"
   CFLAGS+=("-DMM_ENABLE_AFL_REPORTER=1")
@@ -247,11 +260,15 @@ if [[ "$AFLFUZZ" == "1" ]]; then
     echo -e "${YELLOW}IV feedback:${RESET} enabled — marking IV-reaching executions in AFL's coverage map"
     AFL_REPORTER_CFLAGS+=("-DMM_ENABLE_AFL_IV_FEEDBACK=1")
   fi
+  if [[ "$AFL_IV_FEEDBACK_PATH" == "1" ]]; then
+    echo -e "${YELLOW}IV feedback:${RESET} enabled (path-aware) — favoring novel IV-bound monitor paths"
+    AFL_REPORTER_CFLAGS+=("-DMM_ENABLE_AFL_IV_FEEDBACK_PATH=1")
+  fi
   echo -e "${YELLOW}Compiling AFL reporter with clang (no AFL instrumentation):${RESET} $AFL_REPORTER_OBJ"
   clang "${AFL_REPORTER_CFLAGS[@]}" -c "$PASSES_DIR/mm_afl_reporter.c" -o "$AFL_REPORTER_OBJ"
   EXTRA_OBJECTS+=("$AFL_REPORTER_OBJ")
-elif [[ "$AFL_IV_FEEDBACK" == "1" ]]; then
-  echo -e "${RED}Warning:${RESET} -afl-iv-feedback has no effect without -afl (ignored)"
+elif [[ "$AFL_IV_FEEDBACK" == "1" || "$AFL_IV_FEEDBACK_PATH" == "1" ]]; then
+  echo -e "${RED}Warning:${RESET} -afl-iv-feedback/-afl-iv-feedback-path has no effect without -afl (ignored)"
 fi
 
 $CC "${CFLAGS[@]}" "$OUTPUT_FILE" "${MONITOR_RUNTIME[@]}" "${EXTRA_OBJECTS[@]}" "${OBJECTS[@]}" -o "$EXECUTABLE_NAME"

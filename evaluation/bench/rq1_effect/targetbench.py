@@ -271,12 +271,19 @@ def parse_args(argv=None):
                    help="build the instrumented binary with -afl-iv-feedback: mark "
                         "IV-reaching executions in AFL's own coverage map so afl-fuzz "
                         "favors/energizes them (no effect on the plain build)")
+    p.add_argument("--iv-feedback-path", action="store_true",
+                   help="build the instrumented binary with -afl-iv-feedback-path: "
+                        "path-sensitive variant of --iv-feedback -- favors inputs whose "
+                        "monitor path is novel *and* IV, not just 'reached IV at all' "
+                        "(mutually exclusive with --iv-feedback)")
     p.add_argument("--notion",      action="store_true",
                    help="after finishing, publish the campaign to the Notion tracking "
                         "page via notion_publish.py (needs $NOTION_TOKEN). A failure "
                         "here is a warning, not a fatal error -- results are already "
                         "saved on disk regardless.")
     args = p.parse_args(argv)
+    if args.iv_feedback and args.iv_feedback_path:
+        p.error("--iv-feedback and --iv-feedback-path are mutually exclusive -- pick one")
     ex = EXAMPLES[args.example]
     if args.seeds is None:
         args.seeds = ex["seeds"]
@@ -330,6 +337,8 @@ def build_instrumented(args):
         cmd += ["-Iinstrument"] + ex["iinstrument"]
     if args.iv_feedback:
         cmd += ["-afl-iv-feedback"]
+    if args.iv_feedback_path:
+        cmd += ["-afl-iv-feedback-path"]
     if args.campaign:
         cmd += ["-bin-suffix", f"_{args.campaign}"]
     r = _run(cmd)
@@ -559,7 +568,7 @@ def save_summary(data, args):
 def make_plots(data, rows, args, out_path):
     fig, axes = plt.subplots(2, 2, figsize=(13, 11))
     ex_title = EXAMPLES[args.example]["title"]
-    iv_suffix = ", iv-feedback" if args.iv_feedback else ""
+    iv_suffix = ", iv-feedback" if args.iv_feedback else (", iv-feedback-path" if args.iv_feedback_path else "")
     fig.suptitle(f"MimicryMonitor — {ex_title} target reachability", y=0.975,
                  fontsize=13, fontweight="bold")
     fig.text(0.5, 0.945, f"({args.trials} trials × {args.time}s, policy={args.policy}{iv_suffix})",
@@ -724,7 +733,8 @@ def save_report(data, rows, args):
     lines.append(f"\n**Campaign:** {campaign}  ")
     lines.append(f"**Trials:** {args.trials} × {args.time}s  ")
     lines.append(f"**Policy:** {args.policy}  ")
-    lines.append(f"**IV feedback:** {'enabled' if args.iv_feedback else 'disabled'}\n")
+    iv_mode = "coarse" if args.iv_feedback else ("path-aware" if args.iv_feedback_path else "disabled")
+    lines.append(f"**IV feedback:** {iv_mode}\n")
 
     for target in ("instrumented", "plain"):
         t_rows = [r for r in rows if r["target"] == target]

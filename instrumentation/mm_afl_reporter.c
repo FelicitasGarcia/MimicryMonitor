@@ -21,6 +21,16 @@ extern uint32_t __afl_map_size;
 #define MM_ENABLE_AFL_IV_FEEDBACK 0
 #endif
 
+#ifndef MM_ENABLE_AFL_IV_FEEDBACK_PATH
+#define MM_ENABLE_AFL_IV_FEEDBACK_PATH 0
+#endif
+
+/* Bytes carved out of the tail of AFL's own bitmap for monitor-path
+ * feedback, disjoint in purpose from the single fixed byte the coarse mode
+ * uses (the two modes are mutually exclusive at build time -- see
+ * instrument.sh -- so they never actually share a binary). */
+#define MM_MONITOR_MAP_SIZE 256
+
 /* ------------------------------------------------------------------ */
 /* Callbacks                                                            */
 /* ------------------------------------------------------------------ */
@@ -45,6 +55,30 @@ static MM_NO_COVERAGE void afl_on_verdict(MMVerdict verdict, void *ctx)
     (void)verdict;
 }
 
+static MM_NO_COVERAGE void afl_on_transition(uint32_t edge_id, MMVerdict verdict, void *ctx)
+{
+    (void)ctx;
+#if MM_ENABLE_AFL_IV_FEEDBACK_PATH
+    /*
+     * Path-aware IV feedback: edge_id is sensitive to the sequence of
+     * monitor states visited this execution (see monitor_runtime.c), not
+     * just the current one. Only IV-bound transitions get recorded, so
+     * inputs that never reach IV -- or reach it via an already-seen
+     * sub-path -- contribute nothing new here; AFL's own virgin-map logic
+     * then favors inputs that light up novel IV-path coverage, the same
+     * way it already favors a genuinely rare program edge.
+     */
+    if (verdict == MM_VERDICT_IV && __afl_area_ptr && __afl_map_size > MM_MONITOR_MAP_SIZE)
+    {
+        uint32_t idx = (__afl_map_size - MM_MONITOR_MAP_SIZE) + (edge_id % MM_MONITOR_MAP_SIZE);
+        if (__afl_area_ptr[idx] != 0xff)
+            __afl_area_ptr[idx]++;
+    }
+#endif
+    (void)edge_id;
+    (void)verdict;
+}
+
 static MM_NO_COVERAGE void afl_on_abort(MMVerdict verdict, void *ctx)
 {
     (void)ctx;
@@ -64,6 +98,7 @@ static MM_NO_COVERAGE void afl_on_abort(MMVerdict verdict, void *ctx)
 static const MMVerdictReporter afl_reporter = {
     .on_verdict = afl_on_verdict,
     .on_abort = afl_on_abort,
+    .on_transition = afl_on_transition,
     .ctx = NULL,
 };
 

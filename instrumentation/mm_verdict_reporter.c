@@ -23,6 +23,12 @@ void mm_report_verdict(MMVerdict verdict) {
             reporters[i].on_verdict(verdict, reporters[i].ctx);
 }
 
+void mm_report_transition(uint32_t edge_id, MMVerdict verdict) {
+    for (int i = 0; i < reporter_count; i++)
+        if (reporters[i].on_transition)
+            reporters[i].on_transition(edge_id, verdict, reporters[i].ctx);
+}
+
 /* No retorna */
 void mm_report_abort(MMVerdict verdict) {
     for (int i = 0; i < reporter_count; i++)

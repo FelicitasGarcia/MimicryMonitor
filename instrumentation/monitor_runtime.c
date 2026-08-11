@@ -68,9 +68,30 @@ static int mm_stop_recorded = 0;            /* ensure exactly one record */
 
 volatile int mm_target_reached = 0;         /* set to 1 by the probe in the target patch */
 
+/* --- Path-sensitive edge id, for -afl-iv-feedback-path ---------------------
+ * Carried across the whole execution (reset per-run in initAutomaton), same
+ * role as AFL's own prev_loc: makes the same destination node hash to a
+ * different edge_id depending on how the execution got there. */
+static uint32_t mm_prev_loc = 0;
+
 /* ------------------------------------------------------------------ */
 /* Helpers                                                              */
 /* ------------------------------------------------------------------ */
+
+/* 32-bit FNV-1a over the node id string. Node ids are small stable strings
+ * (e.g. "12") already present in the generated automaton -- no LLVM pass or
+ * Java monitor-constructor changes needed to get a numeric handle on them. */
+static uint32_t mm_hash_state(const char *id)
+{
+    uint32_t h = 2166136261u;
+    if (id)
+        for (const unsigned char *p = (const unsigned char *)id; *p; p++)
+        {
+            h ^= *p;
+            h *= 16777619u;
+        }
+    return h;
+}
 
 static AutomatonNode *findNode(const char *id)
 {
@@ -238,6 +259,7 @@ void initAutomaton(AutomatonNode *nodes, int size, const char *initialNodeId)
     automatonSize = size;
     currentState = initialNodeId;
     stopMonitoring = 0;
+    mm_prev_loc = 0;
 
 #if MM_ENABLE_LOG_REPORTER
     logAutomatonSnapshot(initialNodeId);
@@ -326,6 +348,15 @@ void monitorAction(const char *transitionType)
     mm_last_verdict = newNode->verdict;
     MMVerdict v = verdictFromString(newNode->verdict);
     mm_report_verdict(v);
+
+    /* Path-sensitive edge id (AFL-style cur_loc ^ (prev_loc >> 1)), reported
+     * on every real transition regardless of verdict -- it's up to reporters
+     * to decide whether/how to act on it (e.g. only on IV, see
+     * mm_afl_reporter.c's afl_on_transition). */
+    uint32_t cur_loc = mm_hash_state(newState);
+    uint32_t edge_id = cur_loc ^ (mm_prev_loc >> 1);
+    mm_prev_loc = cur_loc >> 1;
+    mm_report_transition(edge_id, v);
 
     if (shouldAbort(newNode->verdict))
     {
