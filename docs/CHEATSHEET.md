@@ -5,10 +5,10 @@ IV-feedback experiments. All commands run from the repo root.
 
 ## Single campaign (targetbench.py) — cat_sleep, instrumented vs plain
 
-Fresh run (10 trials × 1800s, sleep-injected cat):
+Fresh run (10 trials × 1800s, sleep-injected cat, grammar-guided mutation):
 ```bash
 evaluation/bench/.venv/bin/python evaluation/bench/rq1_effect/targetbench.py \
-  --example cat_sleep --trials 10 --time 1800 --policy stop-v \
+  --example cat_sleep --trials 10 --time 1800 --policy stop-v --use-grammar \
   --results evaluation/bench/results/V_sleep/cat_sleep
 ```
 
@@ -16,38 +16,39 @@ Re-render report.md + PNG from existing trial data, no re-fuzzing
 (use after editing `targetbench.py`'s plotting code, or just to redraw):
 ```bash
 evaluation/bench/.venv/bin/python evaluation/bench/rq1_effect/targetbench.py \
-  --example cat_sleep --trials 10 --time 1800 --policy stop-v \
+  --example cat_sleep --trials 10 --time 1800 --policy stop-v --use-grammar \
   --results evaluation/bench/results/V_sleep/cat_sleep \
   --skip-fuzz --skip-build
 ```
 
-Add `--no-grammar` to either command to fuzz with plain AFL++ mutations
-instead of the grammar mutator.
+Grammar is off by default (plain AFL++ byte mutations) -- drop `--use-grammar`
+from either command above for that instead.
 
 ## IV-feedback experiment (run_iv_feedback_experiment.py) — 4 conditions
 
 Conditions: `stop_only`, `fb_only`, `fb_stop` (each its own instrumented
 build), `none` (one shared plain AFL baseline, fuzzed once, not per-arm).
 
-Fresh run:
+Fresh run, grammar-guided mutation:
 ```bash
 evaluation/bench/.venv/bin/python evaluation/bench/rq1_effect/run_iv_feedback_experiment.py \
-  --example cat_sleep --trials 10 --time 1800 \
+  --example cat_sleep --trials 10 --time 1800 --use-grammar \
   --experiment-dir 2026-08-03_10x1800s_abcd-only-sleep
 ```
 
-Same, but plain AFL++ mutations instead of the grammar mutator:
+Same, but plain AFL++ mutations instead of the grammar mutator (the default --
+drop `--use-grammar`):
 ```bash
 evaluation/bench/.venv/bin/python evaluation/bench/rq1_effect/run_iv_feedback_experiment.py \
   --example cat_sleep --trials 10 --time 1800 \
-  --experiment-dir 2026-08-03_10x1800s_abcd-only-sleep-no-grammar --no-grammar
+  --experiment-dir 2026-08-03_10x1800s_abcd-only-sleep-no-grammar
 ```
 
 Re-render the combined comparison chart + summary table + per-condition
 reports from existing trial data (after Ctrl-C, or just to redraw):
 ```bash
 evaluation/bench/.venv/bin/python evaluation/bench/rq1_effect/run_iv_feedback_experiment.py \
-  --example cat_sleep --trials 10 --time 1800 \
+  --example cat_sleep --trials 10 --time 1800 --use-grammar \
   --experiment-dir 2026-08-03_10x1800s_abcd-only-sleep --skip-fuzz
 ```
 

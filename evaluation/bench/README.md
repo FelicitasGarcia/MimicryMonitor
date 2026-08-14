@@ -64,6 +64,7 @@ Useful flags:
 | `--grammar LIB`   | path to `libgrammarmutator-*.so`; enables grammar-guided mutations |
 | `--grammar-only`  | suppress AFL's own byte mutations (`AFL_CUSTOM_MUTATOR_ONLY=1`) |
 | `--trees DIR`     | pre-generated tree cache dir (passed to `fuzz.sh -trees`) |
+| `--use-grammar`   | pull the `--example`'s own grammar config instead of specifying `--grammar`/`--grammar-only`/`--trees` by hand; grammar is off by default either way |
 
 **Grammar Mutator example (catCU):**
 

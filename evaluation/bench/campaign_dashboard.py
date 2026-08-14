@@ -33,12 +33,14 @@ RESULTS = REPO / "evaluation/bench/results"
 # the iv-feedback conditions below are each single-target (3 instrumented-only
 # arms + 1 shared plain "none" baseline, not an instrumented+plain pair per
 # arm), unlike a normal targetbench.py campaign which has both.
-_EXP = "iv_feedback/2026-08-06_10x1800s_abcd-new-sleep-10ms"
+_EXP = "rq1_effect/iv_feedback/2026-08-11_10x1200s_SFPBQN"
 CAMPAIGNS = [
-    ("cat_sleep", "stop_only", Path(f"{_EXP}/stop_only"), range(1, 11), 1800, ["instrumented"]),
-    ("cat_sleep", "fb_only",   Path(f"{_EXP}/fb_only"),   range(1, 11), 1800, ["instrumented"]),
-    ("cat_sleep", "fb_stop",   Path(f"{_EXP}/fb_stop"),   range(1, 11), 1800, ["instrumented"]),
-    ("cat_sleep", "none",      Path(f"{_EXP}/none"),      range(1, 11), 1800, ["plain"]),
+    ("cat_sleep", "stop_only",    Path(f"{_EXP}/stop_only"),    range(1, 11), 1200, ["instrumented"]),
+    ("cat_sleep", "fb_only",      Path(f"{_EXP}/fb_only"),      range(1, 11), 1200, ["instrumented"]),
+    ("cat_sleep", "fb_path_only", Path(f"{_EXP}/fb_path_only"), range(1, 11), 1200, ["instrumented"]),
+    ("cat_sleep", "fb_stop",      Path(f"{_EXP}/fb_stop"),      range(1, 11), 1200, ["instrumented"]),
+    ("cat_sleep", "fb_path_stop", Path(f"{_EXP}/fb_path_stop"), range(1, 11), 1200, ["instrumented"]),
+    ("cat_sleep", "none",         Path(f"{_EXP}/none"),         range(1, 11), 1200, ["plain"]),
 ]
 
 RESET  = "\033[0m"

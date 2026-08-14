@@ -1,5 +1,0 @@
-digraph "CFG for 'emit_stdin_note' function" {
-	label="CFG for 'emit_stdin_note' function";
-
-	Node0x63971190c520 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870" fontname="Courier",label="{0:\l|  %1 = call ptr @gettext(ptr noundef @.str.32) #12, !dbg !295\l  %2 = load ptr, ptr @stdout, align 8, !dbg !295\l  %3 = call i32 @fputs_unlocked(ptr noundef %1, ptr noundef %2), !dbg !295\l  ret void, !dbg !296\l}"];
-}

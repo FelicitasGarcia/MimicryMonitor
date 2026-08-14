@@ -16,7 +16,7 @@ exec-timeout, ...):
                                                     single-fixed-bit nudge)
   fb_path_only  iv-feedback=path,   policy=n       (path-aware feedback only
                                                     -- same isolation as
-                                                    fb_only, but favoring
+                                                fb_only, but favoring
                                                     novel IV-bound monitor
                                                     paths instead of "reached
                                                     IV at all")
@@ -64,6 +64,7 @@ import argparse
 import os
 import shutil
 import sys
+import textwrap
 import warnings
 from pathlib import Path
 
@@ -143,7 +144,8 @@ def rex_trial_already_done(trial_dir, trial_seconds):
         return False
 
 
-def make_arm_args(example, campaign, feedback_mode, policy, trials, time_s, experiment, no_grammar=False):
+def make_arm_args(example, campaign, feedback_mode, policy, trials, time_s, experiment,
+                   no_grammar=False, use_grammar=False):
     argv = [
         "--example", example,
         "--trials",  str(trials),
@@ -156,6 +158,8 @@ def make_arm_args(example, campaign, feedback_mode, policy, trials, time_s, expe
         argv.append("--iv-feedback")
     elif feedback_mode == "path":
         argv.append("--iv-feedback-path")
+    if use_grammar:
+        argv.append("--use-grammar")
     if no_grammar:
         argv.append("--no-grammar")
     args = tb.parse_args(argv)
@@ -185,7 +189,7 @@ CONDITION_DESCRIPTIONS = {
 }
 
 EXPERIMENT_README = """\
-# IV-feedback comparison — {date}, {trials} trials x {time_s}s
+# IV-feedback comparison — {date}, {trials} trials x {time_s}s · grammar={grammar_status}
 
 Interleaved comparison of the AFL IV-feedback mechanism
 (`instrumentation/mm_afl_reporter.c`, `pipeline/instrument.sh -afl-iv-feedback`
@@ -245,14 +249,40 @@ def _campaign_totals(rows):
     return tot_execs, tot_hits, tot_rate
 
 
+def _mean_hits_per_trial(rows):
+    return sum(r["target_hits"] for r in rows) / len(rows) if rows else None
+
+
+def campaign_result_summary(all_rows):
+    """(best_condition, best_mean_hits, plain_mean_hits) for the Notion
+    database's headline result properties -- best_condition/best_mean_hits
+    is the highest mean-hits/trial among all rendered conditions except
+    "none"; plain_mean_hits is "none"'s own mean hits/trial. Any piece that
+    isn't available (e.g. "none" wasn't run, or nothing rendered at all)
+    comes back None so campaign_row_properties() leaves that property unset
+    instead of writing a wrong number."""
+    plain_mean_hits = _mean_hits_per_trial(all_rows["none"]) if "none" in all_rows else None
+    instrumented = {name: rows for name, rows in all_rows.items() if name != "none"}
+    if not instrumented:
+        return None, None, plain_mean_hits
+    best_condition = max(instrumented, key=lambda n: _mean_hits_per_trial(instrumented[n]))
+    best_mean_hits = _mean_hits_per_trial(instrumented[best_condition])
+    return best_condition, best_mean_hits, plain_mean_hits
+
+
 def make_combined_plot(arm_rows, arms, out_path, cli):
     """Combined chart across all conditions, laid out like a single
     targetbench.py campaign's report but with N condition-bars instead of
     2 target-bars: campaign totals (execs bar, hits shaded inside),
     all-trials ranked by hit rate, throughput boxplot, and a concrete-numbers
-    summary table."""
+    summary table. Every size (figure width, label rotation, per-bar text)
+    scales with the number of conditions/trials so this doesn't overlap
+    whether there are 3 conditions or 6+."""
+    n = len(arms)
+    n_bars = sum(len(arm_rows[a]) for a in arms)
     ex_title = tb.EXAMPLES[cli.example]["title"]
-    fig, axes = plt.subplots(2, 2, figsize=(14, 11))
+    fig_w = max(14.0, 1.7 * n, 0.17 * n_bars)
+    fig, axes = plt.subplots(2, 2, figsize=(fig_w, 11))
     fig.suptitle(f"IV-feedback comparison — {ex_title}", y=0.975,
                  fontsize=13, fontweight="bold")
     fig.text(0.5, 0.945, f"({cli.trials} trials × {cli.time}s per condition)",
@@ -263,8 +293,15 @@ def make_combined_plot(arm_rows, arms, out_path, cli):
         f"{ARM_TITLES[name]}: {h:,} hits / {e:,} execs ({r:.1f}%)"
         for name, (e, h, r) in campaign_totals.items()
     ]
-    fig.text(0.5, 0.915, "Campaign totals — " + "    |    ".join(totals_parts),
-              ha="center", fontsize=8, color="#333333")
+    # One line gets unreadable/overflows past ~4 conditions -- wrap into
+    # rows of 3 instead of a single ever-longer "|"-joined string.
+    per_row = 3
+    totals_rows = ["    |    ".join(totals_parts[i:i + per_row])
+                   for i in range(0, len(totals_parts), per_row)]
+    for i, line in enumerate(totals_rows):
+        fig.text(0.5, 0.915 - i * 0.020, ("Campaign totals — " if i == 0 else "") + line,
+                  ha="center", fontsize=8, color="#333333")
+    header_rows = len(totals_rows)
 
     ax_bars, ax_ranked, ax_eps, ax_table = axes.flat
 
@@ -282,7 +319,8 @@ def make_combined_plot(arm_rows, arms, out_path, cli):
         ax.text(xi, tot_hits / 2, f"{tot_hits:,} hits\n({tot_rate:.1f}%)",
                 ha="center", va="center", fontsize=8, color="white", fontweight="bold")
     ax.set_xticks(xs)
-    ax.set_xticklabels([ARM_TITLES[n] for n in arms], fontsize=8.5)
+    ax.set_xticklabels([ARM_TITLES[a] for a in arms], fontsize=8.5,
+                        rotation=15, ha="right", rotation_mode="anchor")
     ax.set_ylabel("Count (campaign total)")
     ax.set_title("Campaign totals: executions vs. target hits")
     ax.set_ylim(0, max(v[0] for v in campaign_totals.values()) * 1.18)
@@ -301,16 +339,21 @@ def make_combined_plot(arm_rows, arms, out_path, cli):
     bar_vals   = [b[0] for b in all_bars]
     bar_labels = [b[1] for b in all_bars]
     bar_colors = [b[2] for b in all_bars]
+    # Per-bar text and x-tick labels both get tighter as trial count grows --
+    # rotating the value labels 90° keeps them from smearing into each other
+    # horizontally regardless of how many bars there are.
+    value_fs = max(4.5, min(6.5, 230 / n_bars))
+    tick_fs  = max(5.0, min(7.0, 260 / n_bars))
     bars = ax.bar(range(len(bar_vals)), bar_vals, color=bar_colors, alpha=0.85)
     for bar, (v, _, _, hits, execs) in zip(bars, all_bars):
-        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.3,
-                f"{v:.1f}%\n{hits}/{execs}", ha="center", va="bottom",
-                fontsize=5.5, linespacing=1.2)
+        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1.0,
+                f"{v:.1f}% ({hits}/{execs})", ha="left", va="bottom",
+                fontsize=value_fs, rotation=90, rotation_mode="anchor")
     ax.set_xticks(range(len(bar_labels)))
-    ax.set_xticklabels(bar_labels, fontsize=6.5)
+    ax.set_xticklabels(bar_labels, fontsize=tick_fs, rotation=90)
     ax.set_ylabel("Hit rate (%)")
     ax.set_title("All trials ranked by hit rate  (label: hits/execs)")
-    ax.set_ylim(0, max(105, ax.get_ylim()[1] * 1.15))
+    ax.set_ylim(0, min(140, max(105, ax.get_ylim()[1] * 1.35)))
     for name in arms:
         ax.bar(0, 0, color=ARM_COLORS[name], alpha=0.85, label=ARM_TITLES[name])
     ax.legend(fontsize=7)
@@ -326,7 +369,8 @@ def make_combined_plot(arm_rows, arms, out_path, cli):
     for element in ("whiskers", "caps", "medians", "fliers"):
         for item in bp[element]:
             item.set_color("black")
-    ax.set_xticklabels([ARM_TITLES[n] for n in arms], fontsize=8)
+    ax.set_xticklabels([ARM_TITLES[a] for a in arms], fontsize=8,
+                        rotation=15, ha="right", rotation_mode="anchor")
     ax.set_ylabel("Execs / sec")
     ax.set_title("Throughput (exec/sec)")
     ax.grid(True, axis="y", alpha=0.3)
@@ -347,24 +391,29 @@ def make_combined_plot(arm_rows, arms, out_path, cli):
         ("Best hit rate",    lambda rs: f"{max(r['hit_rate'] for r in rs)*100:.1f}%"),
         ("Worst hit rate",   lambda rs: f"{min(r['hit_rate'] for r in rs)*100:.1f}%"),
     ]
-    col_labels = ["Metric"] + [ARM_TITLES[n] for n in arms]
-    cell_text = [[label] + [fn(arm_rows[n]) for n in arms] for label, fn in table_metrics]
+    # Wrap long condition names ("Feedback (path) + stop-v") onto multiple
+    # lines instead of widening the column indefinitely -- otherwise N>4
+    # columns run into each other with no space between headers.
+    col_labels = ["Metric"] + ["\n".join(textwrap.wrap(ARM_TITLES[a], width=12)) for a in arms]
+    cell_text = [[label] + [fn(arm_rows[a]) for a in arms] for label, fn in table_metrics]
 
     def tint(hex_color, amount=0.85):
         r, g, b = (int(hex_color[i:i+2], 16) for i in (1, 3, 5))
         r, g, b = (int(v + (255 - v) * amount) for v in (r, g, b))
         return f"#{r:02x}{g:02x}{b:02x}"
 
+    header_fs = max(6.0, min(7.5, 44 / n))
+    body_fs   = max(6.5, min(8.0, 50 / n))
     tbl = ax.table(cellText=cell_text, colLabels=col_labels,
                     cellLoc="center", loc="upper center")
     tbl.auto_set_font_size(False)
-    tbl.set_fontsize(8)
-    tbl.scale(1, 1.6)
+    tbl.set_fontsize(body_fs)
+    tbl.scale(1, 1.9)
     for (r, c), cell in tbl.get_celld().items():
         cell.set_edgecolor("#cccccc")
         if r == 0:
             cell.set_facecolor("#e0e0e0")
-            cell.set_text_props(fontweight="bold", fontsize=7.5)
+            cell.set_text_props(fontweight="bold", fontsize=header_fs)
         elif c == 0:
             cell.set_text_props(ha="left")
         else:
@@ -372,7 +421,7 @@ def make_combined_plot(arm_rows, arms, out_path, cli):
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        plt.tight_layout(pad=1.5, rect=(0, 0, 1, 0.89))
+        plt.tight_layout(pad=1.5, rect=(0, 0, 1, 0.89 - 0.025 * (header_rows - 1)))
     fig.savefig(out_path, dpi=150)
     plt.close(fig)
     print(f"[comparison] saved → {out_path}")
@@ -419,9 +468,13 @@ def main():
                     help="dated folder name under results/rq1_effect/iv_feedback/ "
                          "(default: <today>_<trials>x<time>s_abcde). Reuse an existing "
                          "name with --skip-fuzz to re-render its chart.")
+    p.add_argument("--use-grammar", action="store_true",
+                    help="pull the --example's own grammar-mutator config for all "
+                         "conditions. Off by default -- plain AFL++ mutations unless "
+                         "you pass this.")
     p.add_argument("--no-grammar", action="store_true",
-                    help="disable the grammar mutator for all conditions -- "
-                         "fuzz with plain AFL++ mutations instead")
+                    help="force the grammar mutator off (now the default regardless -- "
+                         "kept as a harmless no-op so old commands with this flag still work)")
     p.add_argument("--conditions", default=None,
                     help="comma-separated subset of condition names to run "
                          f"(default: all -- {','.join(n for n, *_ in CONDITIONS)}). "
@@ -456,7 +509,7 @@ def main():
 
     arm_args = {
         name: make_arm_args(cli.example, name, feedback_mode, policy, cli.trials, cli.time,
-                             experiment, no_grammar=cli.no_grammar)
+                             experiment, no_grammar=cli.no_grammar, use_grammar=cli.use_grammar)
         for name, _, feedback_mode, policy in active_conditions
     }
 
@@ -465,10 +518,19 @@ def main():
         conditions_block = "\n".join(
             f"- `{name}` — {CONDITION_DESCRIPTIONS[name]}" for name, *_ in active_conditions
         )
+        # Every arm shares the same grammar setting (make_arm_args applies
+        # use_grammar/no_grammar uniformly) -- read it back off any one of
+        # them so this reflects the actually-resolved state, not just the
+        # raw CLI flags (works the same regardless of what targetbench.py's
+        # own --example defaults end up being).
+        sample_args = next(iter(arm_args.values()))
+        grammar_status = (f"{sample_args.grammar.name}"
+                           + (" (grammar-only)" if sample_args.grammar_only else "")
+                           if sample_args.grammar else "off")
         (experiment_root / "README.md").write_text(EXPERIMENT_README.format(
             date=datetime.date.today().isoformat(), trials=cli.trials, time_s=cli.time,
             example=cli.example, conditions_block=conditions_block,
-            n_conditions=len(active_conditions),
+            n_conditions=len(active_conditions), grammar_status=grammar_status,
         ))
 
     if not cli.skip_build and not cli.skip_fuzz:
@@ -534,11 +596,25 @@ def main():
             print(f"[summary] FAILED to render: {e!r}")
 
         if cli.notion:
+            npub = tb.notion_publish
             try:
-                tb.notion_publish.publish(
-                    experiment_root, experiment_dir, tb.notion_publish.DEFAULT_PAGE,
-                    os.environ.get("NOTION_TOKEN"), example=cli.example, combined=True)
-            except tb.notion_publish.NotionPublishError as e:
+                token = os.environ.get("NOTION_TOKEN")
+                page = npub.DEFAULT_PAGE
+                database_id = npub.find_or_create_database(
+                    token, page, npub.IV_FEEDBACK_DB_TITLE,
+                    npub.iv_feedback_db_schema(list(tb.EXAMPLES), [n for n, *_ in CONDITIONS]))
+                best_condition, best_mean_hits, plain_mean_hits = campaign_result_summary(all_rows)
+                properties = npub.campaign_row_properties(
+                    experiment_dir, datetime.date.today().isoformat(), cli.example,
+                    cli.trials, cli.time, [n for n, *_ in active_conditions],
+                    grammar_status, npub.git_commit(),
+                    best_condition=best_condition, best_mean_hits=best_mean_hits,
+                    plain_mean_hits=plain_mean_hits)
+                _, summary = npub.parse_combined(experiment_root)
+                body_children = npub.build_result_children(
+                    token, comparison_path, None, summary, True, experiment_dir)
+                npub.publish_row(database_id, properties, body_children, token, experiment_dir)
+            except npub.NotionPublishError as e:
                 print(f"[notion] publish failed (non-fatal): {e}")
 
     update_index_readme()

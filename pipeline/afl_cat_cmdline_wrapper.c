@@ -47,7 +47,9 @@
 #define MAX_PATH_LEN 256
 
 /* Content written to every temp file so cat actually has something to read.
- * Includes tabs and show-nonprinting chars so -A/-T/-v flags exercise their paths. */
+ * Includes tabs and show-nonprinting chars so -A/-T/-v flags exercise their paths.
+ * Repeated (see SEED_FILE_SIZE below) rather than written once, so those same
+ * bytes recur throughout the file instead of only in the first ~50 bytes. */
 static const char SEED_CONTENT[] =
     "hello world\n"
     "\ttabbed line\n"
@@ -55,6 +57,29 @@ static const char SEED_CONTENT[] =
     "empty next:\n"
     "\n"
     "end\n";
+
+#define SEED_FILE_SIZE (1024 * 1024) /* 1 MB */
+
+/* Built once per execution (lazily, on first use) by repeating SEED_CONTENT,
+ * then written in a single write() call per file -- filling this is plain
+ * memcpy, no syscalls, so the only per-file syscall cost is one open() +
+ * one write() + one close(), regardless of SEED_FILE_SIZE. */
+static char seed_buf[SEED_FILE_SIZE];
+static int  seed_buf_ready = 0;
+
+static void fill_seed_buffer(void)
+{
+    if (seed_buf_ready) return;
+    size_t chunk = sizeof(SEED_CONTENT) - 1;
+    size_t filled = 0;
+    while (filled < SEED_FILE_SIZE) {
+        size_t remaining = SEED_FILE_SIZE - filled;
+        size_t n = (remaining < chunk) ? remaining : chunk;
+        memcpy(seed_buf + filled, SEED_CONTENT, n);
+        filled += n;
+    }
+    seed_buf_ready = 1;
+}
 
 /* ── filename → real path mapping ──────────────────────────────────────── */
 
@@ -100,10 +125,19 @@ static const char *resolve(const char *name)
     else if (strcmp(name, "fuzz_c") == 0) snprintf(fmap[idx].path, MAX_PATH_LEN, "%s/c", TMPDIR);
     else                                   snprintf(fmap[idx].path, MAX_PATH_LEN, "%s/t%d", TMPDIR, idx);
 
-    /* Pre-populate so catPUA has something to read. */
+    /* Pre-populate so catPUA has something to read: fresh every execution
+     * (so an aliasing exec's mutation of the file never leaks into the next
+     * execution's "clean input" assumption), but as a single write() from
+     * an in-memory buffer instead of thousands of small ones. */
+    fill_seed_buffer();
     int fd = open(fmap[idx].path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd >= 0) {
-        write(fd, SEED_CONTENT, sizeof(SEED_CONTENT) - 1);
+        ssize_t off = 0;
+        while (off < SEED_FILE_SIZE) {
+            ssize_t n = write(fd, seed_buf + off, SEED_FILE_SIZE - off);
+            if (n <= 0) break;
+            off += n;
+        }
         close(fd);
     }
     return fmap[idx].path;

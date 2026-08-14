@@ -69,6 +69,9 @@ STUB   = REPO / "instrumentation/mm_target_stub.c"
 # Required keys: pua, op, sigma, seeds, input_mode, title, ianalyze, iinstrument
 # Optional keys (override with CLI flags): grammar, grammar_only, trees,
 #                                          wrapper_src, exec_timeout
+# grammar/grammar_only/trees are only pulled from an example when --use-grammar
+# is passed -- see parse_args(). Without it, grammar stays off even if defined
+# here.
 EXAMPLES = {
     "default": {
         "pua":          REPO / "inputs/programPUA.c",
@@ -114,30 +117,6 @@ EXAMPLES = {
         "trees":        Path("/home/felicitas/Grammar-Mutator/trees-cat"),
         "exec_timeout": "5000",
         "title":        "catCU",
-        "ianalyze":     [str(CU / "src"), str(CU / "lib")],
-        "iinstrument":  [
-            str(CU / "lib/libcoreutils.a"),
-            str(CU / "src/version.o"),
-        ],
-        "plain_I":      [str(CU / "src"), str(CU / "lib")],
-        "plain_link":   [
-            str(CU / "lib/libcoreutils.a"),
-            str(CU / "src/version.o"),
-        ],
-    },
-    "cat_no_grammar": {
-        # Same PUA/OP/sigma/seeds as "cat", but with no grammar mutator
-        # configured -- AFL falls back entirely to its own built-in
-        # mutation engine (havoc/splice/bitflip/etc.) starting from the
-        # same seed corpus, instead of grammar-guided command-line mutation.
-        "pua":          REPO / "examples/catCU/catPUA.c",
-        "op":           REPO / "examples/catCU/catOP.c",
-        "sigma":        REPO / "examples/catCU/catSigma.txt",
-        "seeds":        Path("/home/felicitas/Grammar-Mutator/seeds-cat"),
-        "input_mode":   "argv",
-        "wrapper_src":  REPO / "pipeline/afl_cat_cmdline_wrapper.c",
-        "exec_timeout": "5000",
-        "title":        "catCU (no grammar mutator)",
         "ianalyze":     [str(CU / "src"), str(CU / "lib")],
         "iinstrument":  [
             str(CU / "lib/libcoreutils.a"),
@@ -253,9 +232,14 @@ def parse_args(argv=None):
                    help="suppress AFL's own mutations (AFL_CUSTOM_MUTATOR_ONLY=1)")
     p.add_argument("--trees",       type=Path, default=None,
                    help="pre-generated tree cache dir passed to fuzz.sh -trees")
+    p.add_argument("--use-grammar", action="store_true",
+                   help="pull the --example's own grammar-mutator config (grammar/"
+                        "grammar_only/trees), if it defines one. Off by default -- AFL "
+                        "uses its own built-in mutations only unless you pass this or "
+                        "set --grammar explicitly.")
     p.add_argument("--no-grammar",  action="store_true",
-                   help="force the grammar mutator off even if --example defaults one on "
-                        "(AFL uses its own built-in mutations only, seeds unchanged)")
+                   help="force the grammar mutator off (now the default regardless -- "
+                        "kept as a harmless no-op so old commands with this flag still work)")
     p.add_argument("--wrapper-src", type=Path, default=None,
                    help="custom wrapper .c compiled instead of afl_fuzz_wrapper.c (argv mode)")
     p.add_argument("--input-mode",  default=None,
@@ -290,13 +274,15 @@ def parse_args(argv=None):
     if args.results is None:
         experiment = args.experiment or default_experiment_name(args.example)
         args.results = REPO / "evaluation/bench/results" / experiment / (args.campaign or args.example)
-    # Fall back to example-level defaults for optional keys; CLI flags override.
-    if args.grammar is None and "grammar" in ex:
-        args.grammar = ex["grammar"]
-    if not args.grammar_only:
-        args.grammar_only = ex.get("grammar_only", False)
-    if args.trees is None and "trees" in ex:
-        args.trees = ex["trees"]
+    # Grammar is opt-in (--use-grammar), off by default even if --example
+    # defines one; explicit --grammar/--grammar-only/--trees always override.
+    if args.use_grammar:
+        if args.grammar is None and "grammar" in ex:
+            args.grammar = ex["grammar"]
+        if not args.grammar_only:
+            args.grammar_only = ex.get("grammar_only", False)
+        if args.trees is None and "trees" in ex:
+            args.trees = ex["trees"]
     if args.no_grammar:
         args.grammar = None
         args.grammar_only = False
@@ -735,6 +721,9 @@ def save_report(data, rows, args):
     lines.append(f"**Policy:** {args.policy}  ")
     iv_mode = "coarse" if args.iv_feedback else ("path-aware" if args.iv_feedback_path else "disabled")
     lines.append(f"**IV feedback:** {iv_mode}\n")
+    grammar_status = (f"{args.grammar.name}" + (" (grammar-only)" if args.grammar_only else "")
+                       if args.grammar else "off")
+    lines.append(f"**Grammar:** {grammar_status}\n")
 
     for target in ("instrumented", "plain"):
         t_rows = [r for r in rows if r["target"] == target]

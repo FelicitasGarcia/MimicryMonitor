@@ -125,7 +125,42 @@ las tablas panorama a mano.
 ## Estado actual
 
 <!-- AUTO:start — regenerado por sync_context.py, no editar -->
-_(pendiente de primer sync — correr `python evaluation/bench/sync_context.py`)_
+_Último sync: 2026-08-14_
+
+**Repo:** commit=`256ec88` · branch=`fuzzing` · cambios sin commitear
+
+**Última campaña por RQ:**
+- RQ1: `rq1_effect/iv_feedback/2026-08-12_10x1200s_SFPBQN-no-grammar-no-sleep/none`
+- RQ2: `rq2_overhead/micro/full`
+- RQ3: _(sin campañas)_
+
+**Tabla resumen (última campaña RQ1):**
+
+| Trial | Execs | Hits | Hit % | Exec/s |
+|------:|------:|-----:|------:|-------:|
+| 1 | 348965 | 65929 | 18.9% | 297.5 |
+| 2 | 620210 | 74650 | 12.0% | 528.2 |
+| 3 | 527677 | 76184 | 14.4% | 450.2 |
+| 4 | 612157 | 117261 | 19.2% | 522.7 |
+| 5 | 699913 | 120018 | 17.2% | 595.9 |
+| 6 | 426866 | 70923 | 16.6% | 365.6 |
+| 7 | 518161 | 104314 | 20.1% | 441.4 |
+| 8 | 439129 | 83560 | 19.0% | 374.0 |
+| 9 | 692442 | 82795 | 12.0% | 592.8 |
+| 10 | 698845 | 99115 | 14.2% | 597.6 |
+| **Mean** | **558436.5** | **89474.9** | **16.4%** | |
+| **Total (campaign)** | **5584365** | **894749** | **16.0%** | |
+| Metric | Instrumented | Plain |
+|--------|-------------|-------|
+| Total execs (campaign) | — | 5584365 |
+| Total hits (campaign) | — | 894749 |
+| Campaign hit rate | — | 16.0% |
+| Mean execs/trial | — | 558436.5 |
+| Mean hits/trial | — | 89474.9 |
+| Mean hit rate | — | 16.4% |
+| Best hit rate | — | 20.1% |
+| Worst hit rate | — | 12.0% |
+| Best/worst ratio | — | 1.68× |
 <!-- AUTO:end -->
 
 ### Conclusión activa (a mano)

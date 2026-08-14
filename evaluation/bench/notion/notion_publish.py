@@ -175,7 +175,7 @@ def parse_report(report_path: Path):
     if not fields:
         return None, []
     config = (f"{fields.get('Trials', '?')} · policy={fields.get('Policy', '?')} · "
-              f"campaign={fields.get('Campaign', '?')}")
+              f"campaign={fields.get('Campaign', '?')} · grammar={fields.get('Grammar', '?')}")
 
     text = report_path.read_text()
     summary, in_summary = [], False
@@ -289,27 +289,53 @@ def list_children(token, block_id):
 _HEADING_RANK = {"heading_1": 1, "heading_2": 2, "heading_3": 3}
 
 
+def find_descendant_container(token, root_id, predicate):
+    """DFS for the first block matching predicate anywhere under root_id --
+    root_id's direct children first, then recursing into any block that
+    has_children. Returns (parent_id, block): the id of whichever block
+    actually CONTAINS the match (root_id itself, or a nested toggle/heading),
+    plus the matched block. Necessary because sections aren't guaranteed to
+    sit flat as page-level children -- e.g. "# 1. RQ1" is a toggleable
+    heading_1, so everything under it (including "Visualizaciones por
+    campaña") is nested inside THAT block, not a sibling of it on the page."""
+    blocks = list_children(token, root_id)
+    for b in blocks:
+        if predicate(b):
+            return root_id, b
+    for b in blocks:
+        if b.get("has_children"):
+            found = find_descendant_container(token, b["id"], predicate)
+            if found:
+                return found
+    return None
+
+
 def find_section_insert_point(token, page, heading_text, heading_type="heading_2"):
     """Return the block id of the LAST block belonging to the named section
     (right before the next heading of equal-or-higher level, or the end of
-    the page if it's the last section) -- so a new sibling block appended
-    with after=<this id> lands inside the section instead of at the page's
-    end. Sub-headings inside the section (e.g. per-campaign toggle headings,
-    which are heading_3 siblings of a heading_2 section header, not its
-    literal Notion children) are skipped over, not treated as boundaries.
-    Returns None if the heading itself isn't found."""
-    blocks = list_children(token, page)
-    section_rank = _HEADING_RANK[heading_type]
-    start = None
-    for i, b in enumerate(blocks):
+    its container if it's the last section there) -- so a new sibling block
+    appended with after=<this id> lands inside the section instead of at the
+    wrong place. Sub-headings inside the section (e.g. per-campaign toggle
+    headings, which are heading_3 siblings of a heading_2 section header,
+    not its literal Notion children) are skipped over, not treated as
+    boundaries. Searches recursively (see find_descendant_container) since
+    the section may be nested inside a toggleable ancestor heading rather
+    than sitting flat on the page. Returns None if the heading isn't found
+    anywhere under `page`."""
+    def matches(b):
         if b["type"] != heading_type:
-            continue
+            return False
         text = "".join(r["plain_text"] for r in b[heading_type]["rich_text"]).strip()
-        if text == heading_text:
-            start = i
-            break
-    if start is None:
+        return text == heading_text
+
+    found = find_descendant_container(token, page, matches)
+    if found is None:
         return None
+    parent_id, heading_block = found
+
+    blocks = list_children(token, parent_id)
+    section_rank = _HEADING_RANK[heading_type]
+    start = next(i for i, b in enumerate(blocks) if b["id"] == heading_block["id"])
     last_id = blocks[start]["id"]
     for b in blocks[start + 1:]:
         rank = _HEADING_RANK.get(b["type"])
@@ -317,6 +343,124 @@ def find_section_insert_point(token, page, heading_text, heading_type="heading_2
             break
         last_id = b["id"]
     return last_id
+
+
+IV_FEEDBACK_DB_TITLE = "IV-feedback campaigns"
+
+
+def iv_feedback_db_schema(example_choices, condition_choices):
+    """Property schema for the IV-feedback campaigns database: settings
+    (trials, time, example, which conditions ran, grammar, commit) plus a
+    handful of headline result properties (best condition, its mean hits/
+    trial vs. plain's, and the delta) -- the same numbers the old hand-
+    maintained "Panorama de campañas" tables showed, so the database can
+    replace that view. The FULL per-condition breakdown (all 8 metrics x N
+    conditions) stays out of properties by design -- it lives in each row's
+    own page body (see publish_row()), not flattened into fields."""
+    return {
+        "Campaign":               {"title": {}},
+        "Date":                   {"date": {}},
+        "Example":                {"select": {"options": [{"name": e} for e in example_choices]}},
+        "Trials":                 {"number": {"format": "number"}},
+        "Time/trial (s)":         {"number": {"format": "number"}},
+        "Conditions":             {"multi_select": {"options": [{"name": c} for c in condition_choices]}},
+        "Grammar":                {"rich_text": {}},
+        "Commit":                 {"rich_text": {}},
+        "Best condition":         {"select": {"options": [{"name": c} for c in condition_choices]}},
+        "Best mean hits/trial":   {"number": {"format": "number"}},
+        "Plain mean hits/trial":  {"number": {"format": "number"}},
+        "Δ vs plain":             {"number": {"format": "number"}},
+        "Δ vs plain (×)":         {"number": {"format": "number"}},
+    }
+
+
+def campaign_row_properties(campaign, date_str, example, trials, time_s, conditions,
+                             grammar_status, commit, best_condition=None,
+                             best_mean_hits=None, plain_mean_hits=None):
+    """Build the `properties` payload for one campaign row, matching
+    iv_feedback_db_schema()'s types. The result fields (best_condition,
+    best_mean_hits, plain_mean_hits) are optional -- pass None for any of
+    them (e.g. a campaign with no plain "none" arm) to leave that property
+    unset rather than write a wrong number."""
+    props = {
+        "Campaign":       {"title": rt(campaign)},
+        "Date":           {"date": {"start": date_str}},
+        "Example":        {"select": {"name": example}},
+        "Trials":         {"number": trials},
+        "Time/trial (s)": {"number": time_s},
+        "Conditions":     {"multi_select": [{"name": c} for c in conditions]},
+        "Grammar":        {"rich_text": rt(grammar_status)},
+        "Commit":         {"rich_text": rt(commit or "")},
+    }
+    if best_condition is not None:
+        props["Best condition"] = {"select": {"name": best_condition}}
+    if best_mean_hits is not None:
+        props["Best mean hits/trial"] = {"number": best_mean_hits}
+    if plain_mean_hits is not None:
+        props["Plain mean hits/trial"] = {"number": plain_mean_hits}
+    if best_mean_hits is not None and plain_mean_hits is not None:
+        props["Δ vs plain"] = {"number": best_mean_hits - plain_mean_hits}
+        if plain_mean_hits:
+            props["Δ vs plain (×)"] = {"number": best_mean_hits / plain_mean_hits}
+    return props
+
+
+def find_or_create_database(token, page, title, properties_schema):
+    """Return the id of a child database titled `title` living anywhere
+    under `page` (searched recursively -- see find_descendant_container --
+    since the page's sections may be nested inside toggleable headings),
+    creating it if it doesn't exist yet. Idempotent -- a rerun reuses the
+    same database instead of creating a duplicate.
+
+    The Notion API only allows a *page* as a new database's parent (a block/
+    toggle parent is rejected -- verified against the real API), and always
+    appends it as the page's last top-level child with no positioning
+    control. So this always creates at the page's top level, as its own
+    always-visible section -- not nested inside a collapsible RQ toggle,
+    which is arguably where you want a database to live anyway (not hidden
+    inside something collapsed by default)."""
+    found = find_descendant_container(
+        token, page,
+        lambda b: b["type"] == "child_database" and b.get("child_database", {}).get("title") == title)
+    if found is not None:
+        return found[1]["id"]
+
+    created = api(token, "POST", "/databases", {
+        "parent": {"type": "page_id", "page_id": page},
+        "title": rt(title),
+        "properties": properties_schema,
+    })
+    print(f"[notion] created database '{title}' ({created['id']}) as a new "
+          f"top-level section on the page; every later run reuses this same "
+          f"database.")
+    return created["id"]
+
+
+def publish_row(database_id, properties, body_children, token, campaign, dry_run=False):
+    """Create one database row (a page under `database_id`) with the given
+    properties, then write body_children (chart + summary table, see
+    build_result_children()) as that row's own page content. Raises
+    NotionPublishError on failure, same non-fatal-to-the-caller contract as
+    publish()."""
+    print(f"[plan] database  : {database_id}")
+    print(f"[plan] row       : {campaign}")
+    print(f"[plan] properties: {properties}")
+    print(f"[plan] body      : {len(body_children)} block(s)")
+    if dry_run:
+        return True
+    if not token:
+        raise NotionPublishError("no token: export NOTION_TOKEN=... (see module docstring for setup)")
+
+    row = api(token, "POST", "/pages", {
+        "parent": {"database_id": database_id},
+        "properties": properties,
+    })
+    row_id = row["id"]
+    if body_children:
+        api(token, "PATCH", f"/blocks/{row_id}/children", {"children": body_children})
+    print(f"[notion] published campaign '{campaign}' as a database row "
+          f"({sum(1 for c in body_children if c['type'] == 'image')} image(s))")
+    return True
 
 
 def find_panorama_table(token, page, time_suffix):
@@ -382,6 +526,32 @@ def parse_args():
     return p.parse_args()
 
 
+def build_result_children(token, bench_png, overhead_png, summary, combined, campaign,
+                           config=None, commit=None):
+    """Shared body-block builder: optional config line, chart image(s), summary
+    table. Used both for a toggle's children (publish()) and a database row's
+    page body (publish_row()) -- pass config=None to skip that line when the
+    caller already exposes it as structured properties instead."""
+    children = []
+    if config:
+        line = f"Config: {config}" + (f" · commit={commit}" if commit else "")
+        children.append(paragraph(line, bold=True))
+    if bench_png.exists():
+        children.append(paragraph("Campaign comparison" if combined else "Target reachability"))
+        children.append(image(upload_file(token, bench_png),
+                              caption=f"{'iv_feedback comparison' if combined else 'targetbench'} — {campaign}"))
+    if overhead_png and overhead_png.exists():
+        children.append(paragraph("Overhead"))
+        children.append(image(upload_file(token, overhead_png),
+                              caption=f"overhead_micro — {campaign}"))
+    if summary:
+        children.append(paragraph("Resumen"))
+        tbl = md_table_to_block(summary)
+        if tbl:
+            children.append(tbl)
+    return children
+
+
 def publish(results: Path, campaign, page, token, example="cat", combined=False,
             dry_run=False):
     """Core publish logic, importable from other scripts (targetbench.py's
@@ -443,23 +613,8 @@ def publish(results: Path, campaign, page, token, example="cat", combined=False,
 
     # 2. children of the toggle (separate request so the summary table's
     #    rows stay within Notion's 2-level nesting limit per request)
-    children = []
-    if config:
-        line = f"Config: {config}" + (f" · commit={commit}" if commit else "")
-        children.append(paragraph(line, bold=True))
-    if bench_png.exists():
-        children.append(paragraph("Campaign comparison" if combined else "Target reachability"))
-        children.append(image(upload_file(token, bench_png),
-                              caption=f"{'iv_feedback comparison' if combined else 'targetbench'} — {campaign}"))
-    if overhead_png and overhead_png.exists():
-        children.append(paragraph("Overhead"))
-        children.append(image(upload_file(token, overhead_png),
-                              caption=f"overhead_micro — {campaign}"))
-    if summary:
-        children.append(paragraph("Resumen"))
-        tbl = md_table_to_block(summary)
-        if tbl:
-            children.append(tbl)
+    children = build_result_children(token, bench_png, overhead_png, summary, combined,
+                                      campaign, config=config, commit=commit)
 
     api(token, "PATCH", f"/blocks/{toggle}/children", {"children": children})
     print(f"[notion] published campaign '{campaign}' "

@@ -1,5 +1,0 @@
-digraph "CFG for 'write_error' function" {
-	label="CFG for 'write_error' function";
-
-	Node0x639711975b90 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870" fontname="Courier",label="{0:\l|  %1 = alloca i32, align 4\l  %2 = call ptr @__errno_location() #12, !dbg !297\l  %3 = load i32, ptr %2, align 4, !dbg !297\l  store i32 %3, ptr %1, align 4, !dbg !296\l  %4 = load ptr, ptr @stdout, align 8, !dbg !298\l  %5 = call i32 @fflush_unlocked(ptr noundef %4), !dbg !298\l  %6 = load ptr, ptr @stdout, align 8, !dbg !299\l  %7 = call i32 @fpurge(ptr noundef %6), !dbg !300\l  %8 = load ptr, ptr @stdout, align 8, !dbg !301\l  call void @clearerr_unlocked(ptr noundef %8) #13, !dbg !301\l  %9 = load i32, ptr %1, align 4, !dbg !302\l  %10 = call ptr @gettext(ptr noundef @.str.49) #13, !dbg !302\l  call void (i32, i32, ptr, ...) @error(i32 noundef 1, i32 noundef %9, ptr\l... noundef %10) #14, !dbg !302\l  unreachable, !dbg !302\l}"];
-}
