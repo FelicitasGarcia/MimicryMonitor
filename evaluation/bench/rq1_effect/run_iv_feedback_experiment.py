@@ -596,25 +596,12 @@ def main():
             print(f"[summary] FAILED to render: {e!r}")
 
         if cli.notion:
-            npub = tb.notion_publish
             try:
                 token = os.environ.get("NOTION_TOKEN")
-                page = npub.DEFAULT_PAGE
-                database_id = npub.find_or_create_database(
-                    token, page, npub.IV_FEEDBACK_DB_TITLE,
-                    npub.iv_feedback_db_schema(list(tb.EXAMPLES), [n for n, *_ in CONDITIONS]))
-                best_condition, best_mean_hits, plain_mean_hits = campaign_result_summary(all_rows)
-                properties = npub.campaign_row_properties(
-                    experiment_dir, datetime.date.today().isoformat(), cli.example,
-                    cli.trials, cli.time, [n for n, *_ in active_conditions],
-                    grammar_status, npub.git_commit(),
-                    best_condition=best_condition, best_mean_hits=best_mean_hits,
-                    plain_mean_hits=plain_mean_hits)
-                _, summary = npub.parse_combined(experiment_root)
-                body_children = npub.build_result_children(
-                    token, comparison_path, None, summary, True, experiment_dir)
-                npub.publish_row(database_id, properties, body_children, token, experiment_dir)
-            except npub.NotionPublishError as e:
+                tb.notion_subject.publish_subject_campaign(
+                    token, cli.example, experiment_root, experiment_dir,
+                    example=cli.example, combined=True)
+            except Exception as e:
                 print(f"[notion] publish failed (non-fatal): {e}")
 
     update_index_readme()

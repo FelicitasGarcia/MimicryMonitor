@@ -57,12 +57,14 @@ import matplotlib.ticker as mticker
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "notion"))
 import notion_publish
+import notion_subject
 
 # ── paths ────────────────────────────────────────────────────────────────────
 REPO   = Path(__file__).resolve().parents[3]
 FUZZ   = REPO / "pipeline" / "fuzz.sh"
 MIMICRY= REPO / "pipeline" / "run-mimicry.sh"
 CU     = Path("/home/felicitas/Desktop/DOC/MM/coreutils")
+CU_SPLICE = Path("/home/felicitas/Desktop/DOC/MM/coreutils-splice")
 STUB   = REPO / "instrumentation/mm_target_stub.c"
 
 # ── example configs ───────────────────────────────────────────────────────────
@@ -126,6 +128,37 @@ EXAMPLES = {
         "plain_link":   [
             str(CU / "lib/libcoreutils.a"),
             str(CU / "src/version.o"),
+        ],
+    },
+    "cat_splice": {
+        # Real coreutils commit pair (457f885^ = OP, 457f885 = PUA), not a
+        # synthetic example. OP and PUA are byte-identical in cat()'s
+        # formatted byte-by-byte path (V, expensive) and in main() up to the
+        # copy_cat_status dispatch; PUA adds a new splice_cat_status branch
+        # there (IV, cheap fast path via splice()). Built against an
+        # isolated coreutils checkout (CU_SPLICE), since the shared CU
+        # checkout predates that commit and lacks splice_cat's dependencies
+        # (isapipe, increase_pipe_size).
+        "pua":          REPO / "examples/catCU_splice/catPUA.c",
+        "op":           REPO / "examples/catCU_splice/catOP.c",
+        "sigma":        REPO / "examples/catCU_splice/catSigma.txt",
+        "seeds":        Path("/home/felicitas/Grammar-Mutator/seeds-cat"),
+        "input_mode":   "argv",
+        "wrapper_src":  REPO / "pipeline/afl_cat_cmdline_wrapper.c",
+        "grammar":      Path("/home/felicitas/Grammar-Mutator/libgrammarmutator-cat.so"),
+        "grammar_only": True,
+        "trees":        Path("/home/felicitas/Grammar-Mutator/trees-cat"),
+        "exec_timeout": "5000",
+        "title":        "catCU (splice, real commit pair)",
+        "ianalyze":     [str(CU_SPLICE / "src"), str(CU_SPLICE / "lib")],
+        "iinstrument":  [
+            str(CU_SPLICE / "lib/libcoreutils.a"),
+            str(CU_SPLICE / "src/version.o"),
+        ],
+        "plain_I":      [str(CU_SPLICE / "src"), str(CU_SPLICE / "lib")],
+        "plain_link":   [
+            str(CU_SPLICE / "lib/libcoreutils.a"),
+            str(CU_SPLICE / "src/version.o"),
         ],
     },
     "cat_sleep": {
@@ -818,11 +851,10 @@ def main():
     if args.notion:
         campaign = args.campaign or args.example
         try:
-            notion_publish.publish(args.results, campaign,
-                                    notion_publish.DEFAULT_PAGE,
-                                    os.environ.get("NOTION_TOKEN"),
-                                    example=args.example)
-        except notion_publish.NotionPublishError as e:
+            notion_subject.publish_subject_campaign(
+                os.environ.get("NOTION_TOKEN"), args.example, args.results,
+                campaign, example=args.example, combined=False)
+        except Exception as e:
             print(f"[notion] publish failed (non-fatal): {e}")
 
 if __name__ == "__main__":

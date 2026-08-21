@@ -125,12 +125,12 @@ las tablas panorama a mano.
 ## Estado actual
 
 <!-- AUTO:start — regenerado por sync_context.py, no editar -->
-_Último sync: 2026-08-14_
+_Último sync: 2026-08-21_
 
-**Repo:** commit=`256ec88` · branch=`fuzzing` · cambios sin commitear
+**Repo:** commit=`64b5a2e` · branch=`fuzzing` · cambios sin commitear
 
 **Última campaña por RQ:**
-- RQ1: `rq1_effect/iv_feedback/2026-08-12_10x1200s_SFPBQN-no-grammar-no-sleep/none`
+- RQ1: `rq1_effect/iv_feedback/2026-08-21_smoketest_multivariant/none`
 - RQ2: `rq2_overhead/micro/full`
 - RQ3: _(sin campañas)_
 
@@ -138,36 +138,29 @@ _Último sync: 2026-08-14_
 
 | Trial | Execs | Hits | Hit % | Exec/s |
 |------:|------:|-----:|------:|-------:|
-| 1 | 348965 | 65929 | 18.9% | 297.5 |
-| 2 | 620210 | 74650 | 12.0% | 528.2 |
-| 3 | 527677 | 76184 | 14.4% | 450.2 |
-| 4 | 612157 | 117261 | 19.2% | 522.7 |
-| 5 | 699913 | 120018 | 17.2% | 595.9 |
-| 6 | 426866 | 70923 | 16.6% | 365.6 |
-| 7 | 518161 | 104314 | 20.1% | 441.4 |
-| 8 | 439129 | 83560 | 19.0% | 374.0 |
-| 9 | 692442 | 82795 | 12.0% | 592.8 |
-| 10 | 698845 | 99115 | 14.2% | 597.6 |
-| **Mean** | **558436.5** | **89474.9** | **16.4%** | |
-| **Total (campaign)** | **5584365** | **894749** | **16.0%** | |
+| 1 | 1187 | 301 | 25.4% | 27.6 |
+| 2 | 2118 | 614 | 29.0% | 51.7 |
+| **Mean** | **1652.5** | **457.5** | **27.2%** | |
+| **Total (campaign)** | **3305** | **915** | **27.7%** | |
 | Metric | Instrumented | Plain |
 |--------|-------------|-------|
-| Total execs (campaign) | — | 5584365 |
-| Total hits (campaign) | — | 894749 |
-| Campaign hit rate | — | 16.0% |
-| Mean execs/trial | — | 558436.5 |
-| Mean hits/trial | — | 89474.9 |
-| Mean hit rate | — | 16.4% |
-| Best hit rate | — | 20.1% |
-| Worst hit rate | — | 12.0% |
-| Best/worst ratio | — | 1.68× |
+| Total execs (campaign) | — | 3305 |
+| Total hits (campaign) | — | 915 |
+| Campaign hit rate | — | 27.7% |
+| Mean execs/trial | — | 1652.5 |
+| Mean hits/trial | — | 457.5 |
+| Mean hit rate | — | 27.2% |
+| Best hit rate | — | 29.0% |
+| Worst hit rate | — | 25.4% |
+| Best/worst ratio | — | 1.14× |
 <!-- AUTO:end -->
 
 ### Conclusión activa (a mano)
 
-No hay evidencia sólida de que el IV-feedback mejore la tasa de hit
-(hits/execs) por encima de plain AFL. El hallazgo consistente es que el abort
-temprano (`stop-v`) multiplica el throughput de ejecuciones, produciendo más
-hits absolutos sin mejorar la eficiencia por ejecución. `fb_only` supera en
-hit-rate a `fb_stop`, sugiriendo que el confound dominante es el abort, no el
-feedback.
+El hallazgo consistente sigue siendo que el abort temprano (`stop-v`) multiplica el throughput de ejecuciones, produciendo más hits absolutos sin mejorar la eficiencia por ejecución. `fb_only` supera en hit-rate a `fb_stop`, sugiriendo que el confound dominante es el abort, no el feedback. 
+14/08
+Además pareciera que solo se ve esta mejora cuando el programa realiza operaciones más costosas. Por ahora lo estaba simulando con sleep, pero ahora tengo ganas de ver si con escenarios de cat reales podría pasar, por lo que obligue al fuzzer a usar archivos de 1 mega sobre los cuales correr los comandos que fuzzea. Tampoco veo mucha diferencia con ningún tipo de feedback, habría que realizar un análisis estadístico más sólido, para saber que tan significativos son los resultados obtenidos.
+18/08
+Después de correr el heavy operations long no veo mucha mejora en los reusltados, Ni siquiera para stop V. Puede que tenga que ver con que los caminos que dan IV también son costosos.
+21/08
+Probando nuevo commit de cat, para ver que pasa
